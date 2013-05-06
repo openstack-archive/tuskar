@@ -3,6 +3,7 @@
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
+# Copyright 2012 Red Hat, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -16,23 +17,21 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Database setup and migration commands."""
+from oslo.config import cfg
 
-from ironic.common import utils
+from ironic.openstack.common.db.sqlalchemy import session as db_session
+from ironic.openstack.common import rpc
+from ironic.common import paths
+from ironic import version
 
-
-IMPL = utils.LazyPluggable(
-        'db_backend',
-        sqlalchemy='ironic.db.sqlalchemy.migration')
-
-INIT_VERSION = 0
+_DEFAULT_SQL_CONNECTION = 'sqlite:///' + paths.state_path_def('$sqlite_db')
 
 
-def db_sync(version=None):
-    """Migrate the database to `version` or the most recent version."""
-    return IMPL.db_sync(version=version)
-
-
-def db_version():
-    """Display the current database version."""
-    return IMPL.db_version()
+def parse_args(argv, default_config_files=None):
+    db_session.set_defaults(sql_connection=_DEFAULT_SQL_CONNECTION,
+                            sqlite_db='ironic.sqlite')
+    rpc.set_defaults(control_exchange='ironic')
+    cfg.CONF(argv[1:],
+             project='ironic',
+             version=version.version_string(),
+             default_config_files=default_config_files)
