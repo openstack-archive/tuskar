@@ -17,7 +17,7 @@
 
 
 from migrate.changeset import UniqueConstraint
-from sqlalchemy import Table, Column, Index, ForeignKey, MetaData
+from sqlalchemy import Table, Column, ForeignKey, MetaData
 from sqlalchemy import DateTime, Integer, String, Text
 
 from ironic.openstack.common import log as logging
@@ -32,38 +32,28 @@ def upgrade(migrate_engine):
     meta = MetaData()
     meta.bind = migrate_engine
 
-    nodes = Table('nodes', meta,
+    blaas = Table('blaas', meta,
         Column('id', Integer, primary_key=True, nullable=False),
         Column('uuid', String(length=36)),
-        Column('power_info', Text),
-        Column('cpu_arch', String(length=10)),
-        Column('cpu_num', Integer),
-        Column('memory', Integer),
-        Column('local_storage_max', Integer),
-        Column('task_state', String(length=255)),
-        Column('image_path', String(length=255), nullable=True),
-        Column('instance_uuid', String(length=36), nullable=True),
-        Column('instance_name', String(length=255), nullable=True),
-        Column('extra', Text),
+        Column('description', Text),
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
         mysql_engine=ENGINE,
         mysql_charset=CHARSET,
     )
 
-    ifaces = Table('ifaces', meta,
+    sausages = Table('sausages', meta,
         Column('id', Integer, primary_key=True, nullable=False),
-        Column('address', String(length=18)),
-        Column('node_id', Integer, ForeignKey('nodes.id'),
+        Column('name', Text),
+        Column('blaa_id', Integer, ForeignKey('blaas.id'),
             nullable=True),
-        Column('extra', Text),
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
         mysql_engine=ENGINE,
         mysql_charset=CHARSET,
     )
 
-    tables = [nodes, ifaces]
+    tables = [blaas, sausages]
     for table in tables:
         try:
             table.create()
@@ -73,16 +63,13 @@ def upgrade(migrate_engine):
             raise
 
     indexes = [
-        Index('node_cpu_mem_disk', nodes.c.cpu_num,
-                nodes.c.memory, nodes.c.local_storage_max),
-        Index('node_instance_uuid', nodes.c.instance_uuid),
     ]
 
     uniques = [
-        UniqueConstraint('uuid', table=nodes,
-                            name='node_uuid_ux'),
-        UniqueConstraint('address', table=ifaces,
-                            name='iface_address_ux'),
+        UniqueConstraint('uuid', table=blaas,
+                         name='blaas_uuid_ux'),
+        UniqueConstraint('name', table=sausages,
+                         name='sausages_name_ux'),
     ]
 
     if migrate_engine.name == 'mysql' or migrate_engine.name == 'postgresql':
@@ -93,4 +80,4 @@ def upgrade(migrate_engine):
 
 
 def downgrade(migrate_engine):
-    raise NotImplementedError('Downgrade from Folsom is unsupported.')
+    raise NotImplementedError('Downgrade is unsupported.')

@@ -66,191 +66,67 @@ def add_uuid_filter(query, value):
         raise exception.InvalidUUID(uuid=value)
 
 
-def add_mac_filter(query, value):
-    if utils.is_int_like(value):
-        return query.filter_by(id=value)
-    elif utils.is_valid_mac(value):
-        return query.filter_by(address=value)
-    else:
-        raise exception.InvalidMAC(mac=value)
-
-
 class Connection(api.Connection):
     """SqlAlchemy connection."""
 
     def __init__(self):
         pass
 
-    def get_nodes(self, columns):
-        pass
+    def get_blaas(self, columns):
+        # FIXME(markmc): columns
+        return model_query(models.Blaa).all()
 
-    def get_associated_nodes(self):
-        pass
+    def create_blaa(self, values):
+        blaa = models.Blaa()
+        blaa.update(values)
+        blaa.save()
+        return blaa
 
-    def get_unassociated_nodes(self):
-        pass
-
-    def reserve_nodes(self, tag, nodes):
-        # Ensure consistent sort order so we don't run into deadlocks.
-        nodes.sort()
-
-        result = []
-        session = get_session()
-        with session.begin():
-            # TODO(deva): Optimize this by trying to reserve all the nodes
-            #             at once, and fall back to reserving one at a time
-            #             only if needed to determine the cause of an error.
-            for node in nodes:
-                query = model_query(models.Node, session=session)
-                query = add_uuid_filter(query, node)
-
-                # Be optimistic and assume we usually get a reservation.
-                count = query.filter_by(reservation=None).\
-                            update({'reservation': tag})
-
-                if count != 1:
-                    try:
-                        ref = query.one()
-                    except NoResultFound:
-                        raise exception.NodeNotFound(node=node)
-                    else:
-                        raise exception.NodeLocked(node=node)
-                ref = query.one()
-                result.append(ref)
-
-        return result
-
-    def release_nodes(self, tag, nodes):
-        session = get_session()
-        with session.begin():
-            # TODO(deva): Optimize this by trying to release all the nodes
-            #             at once, and fall back to releasing one at a time
-            #             only if needed to determine the cause of an error.
-            for node in nodes:
-                query = model_query(models.Node, session=session)
-                query = add_uuid_filter(query, node)
-
-                # be optimistic and assume we usually release a reservation
-                count = query.filter_by(reservation=tag).\
-                            update({'reservation': None})
-
-                if count != 1:
-                    try:
-                        ref = query.one()
-                    except NoResultFound:
-                        raise exception.NodeNotFound(node=node)
-                    else:
-                        if ref['reservation'] is not None:
-                            raise exception.NodeLocked(node=node)
-
-    def create_node(self, values):
-        node = models.Node()
-        node.update(values)
-        node.save()
-        return node
-
-    def get_node(self, node):
-        query = model_query(models.Node)
-        query = add_uuid_filter(query, node)
+    def get_blaa(self, blaa):
+        query = model_query(models.Blaa)
+        query = add_uuid_filter(query, blaa)
 
         try:
             result = query.one()
         except NoResultFound:
-            raise exception.NodeNotFound(node=node)
+            raise exception.BlaaNotFound(blaa=blaa)
 
         return result
 
-    def get_node_by_instance(self, instance):
-        query = model_query(models.Node)
-        if uuidutils.is_uuid_like(instance):
-            query = query.filter_by(instance_uuid=instance)
-        else:
-            query = query.filter_by(instance_name=instance)
-
-        try:
-            result = query.one()
-        except NoResultFound:
-            raise exception.InstanceNotFound(instance=instance)
-
-        return result
-
-    def destroy_node(self, node):
+    def destroy_blaa(self, blaa):
         session = get_session()
         with session.begin():
-            query = model_query(models.Node, session=session)
-            query = add_uuid_filter(query, node)
+            query = model_query(models.Blaa, session=session)
+            query = add_uuid_filter(query, blaa)
 
             count = query.delete()
             if count != 1:
-                raise exception.NodeNotFound(node=node)
+                raise exception.BlaaNotFound(blaa=blaa)
 
-    def update_node(self, node, values):
+    def update_blaa(self, blaa, values):
         session = get_session()
         with session.begin():
-            query = model_query(models.Node, session=session)
-            query = add_uuid_filter(query, node)
+            query = model_query(models.Blaa, session=session)
+            query = add_uuid_filter(query, blaa)
 
-            print "Updating with %s." % values
             count = query.update(values,
                                  synchronize_session='fetch')
             if count != 1:
-                raise exception.NodeNotFound(node=node)
+                raise exception.BlaaNotFound(blaa=blaa)
             ref = query.one()
         return ref
 
-    def get_port(self, port):
-        query = model_query(models.Port)
-        query = add_mac_filter(query, port)
-
-        try:
-            result = query.one()
-        except NoResultFound:
-            raise exception.PortNotFound(port=port)
-
-        return result
-
-    def get_port_by_vif(self, vif):
-        pass
-
-    def get_ports_by_node(self, node):
+    def get_sausages_by_blaa(self, blaa):
         session = get_session()
 
-        if utils.is_int_like(node):
-            query = session.query(models.Port).\
-                        filter_by(node_id=node)
+        if utils.is_int_like(blaa):
+            query = session.query(models.Sausage).\
+                        filter_by(blaa_id=blaa)
         else:
-            query = session.query(models.Port).\
-                        join(models.Node,
-                             models.Port.node_id == models.Node.id).\
-                        filter(models.Node.uuid == node)
+            query = session.query(models.Sausage).\
+                        join(models.Blaa,
+                             models.Sausage.blaa_id == models.Blaa.id).\
+                        filter(models.Blaa.uuid == blaa)
         result = query.all()
 
         return result
-
-    def create_port(self, values):
-        port = models.Port()
-        port.update(values)
-        port.save()
-        return port
-
-    def update_port(self, port, values):
-        session = get_session()
-        with session.begin():
-            query = model_query(models.Port, session=session)
-            query = add_mac_filter(query, port)
-
-            count = query.update(values)
-            if count != 1:
-                raise exception.PortNotFound(port=port)
-            ref = query.one()
-        return ref
-
-    def destroy_port(self, port):
-        session = get_session()
-        with session.begin():
-            query = model_query(models.Port, session=session)
-            query = add_mac_filter(query, port)
-
-            count = query.delete()
-            if count != 1:
-                raise exception.PortNotFound(port=port)

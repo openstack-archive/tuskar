@@ -16,7 +16,7 @@
 #    under the License.
 
 """
-SQLAlchemy models for baremetal data.
+SQLAlchemy models.
 """
 
 import json
@@ -25,7 +25,7 @@ import urlparse
 from oslo.config import cfg
 
 from sqlalchemy import Column, ForeignKey
-from sqlalchemy import Integer, String, DateTime
+from sqlalchemy import Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import TypeDecorator, VARCHAR
 
@@ -79,37 +79,19 @@ class IronicBase(models.TimestampMixin,
 Base = declarative_base(cls=IronicBase)
 
 
-class Chassis(Base):
-    """Represents a hardware chassis."""
+class Blaa(Base):
+    """Represents a blaa."""
 
-    __tablename__ = 'chassis'
+    __tablename__ = 'blaas'
     id = Column(Integer, primary_key=True)
     uuid = Column(String(36), unique=True)
+    description = Column(Text, nullable=True)
 
 
-class Node(Base):
-    """Represents a bare metal node."""
+class Sausage(Base):
+    """Represents a sausage."""
 
-    __tablename__ = 'nodes'
+    __tablename__ = 'sausages'
     id = Column(Integer, primary_key=True)
-    uuid = Column(String(36), unique=True)
-    instance_uuid = Column(String(36), nullable=True, unique=True)
-    chassis_id = Column(Integer, ForeignKey('chassis.id'), nullable=True)
-    task_start = Column(DateTime, nullable=True)
-    task_state = Column(String(15))
-    properties = Column(JSONEncodedDict)
-    control_driver = Column(String(15))
-    control_info = Column(JSONEncodedDict)
-    deploy_driver = Column(String(15))
-    deploy_info = Column(JSONEncodedDict)
-    reservation = Column(String(255), nullable=True)
-
-
-class Port(Base):
-    """Represents a network port of a bare metal node."""
-
-    __tablename__ = 'ports'
-    id = Column(Integer, primary_key=True)
-    address = Column(String(18), unique=True)
-    node_id = Column(Integer, ForeignKey('nodes.id'), nullable=True)
-    extra = Column(JSONEncodedDict)
+    name = Column(Text, unique=True)
+    blaa_id = Column(Integer, ForeignKey('blaas.id'), nullable=True)

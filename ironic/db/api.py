@@ -41,152 +41,57 @@ class Connection(object):
         """Constructor."""
 
     @abc.abstractmethod
-    def get_nodes(self, columns):
-        """Return a list of dicts of all nodes.
+    def get_blaas(self, columns):
+        """Return a list of dicts of all blaas.
 
         :param columns: List of columns to return.
         """
 
     @abc.abstractmethod
-    def get_associated_nodes(self):
-        """Return a list of ids of all associated nodes."""
+    def create_blaa(self, values):
+        """Create a new blaa.
 
-    @abc.abstractmethod
-    def get_unassociated_nodes(self):
-        """Return a list of ids of all unassociated nodes."""
-
-    @abc.abstractmethod
-    def reserve_nodes(self, tag, nodes):
-        """Reserve a set of nodes atomically.
-
-        To prevent other ManagerServices from manipulating the given
-        Nodes while a Task is performed, mark them all reserved by this host.
-
-        :param tag: A string uniquely identifying the reservation holder.
-        :param nodes: A list of node id or uuid.
-        :returns: A list of the reserved node refs.
-        :raises: NodeNotFound if any node is not found.
-        :raises: NodeAlreadyReserved if any node is already reserved.
-        """
-
-    @abc.abstractmethod
-    def release_nodes(self, tag, nodes):
-        """Release the reservation on a set of nodes atomically.
-
-        :param tag: A string uniquely identifying the reservation holder.
-        :param nodes: A list of node id or uuid.
-        :raises: NodeNotFound if any node is not found.
-        :raises: NodeAlreadyReserved if any node could not be released
-                 because it was not reserved by this host.
-        """
-
-    @abc.abstractmethod
-    def create_node(self, values):
-        """Create a new node.
-
-        :param values: A dict containing several items used to identify
-                       and track the node, and several dicts which are passed
-                       into the Drivers when managing this node. For example:
-
+        :param values: A dict describing a blaa.
                         {
                          'uuid': uuidutils.generate_uuid(),
-                         'instance_uuid': None,
-                         'task_state': states.NOSTATE,
-                         'control_driver': 'ipmi',
-                         'control_info': { ... },
-                         'deploy_driver': 'pxe',
-                         'deploy_info': { ... },
-                         'properties': { ... },
+                         'description': 'foo',
                         }
-        :returns: A node.
+        :returns: A blaa.
         """
 
     @abc.abstractmethod
-    def get_node(self, node):
-        """Return a node.
+    def get_blaa(self, blaa):
+        """Return a blaa.
 
-        :param node: The id or uuid of a node.
-        :returns: A node.
+        :param node: The id or uuid of a blaa.
+        :returns: A blaa.
         """
 
     @abc.abstractmethod
-    def get_node_by_instance(self, instance):
-        """Return a node.
+    def destroy_blaa(self, node):
+        """Destroy a blaa.
 
-        :param instance: The instance name or uuid to search for.
-        :returns: A node.
+        :param node: The id or uuid of a blaa.
         """
 
     @abc.abstractmethod
-    def destroy_node(self, node):
-        """Destroy a node and all associated interfaces.
+    def update_blaa(self, blaa, values):
+        """Update properties of a blaa.
 
-        :param node: The id or uuid of a node.
-        """
-
-    @abc.abstractmethod
-    def update_node(self, node, values):
-        """Update properties of a node.
-
-        :param node: The id or uuid of a node.
+        :param node: The id or uuid of a blaa.
         :param values: Dict of values to update.
-                       May be a partial list, eg. when setting the
-                       properties for a single driver. For example:
+                       May be a partial list. For example:
 
                        {
-                        'deploy_driver': 'my-vendor-driver',
-                        'deploy_info':
-                            {
-                             'my-field-1': val1,
-                             'my-field-2': val2,
-                            }
+                        'description': 'foobar',
                        }
-        :returns: A node.
+        :returns: A blaa.
         """
 
     @abc.abstractmethod
-    def get_port(self, port):
-        """Return a network port representation.
+    def get_sausages_by_blaa(self, blaa):
+        """List all the sausages for a given blaa.
 
-        :param port: The id or MAC of a port.
-        :returns: A port.
-        """
-
-    @abc.abstractmethod
-    def get_port_by_vif(self, vif):
-        """Return the port corresponding to this VIF.
-
-        :param vif: The uuid of the VIF.
-        :returns: A port.
-        """
-
-    @abc.abstractmethod
-    def get_ports_by_node(self, node):
-        """List all the ports for a given node.
-
-        :param node: The id or uuid of a node.
-        :returns: A list of ports.
-        """
-
-    @abc.abstractmethod
-    def create_port(self, values):
-        """Create a new port.
-
-        :param values: Dict of values.
-        """
-
-    @abc.abstractmethod
-    def update_port(self, port, values):
-        """Update properties of an port.
-
-        :param port: The id or MAC of a port.
-        :param values: Dict of values to update.
-        :returns: A port.
-        """
-
-    @abc.abstractmethod
-    def destroy_port(self, port):
-        """Destroy an port.
-
-        :param port: The id or MAC of a port.
+        :param node: The id or uuid of a blaa.
+        :returns: A list of sausages.
         """

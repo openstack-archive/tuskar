@@ -233,8 +233,8 @@ class InstanceNotFound(NotFound):
     message = _("Instance %(instance)s could not be found.")
 
 
-class NodeNotFound(NotFound):
-    message = _("Node %(node)s could not be found.")
+class BlaaNotFound(NotFound):
+    message = _("Blaa %(blaa)s could not be found.")
 
 
 class NodeLocked(NotFound):
