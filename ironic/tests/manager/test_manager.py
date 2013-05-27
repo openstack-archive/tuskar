@@ -18,14 +18,9 @@
 
 """Test class for Ironic ManagerService."""
 
-import mox
-
-from ironic.common import states
 from ironic.db import api as dbapi
 from ironic.manager import manager
 from ironic.tests.db import base
-from ironic.tests.db import utils
-from ironic.tests.manager import utils as mgr_utils
 
 
 class ManagerTestCase(base.DbTestCase):
@@ -34,34 +29,3 @@ class ManagerTestCase(base.DbTestCase):
         super(ManagerTestCase, self).setUp()
         self.service = manager.ManagerService('test-host', 'test-topic')
         self.dbapi = dbapi.get_instance()
-        (self.controller, self.deployer) = mgr_utils.get_mocked_node_manager()
-
-    def test_get_power_state(self):
-        n = utils.get_test_node(control_driver='fake',
-                                deploy_driver='fake')
-        self.dbapi.create_node(n)
-
-        # FakeControlDriver.get_power_state will "pass"
-        # and states.NOSTATE is None, so this test should pass.
-        state = self.service.get_node_power_state(n['uuid'])
-        self.assertEqual(state, states.NOSTATE)
-
-    def test_get_power_state_with_mock(self):
-        n = utils.get_test_node(control_driver='fake',
-                                deploy_driver='fake')
-        self.dbapi.create_node(n)
-
-        self.mox.StubOutWithMock(self.controller, 'get_power_state')
-
-        self.controller.get_power_state(mox.IgnoreArg(), mox.IgnoreArg()).\
-                AndReturn(states.POWER_OFF)
-        self.controller.get_power_state(mox.IgnoreArg(), mox.IgnoreArg()).\
-                AndReturn(states.POWER_ON)
-        self.mox.ReplayAll()
-
-        state = self.service.get_node_power_state(n['uuid'])
-        self.assertEqual(state, states.POWER_OFF)
-        state = self.service.get_node_power_state(n['uuid'])
-        self.assertEqual(state, states.POWER_ON)
-
-        self.mox.VerifyAll()

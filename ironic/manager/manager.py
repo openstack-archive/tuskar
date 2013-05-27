@@ -17,7 +17,6 @@
 #    under the License.
 
 from ironic.common import service
-from ironic.manager import task_manager
 from ironic.openstack.common import log
 
 LOG = log.getLogger(__name__)
@@ -54,14 +53,3 @@ class ManagerService(service.PeriodicService):
     def periodic_tasks(self, context):
         # TODO(deva)
         pass
-
-    def get_node_power_state(self, id):
-        """Get and return the power state for a single node."""
-
-        with task_manager.acquire([id], shared=True) as task:
-            node = task.resources[0].node
-            driver = task.resources[0].controller
-            state = driver.get_power_state(task, node)
-            return state
-
-    # TODO(deva)
