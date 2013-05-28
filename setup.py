@@ -16,14 +16,14 @@
 
 import setuptools
 
-from ironic.openstack.common import setup as common_setup
+from tuskar.openstack.common import setup as common_setup
 
-project = 'ironic'
+project = 'tuskar'
 
 setuptools.setup(
     name=project,
     version=common_setup.get_version(project, '2013.1'),
-    description='Bare Metal controller',
+    description='An OpenStack Management Service',
     classifiers=[
         'Environment :: OpenStack',
         'Intended Audience :: Information Technology',
