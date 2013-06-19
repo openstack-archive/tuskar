@@ -21,6 +21,7 @@ from oslo.config import cfg
 
 # TODO(deva): import MultipleResultsFound and handle it appropriately
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import subqueryload
 
 from tuskar.common import exception
 from tuskar.common import utils
@@ -73,10 +74,21 @@ class Connection(api.Connection):
         pass
 
     def get_racks(self, columns):
-        return model_query(models.Rack).all()
+        session = get_session()
+        return session.query(models.Rack).options(
+                    subqueryload('capacities')
+                ).all()
 
     def create_rack(self, values):
         rack = models.Rack()
+        # FIXME: This should be DB transaction ;-)
+        #
+        if 'capacities' in values:
+            for capacity in values.pop('capacities'):
+                c = models.Capacity()
+                c.update(capacity)
+                c.save()
+                rack.capacities.append(c)
         rack.update(values)
         rack.save()
         return rack

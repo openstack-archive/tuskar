@@ -21,7 +21,6 @@ Version 1 of the Tuskar API
 
 import pecan
 from pecan import rest
-
 import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
@@ -44,9 +43,9 @@ class Base(wtypes.Base):
 
     def as_dict(self):
         return dict((k, getattr(self, k))
-                    for k in self.fields
-                    if hasattr(self, k) and
-                    getattr(self, k) != wsme.Unset)
+                for k in self.fields
+                if hasattr(self, k) and
+                getattr(self, k) != wsme.Unset)
 
 
 class Sausage(Base):
@@ -63,7 +62,11 @@ class Sausage(Base):
 class Rack(Base):
     """A representation of Rack in HTTP body"""
 
+    id = int
     name = wtypes.text
+    slots = int
+    subnet = wtypes.text
+    capacities = [wtypes.DictType(wtypes.text, wtypes.text)]
 
 
 class Blaa(Base):
@@ -137,10 +140,9 @@ class RacksController(rest.RestController):
     @wsme_pecan.wsexpose(Rack, body=Rack, status_code=201)
     def post(self, rack):
         """Create a new Rack."""
-        print "Yeah!"
-        print rack
         try:
-            new_rack = Rack(name=rack.name)
+            new_rack = Rack(name=rack.name, slots=rack.slots,
+                    subnet=rack.subnet, capacities=rack.capacities)
             d = new_rack.as_dict()
             result = pecan.request.dbapi.create_rack(d)
         except Exception as e:
