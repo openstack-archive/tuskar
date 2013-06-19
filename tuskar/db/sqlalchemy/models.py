@@ -21,6 +21,7 @@ SQLAlchemy models.
 
 import json
 import urlparse
+import logging
 
 from oslo.config import cfg
 
@@ -38,6 +39,10 @@ sql_opts = [
 ]
 
 cfg.CONF.register_opts(sql_opts)
+
+
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 
 def table_args():
@@ -95,3 +100,11 @@ class Sausage(Base):
     id = Column(Integer, primary_key=True)
     name = Column(Text, unique=True)
     blaa_id = Column(Integer, ForeignKey('blaas.id'), nullable=True)
+
+
+class Rack(Base):
+    """Represents a Rack."""
+
+    __tablename__ = 'racks'
+    id = Column(Integer, primary_key=True)
+    name = Column(Text, unique=True)

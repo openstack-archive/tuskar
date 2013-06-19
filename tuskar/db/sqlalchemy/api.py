@@ -72,6 +72,15 @@ class Connection(api.Connection):
     def __init__(self):
         pass
 
+    def get_racks(self, columns):
+        return model_query(models.Rack).all()
+
+    def create_rack(self, values):
+        rack = models.Rack()
+        rack.update(values)
+        rack.save()
+        return rack
+
     def get_blaas(self, columns):
         # FIXME(markmc): columns
         return model_query(models.Blaa).all()
