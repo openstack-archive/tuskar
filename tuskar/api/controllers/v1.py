@@ -60,6 +60,12 @@ class Sausage(Base):
         return cls(blaa_id=1, name='first')
 
 
+class Rack(Base):
+    """A representation of Rack in HTTP body"""
+
+    name = wtypes.text
+
+
 class Blaa(Base):
     """A representation of a blaa."""
 
@@ -124,9 +130,36 @@ class BlaasController(rest.RestController):
     sausages = BlaaSausagesController()
 
 
+class RacksController(rest.RestController):
+    """REST controller for Rack"""
+
+    @wsme.validate(Rack)
+    @wsme_pecan.wsexpose(Rack, body=Rack, status_code=201)
+    def post(self, rack):
+        """Create a new Rack."""
+        print "Yeah!"
+        print rack
+        try:
+            new_rack = Rack(name=rack.name)
+            d = new_rack.as_dict()
+            result = pecan.request.dbapi.create_rack(d)
+        except Exception as e:
+            LOG.exception(e)
+            raise wsme.exc.ClientSideError(_("Invalid data"))
+        return Rack.from_db_model(result)
+
+    @wsme_pecan.wsexpose([Rack])
+    def get_all(self):
+        """Retrieve a list of all racks"""
+        result = pecan.request.dbapi.get_racks(None)
+        return [Rack.from_db_model(rack) for rack in result]
+
+
 class Controller(object):
     """Version 1 API controller root."""
 
     # TODO(markmc): _default and index
-
+    # TODO(mfojtik): remove this at some point ;-)
     blaas = BlaasController()
+
+    racks = RacksController()
