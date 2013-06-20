@@ -93,6 +93,18 @@ class Connection(api.Connection):
         rack.save()
         return rack
 
+    def get_resource_classes(self, columns):
+        session = get_session()
+        return session.query(models.ResourceClass).all()
+
+    def create_resource_class(self, values):
+        rc = models.ResourceClass()
+        # FIXME: This should be DB transaction ;-)
+        #
+        rc.update(values)
+        rc.save()
+        return rc
+
     def get_blaas(self, columns):
         # FIXME(markmc): columns
         return model_query(models.Blaa).all()

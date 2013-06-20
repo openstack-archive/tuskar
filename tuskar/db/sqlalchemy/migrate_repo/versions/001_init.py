@@ -85,7 +85,18 @@ def upgrade(migrate_engine):
         mysql_charset=CHARSET,
     )
 
-    tables = [blaas, sausages, capacities, racks, rack_capacities]
+    resource_classes = Table('resource_classes', meta,
+        Column('id', Integer, primary_key=True, nullable=False),
+        Column('name', String(length=128)),
+        Column('service_type', String(length=128)),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        mysql_engine=ENGINE,
+        mysql_charset=CHARSET,
+    )
+
+    tables = [blaas, sausages, capacities, racks, rack_capacities,
+              resource_classes]
 
     for table in tables:
         try:
