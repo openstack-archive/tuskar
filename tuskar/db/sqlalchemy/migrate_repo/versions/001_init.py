@@ -32,27 +32,6 @@ def upgrade(migrate_engine):
     meta = MetaData()
     meta.bind = migrate_engine
 
-    blaas = Table('blaas', meta,
-        Column('id', Integer, primary_key=True, nullable=False),
-        Column('uuid', String(length=36)),
-        Column('description', Text),
-        Column('created_at', DateTime),
-        Column('updated_at', DateTime),
-        mysql_engine=ENGINE,
-        mysql_charset=CHARSET,
-    )
-
-    sausages = Table('sausages', meta,
-        Column('id', Integer, primary_key=True, nullable=False),
-        Column('name', Text),
-        Column('blaa_id', Integer, ForeignKey('blaas.id'),
-            nullable=True),
-        Column('created_at', DateTime),
-        Column('updated_at', DateTime),
-        mysql_engine=ENGINE,
-        mysql_charset=CHARSET,
-    )
-
     capacities = Table('capacities', meta,
         Column('id', Integer, primary_key=True, nullable=False),
         Column('name', String(length=64)),
@@ -95,7 +74,7 @@ def upgrade(migrate_engine):
         mysql_charset=CHARSET,
     )
 
-    tables = [blaas, sausages, capacities, racks, rack_capacities,
+    tables = [capacities, racks, rack_capacities,
               resource_classes]
 
     for table in tables:
@@ -110,10 +89,8 @@ def upgrade(migrate_engine):
     ]
 
     uniques = [
-        UniqueConstraint('uuid', table=blaas,
-                         name='blaas_uuid_ux'),
-        UniqueConstraint('name', table=sausages,
-                         name='sausages_name_ux'),
+        UniqueConstraint('name', table=racks,
+                         name='racks_name_ux'),
     ]
 
     if migrate_engine.name == 'mysql' or migrate_engine.name == 'postgresql':

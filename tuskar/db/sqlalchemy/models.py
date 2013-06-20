@@ -94,24 +94,6 @@ class TuskarBase(models.TimestampMixin,
 Base = declarative_base(cls=TuskarBase)
 
 
-class Blaa(Base):
-    """Represents a blaa."""
-
-    __tablename__ = 'blaas'
-    id = Column(Integer, primary_key=True)
-    uuid = Column(String(36), unique=True)
-    description = Column(Text, nullable=True)
-
-
-class Sausage(Base):
-    """Represents a sausage."""
-
-    __tablename__ = 'sausages'
-    id = Column(Integer, primary_key=True)
-    name = Column(Text, unique=True)
-    blaa_id = Column(Integer, ForeignKey('blaas.id'), nullable=True)
-
-
 class Capacity(Base):
     """Represents a Capacity."""
 
