@@ -53,7 +53,40 @@ def upgrade(migrate_engine):
         mysql_charset=CHARSET,
     )
 
-    tables = [blaas, sausages]
+    capacities = Table('capacities', meta,
+        Column('id', Integer, primary_key=True, nullable=False),
+        Column('name', String(length=64)),
+        Column('value', String(length=128)),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        mysql_engine=ENGINE,
+        mysql_charset=CHARSET,
+    )
+
+    racks = Table('racks', meta,
+        Column('id', Integer, primary_key=True, nullable=False),
+        Column('name', String(length=128)),
+        Column('slots', Integer),
+        Column('subnet', String(length=128)),
+        Column('chassis_url', Text),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        mysql_engine=ENGINE,
+        mysql_charset=CHARSET,
+    )
+
+    rack_capacities = Table('rack_capacities', meta,
+        Column('id', Integer, primary_key=True, nullable=False),
+        Column('capacity_id', Integer, ForeignKey('capacities.id')),
+        Column('rack_id', Integer, ForeignKey('racks.id')),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        mysql_engine=ENGINE,
+        mysql_charset=CHARSET,
+    )
+
+    tables = [blaas, sausages, capacities, racks, rack_capacities]
+
     for table in tables:
         try:
             table.create()

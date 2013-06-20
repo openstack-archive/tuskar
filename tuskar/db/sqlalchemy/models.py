@@ -21,6 +21,7 @@ SQLAlchemy models.
 
 import json
 import urlparse
+import logging
 
 from oslo.config import cfg
 
@@ -28,6 +29,7 @@ from sqlalchemy import Column, ForeignKey
 from sqlalchemy import Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import TypeDecorator, VARCHAR
+from sqlalchemy.orm import relationship
 
 from tuskar.openstack.common.db.sqlalchemy import models
 
@@ -38,6 +40,10 @@ sql_opts = [
 ]
 
 cfg.CONF.register_opts(sql_opts)
+
+
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 
 def table_args():
@@ -95,3 +101,45 @@ class Sausage(Base):
     id = Column(Integer, primary_key=True)
     name = Column(Text, unique=True)
     blaa_id = Column(Integer, ForeignKey('blaas.id'), nullable=True)
+
+
+class Capacity(Base):
+    """Represents a Capacity."""
+
+    __tablename__ = 'capacities'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(length=64))
+    value = Column(String(length=128))
+
+
+class RackCapacities(Base):
+    """Represents a many-to-many relation between Rack and Capacity"""
+
+    __tablename__ = 'rack_capacities'
+    id = Column(Integer, primary_key=True)
+    rack_id = Column(Integer, ForeignKey('racks.id'), primary_key=True)
+    capacity_id = Column(Integer, ForeignKey('capacities.id'),
+            primary_key=True)
+
+
+class Rack(Base):
+    """Represents a Rack."""
+
+    __tablename__ = 'racks'
+    id = Column(Integer, primary_key=True)
+    name = Column(Text, unique=True)
+    slots = Column(Integer)
+    subnet = Column(String(length=64))
+    capacities = relationship("Capacity",
+            secondary=Base.metadata.tables['rack_capacities'],
+            lazy='joined')
+
+    def as_dict(self):
+        d = super(Rack, self).as_dict()
+
+        def convert_capacity(c):
+            return {'name': c.name, 'value': c.value}
+
+        d['capacities'] = [convert_capacity(c) for c in self['capacities']]
+
+        return d
