@@ -83,12 +83,9 @@ class Connection(api.Connection):
 
     def create_rack(self, values):
         rack = models.Rack()
-        # FIXME: This should be DB transaction ;-)
-        #
         if 'capacities' in values:
             for capacity in values.pop('capacities'):
-                c = models.Capacity()
-                c.update(capacity)
+                c = models.Capacity(name=capacity.name, value=capacity.value)
                 c.save()
                 rack.capacities.append(c)
         rack.update(values)

@@ -73,6 +73,16 @@ class Chassis(Base):
     links = [Link]
 
 
+class Capacity(Base):
+    """A capacity representation"""
+
+    name = wtypes.text
+    value = wtypes.text
+
+    def as_dict(self):
+        return {self.name: self.value}
+
+
 class Rack(Base):
     """A representation of Rack in HTTP body"""
 
@@ -81,7 +91,7 @@ class Rack(Base):
     slots = int
     subnet = wtypes.text
     chassis = Chassis
-    capacities = [wtypes.DictType(wtypes.text, wtypes.text)]
+    capacities = [Capacity]
     links = [Link]
 
 class ResourceClass(Base):
@@ -92,8 +102,13 @@ class ResourceClass(Base):
     service_type = wtypes.text
 
     @classmethod
-    def from_db(cls, m, links, chassis_links):
-        return cls(links=links, chassis=chassis_links, **(m.as_dict()))
+    def convert(self, rack, links):
+        chassis = Chassis(links=[Link(href=rack.chassis_url, rel="self")])
+        capacities = [
+                Capacity(name=c.name, value=c.value) for c in rack.capacities
+                ]
+        return Rack(links=links, chassis=chassis, capacities=capacities,
+                **(rack.as_dict()))
 
 class RacksController(rest.RestController):
     """REST controller for Rack"""
@@ -114,14 +129,12 @@ class RacksController(rest.RestController):
             result = pecan.request.dbapi.create_rack(d)
             link = _make_link('self', pecan.request.host_url, 'racks',
                     result.id)
-            chassis = Chassis(links=[Link(href=new_rack.chassis_url,
-                rel="self")])
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
         pecan.response.headers['Location'] = str(link.href)
         pecan.response.status_code = 201
-        return Rack.from_db(result, [link], chassis)
+        return Rack.convert(result, [link])
 
     @wsme_pecan.wsexpose([Rack])
     def get_all(self):
@@ -131,9 +144,7 @@ class RacksController(rest.RestController):
         for rack in pecan.request.dbapi.get_racks(None):
             links = [_make_link('self', pecan.request.host_url, 'racks',
                     rack.id)]
-            chassis = Chassis(links=[Link(href=rack.chassis_url, rel="self")])
-            result.append(Rack.from_db(rack, links, chassis))
-
+            result.append(Rack.convert(rack, links))
         return result
 
     @wsme_pecan.wsexpose(Rack, unicode)
@@ -142,8 +153,7 @@ class RacksController(rest.RestController):
         rack = pecan.request.dbapi.get_rack(rack_id)
         link = _make_link('self', pecan.request.host_url, 'racks',
                 rack.id)
-        chassis = Chassis(links=[Link(href=rack.chassis_url, rel="self")])
-        return Rack.from_db(rack, [link], chassis)
+        return Rack.convert(rack, [link])
 
 class ResourceClassesController(rest.RestController):
     """REST controller for Resource Class"""

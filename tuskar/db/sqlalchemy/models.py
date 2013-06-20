@@ -121,12 +121,6 @@ class Rack(Base):
 
     def as_dict(self):
         d = super(Rack, self).as_dict()
-
-        def convert_capacity(c):
-            return {'name': c.name, 'value': c.value}
-
-        d['capacities'] = [convert_capacity(c) for c in self['capacities']]
-
         return d
 
 class ResourceClass(Base):
