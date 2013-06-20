@@ -194,6 +194,14 @@ class RacksController(rest.RestController):
 
         return result
 
+    @wsme_pecan.wsexpose(Rack, unicode)
+    def get_one(self, rack_id):
+        """Retrieve information about the given Rack."""
+        rack = pecan.request.dbapi.get_rack(rack_id)
+        link = _make_link('self', pecan.request.host_url, 'racks',
+                rack.id)
+        return Rack.from_db_and_links(rack, [link])
+
 
 class Controller(object):
     """Version 1 API controller root."""
