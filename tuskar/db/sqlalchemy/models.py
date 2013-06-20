@@ -76,9 +76,18 @@ class TuskarBase(models.TimestampMixin,
     metadata = None
 
     def as_dict(self):
-        d = {}
+        d = {"id": self['id']}
         for c in self.__table__.columns:
-            d[c.name] = self[c.name]
+            if c.name == 'id':
+                continue
+            if c.name.endswith('_url'):
+                d[c.name.replace('_url', '')] = {
+                        'links': [
+                                {"rel": "self", "url": self[c.name]}
+                            ]
+                        }
+            else:
+                d[c.name] = self[c.name]
         return d
 
 
@@ -130,6 +139,7 @@ class Rack(Base):
     name = Column(Text, unique=True)
     slots = Column(Integer)
     subnet = Column(String(length=64))
+    chassis_url = Column(Text)
     capacities = relationship("Capacity",
             secondary=Base.metadata.tables['rack_capacities'],
             lazy='joined')
