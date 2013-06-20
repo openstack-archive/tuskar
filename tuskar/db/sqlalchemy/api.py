@@ -58,15 +58,6 @@ def model_query(model, *args, **kwargs):
     return query
 
 
-def add_uuid_filter(query, value):
-    if utils.is_int_like(value):
-        return query.filter_by(id=value)
-    elif uuidutils.is_uuid_like(value):
-        return query.filter_by(uuid=value)
-    else:
-        raise exception.InvalidUUID(uuid=value)
-
-
 class Connection(api.Connection):
     """SqlAlchemy connection."""
 

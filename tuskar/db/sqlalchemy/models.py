@@ -80,14 +80,7 @@ class TuskarBase(models.TimestampMixin,
         for c in self.__table__.columns:
             if c.name == 'id':
                 continue
-            if c.name.endswith('_url'):
-                d[c.name.replace('_url', '')] = {
-                        'links': [
-                                {"rel": "self", "url": self[c.name]}
-                            ]
-                        }
-            else:
-                d[c.name] = self[c.name]
+            d[c.name] = self[c.name]
         return d
 
 
