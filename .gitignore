@@ -29,3 +29,5 @@ develop-eggs
 cover
 AUTHORS
 ChangeLog
+etc/tuskar/tuskar.conf
+*.sqlite
