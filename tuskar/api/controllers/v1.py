@@ -68,6 +68,12 @@ class Rack(Base):
     subnet = wtypes.text
     capacities = [wtypes.DictType(wtypes.text, wtypes.text)]
 
+class ResourceClass(Base):
+    """A representation of Resource Class in HTTP body"""
+
+    id = int
+    name = wtypes.text
+    service_type = wtypes.text
 
 class Blaa(Base):
     """A representation of a blaa."""
@@ -156,6 +162,27 @@ class RacksController(rest.RestController):
         result = pecan.request.dbapi.get_racks(None)
         return [Rack.from_db_model(rack) for rack in result]
 
+class ResourceClassesController(rest.RestController):
+    """REST controller for Resource Class"""
+
+    @wsme.validate(ResourceClass)
+    @wsme_pecan.wsexpose(ResourceClass, body=ResourceClass, status_code=201)
+    def post(self, resource_class):
+        """Create a new Resource Class."""
+        try:
+            rc = ResourceClass(name=resource_class.name,
+                               service_type=resource_class.service_type)
+            result = pecan.request.dbapi.create_resource_class(rc.as_dict())
+        except Exception as e:
+            LOG.exception(e)
+            raise wsme.exc.ClientSideError(_("Invalid data"))
+        return ResourceClass.from_db_model(result)
+
+    @wsme_pecan.wsexpose([ResourceClass])
+    def get_all(self):
+        """Retrieve a list of all resource classes"""
+        result = pecan.request.dbapi.get_resource_classes(None)
+        return [ResourceClass.from_db_model(resource_class) for resource_class in result]
 
 class Controller(object):
     """Version 1 API controller root."""
@@ -165,3 +192,5 @@ class Controller(object):
     blaas = BlaasController()
 
     racks = RacksController()
+
+    resource_classes = ResourceClassesController()
