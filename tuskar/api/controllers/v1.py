@@ -79,9 +79,6 @@ class Capacity(Base):
     name = wtypes.text
     value = wtypes.text
 
-    def as_dict(self):
-        return {self.name: self.value}
-
 
 class Rack(Base):
     """A representation of Rack in HTTP body"""
