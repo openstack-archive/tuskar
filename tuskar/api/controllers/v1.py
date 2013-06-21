@@ -79,6 +79,11 @@ class Capacity(Base):
     name = wtypes.text
     value = wtypes.text
 
+class Hosts(Base):
+    """A Host list representation"""
+
+    links = [Link]
+
 
 class Rack(Base):
     """A representation of Rack in HTTP body"""
@@ -89,6 +94,7 @@ class Rack(Base):
     subnet = wtypes.text
     chassis = Chassis
     capacities = [Capacity]
+    hosts = Hosts
     links = [Link]
 
     @classmethod
@@ -97,11 +103,16 @@ class Rack(Base):
             chassis = Chassis(links=[Link(href=rack.chassis_url, rel="rack")])
         else:
             chassis = Chassis(links=[])
+
         capacities = [
-                Capacity(name=c.name, value=c.value) for c in rack.capacities
-                ]
+                       Capacity(name=c.name, value=c.value) for c in rack.capacities
+                     ]
+
+        hosts = Hosts(links=[ Link(href=h.node_url, rel="node") for h in
+            rack.hosts ])
+
         return Rack(links=links, chassis=chassis, capacities=capacities,
-                **(rack.as_dict()))
+                hosts=hosts, **(rack.as_dict()))
 
 class ResourceClass(Base):
     """A representation of Resource Class in HTTP body"""

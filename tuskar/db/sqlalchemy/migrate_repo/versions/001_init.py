@@ -54,6 +54,16 @@ def upgrade(migrate_engine):
         mysql_charset=CHARSET,
     )
 
+    hosts = Table('hosts', meta,
+        Column('id', Integer, primary_key=True, nullable=False),
+        Column('node_url', Text),
+        Column('rack_id', Integer, ForeignKey('racks.id')),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        mysql_engine=ENGINE,
+        mysql_charset=CHARSET,
+    )
+
     rack_capacities = Table('rack_capacities', meta,
         Column('id', Integer, primary_key=True, nullable=False),
         Column('capacity_id', Integer, ForeignKey('capacities.id')),
@@ -74,7 +84,7 @@ def upgrade(migrate_engine):
         mysql_charset=CHARSET,
     )
 
-    tables = [capacities, racks, rack_capacities,
+    tables = [capacities, racks, hosts, rack_capacities,
               resource_classes]
 
     for table in tables:
@@ -91,6 +101,9 @@ def upgrade(migrate_engine):
     uniques = [
         UniqueConstraint('name', table=racks,
                          name='racks_name_ux'),
+
+        UniqueConstraint('node_url', table=hosts,
+                         name='host_node_url_ux'),
     ]
 
     if migrate_engine.name == 'mysql' or migrate_engine.name == 'postgresql':
