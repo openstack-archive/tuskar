@@ -79,6 +79,17 @@ class Connection(api.Connection):
                     subqueryload('capacities')
                 ).all()
 
+    def get_rack(self, rack_id):
+        session = get_session()
+        try:
+            result = session.query(models.Rack).options(
+                    subqueryload('capacities')
+                    ).filter_by(id=rack_id).one()
+        except NoResultFound:
+            raise exception.RackNotFound(rack=rack_id)
+
+        return result
+
     def create_rack(self, values):
         rack = models.Rack()
         # FIXME: This should be DB transaction ;-)

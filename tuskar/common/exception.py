@@ -237,6 +237,10 @@ class BlaaNotFound(NotFound):
     message = _("Blaa %(blaa)s could not be found.")
 
 
+class RackNotFound(NotFound):
+    message = _("Rack %(rack)s could not be found.")
+
+
 class NodeLocked(NotFound):
     message = _("Node %(node)s is locked by another process.")
 
