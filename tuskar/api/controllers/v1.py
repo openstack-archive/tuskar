@@ -93,7 +93,10 @@ class Rack(Base):
 
     @classmethod
     def convert_with_links(self, rack, links):
-        chassis = Chassis(links=[Link(href=rack.chassis_url, rel="rack")])
+        if rack.chassis_url:
+            chassis = Chassis(links=[Link(href=rack.chassis_url, rel="rack")])
+        else:
+            chassis = Chassis(links=[])
         capacities = [
                 Capacity(name=c.name, value=c.value) for c in rack.capacities
                 ]

@@ -99,7 +99,7 @@ class Connection(api.Connection):
                      name=new_rack.name,
                      slots=new_rack.slots,
                      subnet=new_rack.subnet,
-                     chassis_url=new_rack.chassis.links[0].href
+                     #chassis_url=new_rack.chassis.links[0].href
                    )
             session.add(rack)
             if new_rack.capacities:
