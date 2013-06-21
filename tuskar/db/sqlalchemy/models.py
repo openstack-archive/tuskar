@@ -30,7 +30,6 @@ from sqlalchemy import Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import TypeDecorator, VARCHAR
 from sqlalchemy.orm import relationship
-
 from tuskar.openstack.common.db.sqlalchemy import models
 
 sql_opts = [
@@ -117,11 +116,8 @@ class Rack(Base):
     chassis_url = Column(Text)
     capacities = relationship("Capacity",
             secondary=Base.metadata.tables['rack_capacities'],
+            cascade="all, delete",
             lazy='joined')
-
-    def as_dict(self):
-        d = super(Rack, self).as_dict()
-        return d
 
 class ResourceClass(Base):
     """Represents a Resource Class."""

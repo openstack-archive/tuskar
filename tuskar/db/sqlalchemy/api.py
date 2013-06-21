@@ -24,12 +24,10 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import subqueryload
 
 from tuskar.common import exception
-from tuskar.common import utils
 from tuskar.db import api
 from tuskar.db.sqlalchemy import models
 from tuskar.openstack.common.db.sqlalchemy import session as db_session
 from tuskar.openstack.common import log
-from tuskar.openstack.common import uuidutils
 
 CONF = cfg.CONF
 CONF.import_opt('connection',
@@ -81,17 +79,6 @@ class Connection(api.Connection):
 
         return result
 
-    def create_rack(self, values):
-        rack = models.Rack()
-        if 'capacities' in values:
-            for capacity in values.pop('capacities'):
-                c = models.Capacity(name=capacity.name, value=capacity.value)
-                c.save()
-                rack.capacities.append(c)
-        rack.update(values)
-        rack.save()
-        return rack
-
     def get_resource_classes(self, columns):
         session = get_session()
         return session.query(models.ResourceClass).all()
@@ -103,3 +90,40 @@ class Connection(api.Connection):
         rc.update(values)
         rc.save()
         return rc
+
+    def create_rack(self, new_rack):
+        session = get_session()
+        session.begin()
+        try:
+            rack = models.Rack(
+                     name=new_rack.name,
+                     slots=new_rack.slots,
+                     subnet=new_rack.subnet,
+                     chassis_url=new_rack.chassis.links[0].href
+                   )
+            session.add(rack)
+            if new_rack.capacities:
+                for c in new_rack.capacities:
+                    capacity = models.Capacity(name=c.name, value=c.value)
+                    session.add(capacity)
+                    rack.capacities.append(capacity)
+                    session.add(rack)
+            session.commit()
+            session.refresh(rack)
+            return rack
+        except:
+            session.rollback()
+            raise
+
+    def delete_rack(self, rack_id):
+        session = get_session()
+        rack = self.get_rack(rack_id)
+        session.begin()
+        try:
+            session.delete(rack)
+            for c in rack.capacities:
+                session.delete(c)
+            session.commit()
+        except:
+            session.rollback()
+            raise

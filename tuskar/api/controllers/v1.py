@@ -94,6 +94,15 @@ class Rack(Base):
     capacities = [Capacity]
     links = [Link]
 
+    @classmethod
+    def convert_with_links(self, rack, links):
+        chassis = Chassis(links=[Link(href=rack.chassis_url, rel="rack")])
+        capacities = [
+                Capacity(name=c.name, value=c.value) for c in rack.capacities
+                ]
+        return Rack(links=links, chassis=chassis, capacities=capacities,
+                **(rack.as_dict()))
+
 class ResourceClass(Base):
     """A representation of Resource Class in HTTP body"""
 
@@ -101,14 +110,6 @@ class ResourceClass(Base):
     name = wtypes.text
     service_type = wtypes.text
 
-    @classmethod
-    def convert(self, rack, links):
-        chassis = Chassis(links=[Link(href=rack.chassis_url, rel="self")])
-        capacities = [
-                Capacity(name=c.name, value=c.value) for c in rack.capacities
-                ]
-        return Rack(links=links, chassis=chassis, capacities=capacities,
-                **(rack.as_dict()))
 
 class RacksController(rest.RestController):
     """REST controller for Rack"""
@@ -118,23 +119,22 @@ class RacksController(rest.RestController):
     def post(self, rack):
         """Create a new Rack."""
         try:
-            new_rack = Rack(
-                    name=rack.name,
-                    slots=rack.slots,
-                    subnet=rack.subnet,
-                    capacities=rack.capacities,
-                    chassis_url=str(rack.chassis.links[0].href),
-                    )
-            d = new_rack.as_dict()
-            result = pecan.request.dbapi.create_rack(d)
-            link = _make_link('self', pecan.request.host_url, 'racks',
-                    result.id)
+            result = pecan.request.dbapi.create_rack(rack)
+            links = [_make_link('self', pecan.request.host_url, 'racks',
+                    result.id)]
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
-        pecan.response.headers['Location'] = str(link.href)
+
+        # 201 Created require Location header pointing to newly created
+        #     resource
+        #
+        # FIXME(mfojtik): For some reason, Pecan does not return 201 here
+        #                 as configured above
+        #
+        pecan.response.headers['Location'] = str(links[0].href)
         pecan.response.status_code = 201
-        return Rack.convert(result, [link])
+        return Rack.convert_with_links(result, links)
 
     @wsme_pecan.wsexpose([Rack])
     def get_all(self):
@@ -144,16 +144,21 @@ class RacksController(rest.RestController):
         for rack in pecan.request.dbapi.get_racks(None):
             links = [_make_link('self', pecan.request.host_url, 'racks',
                     rack.id)]
-            result.append(Rack.convert(rack, links))
+            result.append(Rack.convert_with_links(rack, links))
         return result
 
     @wsme_pecan.wsexpose(Rack, unicode)
     def get_one(self, rack_id):
         """Retrieve information about the given Rack."""
         rack = pecan.request.dbapi.get_rack(rack_id)
-        link = _make_link('self', pecan.request.host_url, 'racks',
-                rack.id)
-        return Rack.convert(rack, [link])
+        links = [_make_link('self', pecan.request.host_url, 'racks',
+                rack.id)]
+        return Rack.convert_with_links(rack, links)
+
+    @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
+    def delete(self, rack_id):
+        """Remove the Rack"""
+        pecan.request.dbapi.delete_rack(rack_id)
 
 class ResourceClassesController(rest.RestController):
     """REST controller for Resource Class"""
