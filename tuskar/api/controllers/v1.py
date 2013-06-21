@@ -21,7 +21,6 @@ Version 1 of the Tuskar API
 
 import pecan
 from pecan import rest
-from pecan.core import redirect
 import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
@@ -68,15 +67,17 @@ class Link(Base):
     "The name of a link"
 
 
-class Sausage(Base):
-    """A representation of a sausage."""
+class Chassis(Base):
+    """A chassis representation"""
 
-    blaa_id = int
+    links = [Link]
+
+
+class Capacity(Base):
+    """A capacity representation"""
+
     name = wtypes.text
-
-    @classmethod
-    def sample(cls):
-        return cls(blaa_id=1, name='first')
+    value = wtypes.text
 
 
 class Rack(Base):
@@ -86,10 +87,21 @@ class Rack(Base):
     name = wtypes.text
     slots = int
     subnet = wtypes.text
-    chassis = wtypes.DictType(wtypes.text, [wtypes.DictType(wtypes.text,
-        wtypes.text)])
-    capacities = [wtypes.DictType(wtypes.text, wtypes.text)]
+    chassis = Chassis
+    capacities = [Capacity]
     links = [Link]
+
+    @classmethod
+    def convert_with_links(self, rack, links):
+        if rack.chassis_url:
+            chassis = Chassis(links=[Link(href=rack.chassis_url, rel="rack")])
+        else:
+            chassis = Chassis(links=[])
+        capacities = [
+                Capacity(name=c.name, value=c.value) for c in rack.capacities
+                ]
+        return Rack(links=links, chassis=chassis, capacities=capacities,
+                **(rack.as_dict()))
 
 class ResourceClass(Base):
     """A representation of Resource Class in HTTP body"""
@@ -97,69 +109,6 @@ class ResourceClass(Base):
     id = int
     name = wtypes.text
     service_type = wtypes.text
-
-class Blaa(Base):
-    """A representation of a blaa."""
-
-    uuid = wtypes.text
-    description = wtypes.text
-
-    @classmethod
-    def sample(cls):
-        return cls(uuid='c5255477-ed51-4017-91e0-0d96148f6937',
-                   description="markmc's floury blaa")
-
-
-class BlaaSausagesController(rest.RestController):
-    """For GET /blaa/<blaa_id>/sausages."""
-
-    @wsme_pecan.wsexpose([Sausage], unicode)
-    def get(self, blaa_id):
-        return [Sausage.from_db_model(r)
-                for r in pecan.request.dbapi.get_sausages_by_blaa(blaa_id)]
-
-
-class BlaasController(rest.RestController):
-    """REST controller for Blaas."""
-
-    @wsme.validate(Blaa)
-    @wsme_pecan.wsexpose(Blaa, body=Blaa, status_code=201)
-    def post(self, blaa):
-        """Ceate a new blaa."""
-        try:
-            # FIXME(markmc): blaa doesn't have fields set
-            blaa = Blaa(description=blaa.description, uuid=blaa.uuid)
-            d = blaa.as_dict()
-            r = pecan.request.dbapi.create_blaa(d)
-        except Exception as e:
-            LOG.exception(e)
-            raise wsme.exc.ClientSideError(_("Invalid data"))
-        return Blaa.from_db_model(r)
-
-    @wsme_pecan.wsexpose([Blaa])
-    def get_all(self):
-        """Retrieve a list of all blaas."""
-        # FIXME(markmc): columns?
-        r = pecan.request.dbapi.get_blaas(None)
-        return [Blaa.from_db_model(blaa) for blaa in r]
-
-    @wsme_pecan.wsexpose(Blaa, unicode)
-    def get_one(self, blaa_id):
-        """Retrieve information about the given blaa."""
-        r = pecan.request.dbapi.get_blaa(blaa_id)
-        return Blaa.from_db_model(r)
-
-    @wsme_pecan.wsexpose()
-    def delete(self, blaa_id):
-        """Delete a blaa."""
-        pecan.request.dbapi.destroy_blaa(blaa_id)
-
-    @wsme_pecan.wsexpose()
-    def put(self, blaa_id):
-        """Update a blaa."""
-        pass
-
-    sausages = BlaaSausagesController()
 
 
 class RacksController(rest.RestController):
@@ -170,23 +119,22 @@ class RacksController(rest.RestController):
     def post(self, rack):
         """Create a new Rack."""
         try:
-            new_rack = Rack(
-                    name=rack.name,
-                    slots=rack.slots,
-                    subnet=rack.subnet,
-                    capacities=rack.capacities,
-                    chassis_url=rack.chassis['links'][0]['href'],
-                    )
-            d = new_rack.as_dict()
-            result = pecan.request.dbapi.create_rack(d)
-            link = _make_link('self', pecan.request.host_url, 'racks',
-                    result.id)
+            result = pecan.request.dbapi.create_rack(rack)
+            links = [_make_link('self', pecan.request.host_url, 'racks',
+                    result.id)]
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
-        pecan.response.headers['Location'] = str(link.href)
+
+        # 201 Created require Location header pointing to newly created
+        #     resource
+        #
+        # FIXME(mfojtik): For some reason, Pecan does not return 201 here
+        #                 as configured above
+        #
+        pecan.response.headers['Location'] = str(links[0].href)
         pecan.response.status_code = 201
-        return Rack.from_db_and_links(result, [link])
+        return Rack.convert_with_links(result, links)
 
     @wsme_pecan.wsexpose([Rack])
     def get_all(self):
@@ -196,17 +144,21 @@ class RacksController(rest.RestController):
         for rack in pecan.request.dbapi.get_racks(None):
             links = [_make_link('self', pecan.request.host_url, 'racks',
                     rack.id)]
-            result.append(Rack.from_db_and_links(rack, links))
-
+            result.append(Rack.convert_with_links(rack, links))
         return result
 
     @wsme_pecan.wsexpose(Rack, unicode)
     def get_one(self, rack_id):
         """Retrieve information about the given Rack."""
         rack = pecan.request.dbapi.get_rack(rack_id)
-        link = _make_link('self', pecan.request.host_url, 'racks',
-                rack.id)
-        return Rack.from_db_and_links(rack, [link])
+        links = [_make_link('self', pecan.request.host_url, 'racks',
+                rack.id)]
+        return Rack.convert_with_links(rack, links)
+
+    @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
+    def delete(self, rack_id):
+        """Remove the Rack"""
+        pecan.request.dbapi.delete_rack(rack_id)
 
 class ResourceClassesController(rest.RestController):
     """REST controller for Resource Class"""
@@ -232,10 +184,6 @@ class ResourceClassesController(rest.RestController):
 
 class Controller(object):
     """Version 1 API controller root."""
-
-    # TODO(markmc): _default and index
-    # TODO(mfojtik): remove this at some point ;-)
-    blaas = BlaasController()
 
     racks = RacksController()
 

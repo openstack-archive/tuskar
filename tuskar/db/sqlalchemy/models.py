@@ -30,7 +30,6 @@ from sqlalchemy import Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import TypeDecorator, VARCHAR
 from sqlalchemy.orm import relationship
-
 from tuskar.openstack.common.db.sqlalchemy import models
 
 sql_opts = [
@@ -80,36 +79,11 @@ class TuskarBase(models.TimestampMixin,
         for c in self.__table__.columns:
             if c.name == 'id':
                 continue
-            if c.name.endswith('_url'):
-                d[c.name.replace('_url', '')] = {
-                        'links': [
-                                {"rel": "self", "url": self[c.name]}
-                            ]
-                        }
-            else:
-                d[c.name] = self[c.name]
+            d[c.name] = self[c.name]
         return d
 
 
 Base = declarative_base(cls=TuskarBase)
-
-
-class Blaa(Base):
-    """Represents a blaa."""
-
-    __tablename__ = 'blaas'
-    id = Column(Integer, primary_key=True)
-    uuid = Column(String(36), unique=True)
-    description = Column(Text, nullable=True)
-
-
-class Sausage(Base):
-    """Represents a sausage."""
-
-    __tablename__ = 'sausages'
-    id = Column(Integer, primary_key=True)
-    name = Column(Text, unique=True)
-    blaa_id = Column(Integer, ForeignKey('blaas.id'), nullable=True)
 
 
 class Capacity(Base):
@@ -142,17 +116,8 @@ class Rack(Base):
     chassis_url = Column(Text)
     capacities = relationship("Capacity",
             secondary=Base.metadata.tables['rack_capacities'],
+            cascade="all, delete",
             lazy='joined')
-
-    def as_dict(self):
-        d = super(Rack, self).as_dict()
-
-        def convert_capacity(c):
-            return {'name': c.name, 'value': c.value}
-
-        d['capacities'] = [convert_capacity(c) for c in self['capacities']]
-
-        return d
 
 class ResourceClass(Base):
     """Represents a Resource Class."""

@@ -24,12 +24,10 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import subqueryload
 
 from tuskar.common import exception
-from tuskar.common import utils
 from tuskar.db import api
 from tuskar.db.sqlalchemy import models
 from tuskar.openstack.common.db.sqlalchemy import session as db_session
 from tuskar.openstack.common import log
-from tuskar.openstack.common import uuidutils
 
 CONF = cfg.CONF
 CONF.import_opt('connection',
@@ -58,15 +56,6 @@ def model_query(model, *args, **kwargs):
     return query
 
 
-def add_uuid_filter(query, value):
-    if utils.is_int_like(value):
-        return query.filter_by(id=value)
-    elif uuidutils.is_uuid_like(value):
-        return query.filter_by(uuid=value)
-    else:
-        raise exception.InvalidUUID(uuid=value)
-
-
 class Connection(api.Connection):
     """SqlAlchemy connection."""
 
@@ -90,20 +79,6 @@ class Connection(api.Connection):
 
         return result
 
-    def create_rack(self, values):
-        rack = models.Rack()
-        # FIXME: This should be DB transaction ;-)
-        #
-        if 'capacities' in values:
-            for capacity in values.pop('capacities'):
-                c = models.Capacity()
-                c.update(capacity)
-                c.save()
-                rack.capacities.append(c)
-        rack.update(values)
-        rack.save()
-        return rack
-
     def get_resource_classes(self, columns):
         session = get_session()
         return session.query(models.ResourceClass).all()
@@ -116,61 +91,39 @@ class Connection(api.Connection):
         rc.save()
         return rc
 
-    def get_blaas(self, columns):
-        # FIXME(markmc): columns
-        return model_query(models.Blaa).all()
-
-    def create_blaa(self, values):
-        blaa = models.Blaa()
-        blaa.update(values)
-        blaa.save()
-        return blaa
-
-    def get_blaa(self, blaa):
-        query = model_query(models.Blaa)
-        query = add_uuid_filter(query, blaa)
-
+    def create_rack(self, new_rack):
+        session = get_session()
+        session.begin()
         try:
-            result = query.one()
-        except NoResultFound:
-            raise exception.BlaaNotFound(blaa=blaa)
+            rack = models.Rack(
+                     name=new_rack.name,
+                     slots=new_rack.slots,
+                     subnet=new_rack.subnet,
+                     #chassis_url=new_rack.chassis.links[0].href
+                   )
+            session.add(rack)
+            if new_rack.capacities:
+                for c in new_rack.capacities:
+                    capacity = models.Capacity(name=c.name, value=c.value)
+                    session.add(capacity)
+                    rack.capacities.append(capacity)
+                    session.add(rack)
+            session.commit()
+            session.refresh(rack)
+            return rack
+        except:
+            session.rollback()
+            raise
 
-        return result
-
-    def destroy_blaa(self, blaa):
+    def delete_rack(self, rack_id):
         session = get_session()
-        with session.begin():
-            query = model_query(models.Blaa, session=session)
-            query = add_uuid_filter(query, blaa)
-
-            count = query.delete()
-            if count != 1:
-                raise exception.BlaaNotFound(blaa=blaa)
-
-    def update_blaa(self, blaa, values):
-        session = get_session()
-        with session.begin():
-            query = model_query(models.Blaa, session=session)
-            query = add_uuid_filter(query, blaa)
-
-            count = query.update(values,
-                                 synchronize_session='fetch')
-            if count != 1:
-                raise exception.BlaaNotFound(blaa=blaa)
-            ref = query.one()
-        return ref
-
-    def get_sausages_by_blaa(self, blaa):
-        session = get_session()
-
-        if utils.is_int_like(blaa):
-            query = session.query(models.Sausage).\
-                        filter_by(blaa_id=blaa)
-        else:
-            query = session.query(models.Sausage).\
-                        join(models.Blaa,
-                             models.Sausage.blaa_id == models.Blaa.id).\
-                        filter(models.Blaa.uuid == blaa)
-        result = query.all()
-
-        return result
+        rack = self.get_rack(rack_id)
+        session.begin()
+        try:
+            session.delete(rack)
+            for c in rack.capacities:
+                session.delete(c)
+            session.commit()
+        except:
+            session.rollback()
+            raise
