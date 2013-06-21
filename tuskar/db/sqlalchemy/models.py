@@ -153,3 +153,15 @@ class Rack(Base):
         d['capacities'] = [convert_capacity(c) for c in self['capacities']]
 
         return d
+
+class ResourceClass(Base):
+    """Represents a Resource Class."""
+
+    __tablename__ = 'resource_classes'
+    id = Column(Integer, primary_key=True)
+    name = Column(Text, unique=True)
+    service_type = Column(Text, unique=True)
+
+    def as_dict(self):
+        d = super(ResourceClass, self).as_dict()
+        return d
