@@ -47,7 +47,17 @@ def upgrade(migrate_engine):
         Column('name', String(length=128)),
         Column('slots', Integer),
         Column('subnet', String(length=128)),
-        Column('chassis_url', Text),
+        Column('chassis_id', String(length=64)),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        mysql_engine=ENGINE,
+        mysql_charset=CHARSET,
+    )
+
+    nodes = Table('nodes', meta,
+        Column('id', Integer, primary_key=True, nullable=False),
+        Column('node_id', String(length=64)),
+        Column('rack_id', Integer, ForeignKey('racks.id')),
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
         mysql_engine=ENGINE,
@@ -74,7 +84,7 @@ def upgrade(migrate_engine):
         mysql_charset=CHARSET,
     )
 
-    tables = [capacities, racks, rack_capacities,
+    tables = [capacities, racks, nodes, rack_capacities,
               resource_classes]
 
     for table in tables:
@@ -91,6 +101,12 @@ def upgrade(migrate_engine):
     uniques = [
         UniqueConstraint('name', table=racks,
                          name='racks_name_ux'),
+
+        # The 'node_id' in nodes table must be unique
+        # so Tuskar Node <-> Ironic Node mapping is 1:1
+        #
+        UniqueConstraint('node_id', table=nodes,
+                         name='node_node_id_ux'),
     ]
 
     if migrate_engine.name == 'mysql' or migrate_engine.name == 'postgresql':

@@ -65,14 +65,16 @@ class Connection(api.Connection):
     def get_racks(self, columns):
         session = get_session()
         return session.query(models.Rack).options(
-                    subqueryload('capacities')
+                    subqueryload('capacities'),
+                    subqueryload('nodes')
                 ).all()
 
     def get_rack(self, rack_id):
         session = get_session()
         try:
             result = session.query(models.Rack).options(
-                    subqueryload('capacities')
+                    subqueryload('capacities'),
+                    subqueryload('nodes')
                     ).filter_by(id=rack_id).one()
         except NoResultFound:
             raise exception.RackNotFound(rack=rack_id)
@@ -99,15 +101,27 @@ class Connection(api.Connection):
                      name=new_rack.name,
                      slots=new_rack.slots,
                      subnet=new_rack.subnet,
-                     #chassis_url=new_rack.chassis.links[0].href
                    )
+
+            if new_rack.chassis:
+                rack.chassis_id=new_rack.chassis.id
+
             session.add(rack)
+
             if new_rack.capacities:
                 for c in new_rack.capacities:
                     capacity = models.Capacity(name=c.name, value=c.value)
                     session.add(capacity)
                     rack.capacities.append(capacity)
                     session.add(rack)
+
+            if new_rack.nodes:
+                for n in new_rack.nodes:
+                    node = models.Node(node_id=n.id)
+                    session.add(node)
+                    rack.nodes.append(node)
+                    session.add(rack)
+
             session.commit()
             session.refresh(rack)
             return rack

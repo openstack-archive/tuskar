@@ -24,15 +24,27 @@ from pecan import rest
 import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
+from oslo.config import cfg
 
 from tuskar.openstack.common import log
 
 LOG = log.getLogger(__name__)
+CONF = cfg.CONF
 
+ironic_opts = [
+        cfg.StrOpt('ironic_url',
+            default='http://ironic.local:6543/v1',
+            help='Ironic API entrypoint URL'),
+        ]
+
+CONF.register_opts(ironic_opts)
 
 def _make_link(rel_name, url, type, type_arg):
     return Link(href=('%s/v1/%s/%s') % (url, type, type_arg),
                 rel=rel_name)
+
+def _ironic_link(rel_name, resource_id):
+    return Link(href=('%s/%s') % (CONF.ironic_url, resource_id), rel=rel_name)
 
 
 class Base(wtypes.Base):
@@ -70,6 +82,7 @@ class Link(Base):
 class Chassis(Base):
     """A chassis representation"""
 
+    id    = wtypes.text
     links = [Link]
 
 
@@ -78,6 +91,12 @@ class Capacity(Base):
 
     name = wtypes.text
     value = wtypes.text
+
+class Node(Base):
+    """A Node representation"""
+
+    id    = wtypes.text
+    links = [Link]
 
 
 class Rack(Base):
@@ -89,19 +108,23 @@ class Rack(Base):
     subnet = wtypes.text
     chassis = Chassis
     capacities = [Capacity]
+    nodes = [Node]
     links = [Link]
 
     @classmethod
     def convert_with_links(self, rack, links):
-        if rack.chassis_url:
-            chassis = Chassis(links=[Link(href=rack.chassis_url, rel="rack")])
+
+        if rack.chassis_id:
+            chassis = Chassis(id=rack.chassis_id, links=[_ironic_link('chassis', rack.chassis_id)])
         else:
-            chassis = Chassis(links=[])
-        capacities = [
-                Capacity(name=c.name, value=c.value) for c in rack.capacities
-                ]
+            chassis = Chassis()
+
+        capacities = [Capacity(name=c.name, value=c.value) for c in rack.capacities]
+
+        nodes = [Node(id=n.node_id, links=[_ironic_link('node', n.node_id)]) for n in rack.nodes]
+
         return Rack(links=links, chassis=chassis, capacities=capacities,
-                **(rack.as_dict()))
+                nodes=nodes, **(rack.as_dict()))
 
 class ResourceClass(Base):
     """A representation of Resource Class in HTTP body"""
@@ -158,6 +181,11 @@ class RacksController(rest.RestController):
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self, rack_id):
         """Remove the Rack"""
+
+        # FIXME(mfojtik: For some reason, Pecan does not return 201 here
+        #                as configured above
+        #
+        pecan.response.status_code = 204
         pecan.request.dbapi.delete_rack(rack_id)
 
 class ResourceClassesController(rest.RestController):

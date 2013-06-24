@@ -104,6 +104,14 @@ class RackCapacities(Base):
     capacity_id = Column(Integer, ForeignKey('capacities.id'),
             primary_key=True)
 
+class Node(Base):
+    """Represents a Node """
+
+    __tablename__ = 'nodes'
+    id = Column(Integer, primary_key=True)
+    rack_id = Column(Integer, ForeignKey('racks.id'))
+    node_id = Column(String(length=64), unique=True)
+
 
 class Rack(Base):
     """Represents a Rack."""
@@ -113,11 +121,12 @@ class Rack(Base):
     name = Column(Text, unique=True)
     slots = Column(Integer)
     subnet = Column(String(length=64))
-    chassis_url = Column(Text)
+    chassis_id = Column(String(length=64))
     capacities = relationship("Capacity",
             secondary=Base.metadata.tables['rack_capacities'],
             cascade="all, delete",
             lazy='joined')
+    nodes = relationship("Node", cascade="all, delete")
 
 class ResourceClass(Base):
     """Represents a Resource Class."""

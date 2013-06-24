@@ -1,6 +1,12 @@
 [DEFAULT]
 
 #
+# Ironic API entrypoint URL (without trailing slash)
+#
+
+#ironic_url=http://ironic.local:6543/v1
+
+#
 # Options defined in tuskar.netconf
 #
 
