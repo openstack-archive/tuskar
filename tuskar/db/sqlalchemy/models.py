@@ -121,7 +121,7 @@ class Rack(Base):
     name = Column(Text, unique=True)
     slots = Column(Integer)
     subnet = Column(String(length=64))
-    chassis_url = Column(Text)
+    chassis_id = Column(String(length=64))
     capacities = relationship("Capacity",
             secondary=Base.metadata.tables['rack_capacities'],
             cascade="all, delete",

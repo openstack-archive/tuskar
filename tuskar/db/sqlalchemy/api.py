@@ -102,19 +102,26 @@ class Connection(api.Connection):
                      slots=new_rack.slots,
                      subnet=new_rack.subnet,
                    )
+
+            if new_rack.chassis:
+                rack.chassis_id=new_rack.chassis.id
+
             session.add(rack)
+
             if new_rack.capacities:
                 for c in new_rack.capacities:
                     capacity = models.Capacity(name=c.name, value=c.value)
                     session.add(capacity)
                     rack.capacities.append(capacity)
                     session.add(rack)
+
             if new_rack.nodes:
                 for n in new_rack.nodes:
                     node = models.Node(node_id=n.id)
                     session.add(node)
                     rack.nodes.append(node)
                     session.add(rack)
+
             session.commit()
             session.refresh(rack)
             return rack

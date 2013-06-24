@@ -47,7 +47,7 @@ def upgrade(migrate_engine):
         Column('name', String(length=128)),
         Column('slots', Integer),
         Column('subnet', String(length=128)),
-        Column('chassis_url', Text),
+        Column('chassis_id', String(length=64)),
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
         mysql_engine=ENGINE,
