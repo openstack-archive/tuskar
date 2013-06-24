@@ -187,6 +187,21 @@ class RacksController(rest.RestController):
         pecan.response.status_code = 201
         return Rack.convert_with_links(result, links)
 
+    @wsme.validate(Rack)
+    @wsme_pecan.wsexpose(Rack, body=Rack, status_code=200)
+    def put(self, rack):
+        """Update the Rack"""
+
+        try:
+            result = pecan.request.dbapi.update_rack(rack)
+            links = [_make_link('self', pecan.request.host_url, 'racks',
+                    result.id)]
+        except Exception as e:
+            LOG.exception(e)
+            raise wsme.exc.ClientSideError(_("Invalid data"))
+        return Rack.convert_with_links(result, links)
+
+
     @wsme_pecan.wsexpose([Rack])
     def get_all(self):
         """Retrieve a list of all racks"""
