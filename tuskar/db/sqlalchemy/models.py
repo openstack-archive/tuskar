@@ -110,7 +110,7 @@ class Node(Base):
     __tablename__ = 'nodes'
     id = Column(Integer, primary_key=True)
     rack_id = Column(Integer, ForeignKey('racks.id'))
-    node_url = Column(Text, unique=True)
+    node_id = Column(String(length=64), unique=True)
 
 
 class Rack(Base):

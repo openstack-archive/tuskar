@@ -56,7 +56,7 @@ def upgrade(migrate_engine):
 
     nodes = Table('nodes', meta,
         Column('id', Integer, primary_key=True, nullable=False),
-        Column('node_url', Text), # TODO(mfojtik): Probably rename this to just 'url' ;-)
+        Column('node_id', String(length=64)),
         Column('rack_id', Integer, ForeignKey('racks.id')),
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
@@ -102,8 +102,11 @@ def upgrade(migrate_engine):
         UniqueConstraint('name', table=racks,
                          name='racks_name_ux'),
 
-        UniqueConstraint('node_url', table=nodes,
-                         name='node_node_url_ux'),
+        # The 'node_id' in nodes table must be unique
+        # so Tuskar Node <-> Ironic Node mapping is 1:1
+        #
+        UniqueConstraint('node_id', table=nodes,
+                         name='node_node_id_ux'),
     ]
 
     if migrate_engine.name == 'mysql' or migrate_engine.name == 'postgresql':

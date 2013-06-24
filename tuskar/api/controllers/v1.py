@@ -79,9 +79,10 @@ class Capacity(Base):
     name = wtypes.text
     value = wtypes.text
 
-class Nodes(Base):
-    """A Node list representation"""
+class Node(Base):
+    """A Node representation"""
 
+    id    = int
     links = [Link]
 
 
@@ -94,7 +95,7 @@ class Rack(Base):
     subnet = wtypes.text
     chassis = Chassis
     capacities = [Capacity]
-    nodes = Nodes
+    nodes = [Node]
     links = [Link]
 
     @classmethod
@@ -108,8 +109,7 @@ class Rack(Base):
                        Capacity(name=c.name, value=c.value) for c in rack.capacities
                      ]
 
-        nodes = Nodes(links=[ Link(href=h.node_url, rel="node") for h in
-            rack.nodes ])
+        nodes = [ Node(id=n.node_id) for n in rack.nodes ]
 
         return Rack(links=links, chassis=chassis, capacities=capacities,
                 nodes=nodes, **(rack.as_dict()))

@@ -110,8 +110,8 @@ class Connection(api.Connection):
                     rack.capacities.append(capacity)
                     session.add(rack)
             if new_rack.nodes:
-                for link in new_rack.nodes.links:
-                    node = models.Node(node_url=link.href)
+                for n in new_rack.nodes:
+                    node = models.Node(node_id=n.id)
                     session.add(node)
                     rack.nodes.append(node)
                     session.add(rack)
