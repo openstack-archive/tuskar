@@ -24,11 +24,20 @@ from pecan import rest
 import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
+from oslo.config import cfg
 
 from tuskar.openstack.common import log
 
 LOG = log.getLogger(__name__)
+CONF = cfg.CONF
 
+ironic_opts = [
+        cfg.StrOpt('ironic_url',
+            default='http://ironic.local:6543/v1',
+            help='Ironic API entrypoint URL'),
+        ]
+
+CONF.register_opts(ironic_opts)
 
 def _make_link(rel_name, url, type, type_arg):
     return Link(href=('%s/v1/%s/%s') % (url, type, type_arg),
@@ -109,7 +118,10 @@ class Rack(Base):
                        Capacity(name=c.name, value=c.value) for c in rack.capacities
                      ]
 
-        nodes = [ Node(id=n.node_id) for n in rack.nodes ]
+        def node_link(node_id):
+            return Link(href=CONF.ironic_url + '/' + str(node_id), rel="node")
+
+        nodes = [ Node(id=n.node_id, links=[node_link(n.node_id)]) for n in rack.nodes ]
 
         return Rack(links=links, chassis=chassis, capacities=capacities,
                 nodes=nodes, **(rack.as_dict()))
