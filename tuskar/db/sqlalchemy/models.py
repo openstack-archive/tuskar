@@ -93,7 +93,7 @@ class Capacity(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(length=64))
     value = Column(String(length=128))
-
+    unit = Column(String(length=24))
 
 class RackCapacities(Base):
     """Represents a many-to-many relation between Rack and Capacity"""
@@ -101,6 +101,15 @@ class RackCapacities(Base):
     __tablename__ = 'rack_capacities'
     id = Column(Integer, primary_key=True)
     rack_id = Column(Integer, ForeignKey('racks.id'), primary_key=True)
+    capacity_id = Column(Integer, ForeignKey('capacities.id'),
+            primary_key=True)
+
+class FlavorCapacities(Base):
+    """Represents a many-to-many relation between Flavor and Capacity"""
+    __tablename__ = 'flavor_capacities'
+    id = Column(Integer, primary_key=True)
+    #FIXME - I want flavor.id to be UUID String
+    flavor_id = Column(Integer, ForeignKey('flavors.id'), primary_key=True)
     capacity_id = Column(Integer, ForeignKey('capacities.id'),
             primary_key=True)
 
@@ -139,3 +148,15 @@ class ResourceClass(Base):
     def as_dict(self):
         d = super(ResourceClass, self).as_dict()
         return d
+
+class Flavor(Base):
+    """Represents a Flavor Class."""
+
+    __tablename__ = 'flavors'
+    #FIXME - I want flavor.id to be UUID String
+    id = Column(Integer, primary_key=True)
+    name = Column(Text, unique=True)
+    capacities = relationship("Capacity",
+            secondary=Base.metadata.tables['flavor_capacities'],
+            cascade="all, delete",
+            lazy='joined')

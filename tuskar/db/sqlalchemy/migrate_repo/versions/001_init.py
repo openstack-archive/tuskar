@@ -36,6 +36,7 @@ def upgrade(migrate_engine):
         Column('id', Integer, primary_key=True, nullable=False),
         Column('name', String(length=64)),
         Column('value', String(length=128)),
+        Column('unit', String(length=24)),
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
         mysql_engine=ENGINE,
@@ -74,6 +75,16 @@ def upgrade(migrate_engine):
         mysql_charset=CHARSET,
     )
 
+    flavor_capacities = Table('flavor_capacities', meta,
+        Column('id', Integer, primary_key=True, nullable=False),
+        Column('capacity_id', Integer, ForeignKey('capacities.id')),
+        Column('flavor_id', Integer, ForeignKey('flavors.id')),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        mysql_engine=ENGINE,
+        mysql_charset=CHARSET,
+    )
+
     resource_classes = Table('resource_classes', meta,
         Column('id', Integer, primary_key=True, nullable=False),
         Column('name', String(length=128)),
@@ -84,8 +95,18 @@ def upgrade(migrate_engine):
         mysql_charset=CHARSET,
     )
 
+    flavors = Table('flavors', meta,
+        #FIXME - id should be UUID string
+        Column('id', Integer, primary_key=True, nullable=False),
+        Column('name', String(length=128)),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        mysql_engine=ENGINE,
+        mysql_charset=CHARSET,
+    )
+
     tables = [capacities, racks, nodes, rack_capacities,
-              resource_classes]
+              flavor_capacities, resource_classes, flavors]
 
     for table in tables:
         try:

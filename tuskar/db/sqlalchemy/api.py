@@ -141,3 +141,23 @@ class Connection(api.Connection):
         except:
             session.rollback()
             raise
+
+    def get_flavors(self, columns):
+        session = get_session()
+        return session.query(models.Flavor).all()
+
+    def create_flavor(self, new_flavor):
+        session = get_session()
+        with session.begin():
+            import pdb; pdb.set_trace()
+            flavor = models.Flavor(name=new_flavor.name)
+            session.add(flavor)
+            for c in new_flavor.capacities:
+                capacity = models.Capacity(name=c.name, value=c.value, unit=c.unit)
+                session.add(capacity)
+                flavor.capacities.append(capacity)
+                session.add(flavor)
+            return flavor
+
+
+

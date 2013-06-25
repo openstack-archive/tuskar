@@ -23,6 +23,7 @@ import pecan
 from pecan import rest
 import wsme
 from wsme import types as wtypes
+from wsme import wsattr
 import wsmeext.pecan as wsme_pecan
 from oslo.config import cfg
 
@@ -47,7 +48,7 @@ def _ironic_link(rel_name, resource_id):
     return Link(href=('%s/%s') % (CONF.ironic_url, resource_id), rel=rel_name)
 
 
-class Base(wtypes.Base):
+class Base(wsme.types.Base):
 
     def __init__(self, **kwargs):
         self.fields = list(kwargs)
@@ -91,6 +92,7 @@ class Capacity(Base):
 
     name = wtypes.text
     value = wtypes.text
+    unit = wtypes.text
 
 class Node(Base):
     """A Node representation"""
@@ -133,6 +135,12 @@ class ResourceClass(Base):
     name = wtypes.text
     service_type = wtypes.text
 
+class Flavor(Base):
+    """A representation of Flavor in HTTP body"""
+    #FIXME - I want id to be UUID - String
+    id = wsattr(int, mandatory=True)
+    name = wsattr(wtypes.text, mandatory=False)
+    capacities = [Capacity]
 
 class RacksController(rest.RestController):
     """REST controller for Rack"""
@@ -210,9 +218,31 @@ class ResourceClassesController(rest.RestController):
         result = pecan.request.dbapi.get_resource_classes(None)
         return [ResourceClass.from_db_model(resource_class) for resource_class in result]
 
+class FlavorsController(rest.RestController):
+    """REST controller for Flavor"""
+
+    @wsme.validate(Flavor)
+    @wsme_pecan.wsexpose(Flavor, body=Flavor, status_code=201)
+    def post(self, flavor):
+        """Create a new Flavor."""
+        try:
+            result = pecan.request.dbapi.create_flavor(flavor)
+        except Exception as e:
+            LOG.exception(e)
+            raise wsme.exc.ClientSideError(_("Invalid data"))
+        return Flavor.from_db_model(result)
+
+    @wsme_pecan.wsexpose([Flavor])
+    def get_all(self):
+        """Retrieve a list of all flavors"""
+        result = pecan.request.dbapi.get_flavors(None)
+        return [Flavor.from_db_model(flavor) for flavor in result]
+
 class Controller(object):
     """Version 1 API controller root."""
 
     racks = RacksController()
 
     resource_classes = ResourceClassesController()
+
+    flavors = FlavorsController()
