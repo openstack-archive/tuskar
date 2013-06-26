@@ -47,6 +47,7 @@ def upgrade(migrate_engine):
         Column('name', String(length=128)),
         Column('slots', Integer),
         Column('subnet', String(length=128)),
+<<<<<<< HEAD
         Column('chassis_id', String(length=64)),
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
@@ -58,6 +59,10 @@ def upgrade(migrate_engine):
         Column('id', Integer, primary_key=True, nullable=False),
         Column('node_id', String(length=64)),
         Column('rack_id', Integer, ForeignKey('racks.id')),
+=======
+        Column('chassis_url', Text),
+        Column('resource_class_id', Integer, ForeignKey('resource_classes.id')),
+>>>>>>> Updated Resource Class API
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
         mysql_engine=ENGINE,

@@ -122,11 +122,13 @@ class Rack(Base):
     slots = Column(Integer)
     subnet = Column(String(length=64))
     chassis_id = Column(String(length=64))
+    resource_class_id = Column(Integer, ForeignKey('resource_classes.id'))
     capacities = relationship("Capacity",
             secondary=Base.metadata.tables['rack_capacities'],
             cascade="all, delete",
             lazy='joined')
     nodes = relationship("Node", cascade="all, delete")
+
 
 class ResourceClass(Base):
     """Represents a Resource Class."""
@@ -135,7 +137,4 @@ class ResourceClass(Base):
     id = Column(Integer, primary_key=True)
     name = Column(Text, unique=True)
     service_type = Column(Text, unique=True)
-
-    def as_dict(self):
-        d = super(ResourceClass, self).as_dict()
-        return d
+    racks = relationship("Rack", backref="resource_class", lazy='joined')

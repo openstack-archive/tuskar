@@ -43,10 +43,13 @@ def _make_link(rel_name, url, type, type_arg):
     return Link(href=('%s/v1/%s/%s') % (url, type, type_arg),
                 rel=rel_name)
 
+<<<<<<< HEAD
 def _ironic_link(rel_name, resource_id):
     return Link(href=('%s/%s') % (CONF.ironic_url, resource_id), rel=rel_name)
 
 
+=======
+>>>>>>> Updated Resource Class API
 class Base(wtypes.Base):
 
     def __init__(self, **kwargs):
@@ -68,6 +71,11 @@ class Base(wtypes.Base):
                 if hasattr(self, k) and
                 getattr(self, k) != wsme.Unset)
 
+    def get_id(self):
+        """Returns the ID of this resource as specified in the self link"""
+
+        # FIXME(mtaylor) We should use a more robust method for parsing the URL
+        return self.links[0].href.split("/")[-1]
 
 class Link(Base):
     """A link representation"""
@@ -126,13 +134,36 @@ class Rack(Base):
         return Rack(links=links, chassis=chassis, capacities=capacities,
                 nodes=nodes, **(rack.as_dict()))
 
+    @classmethod
+    def marshall(self, rack, base_url, minimal=False):
+        links = [_make_link('self', pecan.request.host_url, 'rack',
+                             rack.id)]
+        if minimal:
+            return Rack(links=links)
+
 class ResourceClass(Base):
     """A representation of Resource Class in HTTP body"""
 
     id = int
     name = wtypes.text
     service_type = wtypes.text
+    racks = [Rack]
+    links = [Link]
 
+    @classmethod
+    def marshall(self, resource_class, base_url, minimal=False):
+        links = [_make_link('self', pecan.request.host_url, 'resource_classes',
+                             resource_class.id)]
+        if minimal:
+            return ResourceClass(links=links)
+        else:
+            racks = []
+            if resource_class.racks:
+                for r in resource_class.racks:
+                    rack = Rack.marshall(r, base_url, True)
+                    racks.append(rack)
+            return ResourceClass(links=links, racks=racks,
+                                 **(resource_class.as_dict()))
 
 class RacksController(rest.RestController):
     """REST controller for Rack"""
@@ -196,19 +227,45 @@ class ResourceClassesController(rest.RestController):
     def post(self, resource_class):
         """Create a new Resource Class."""
         try:
-            rc = ResourceClass(name=resource_class.name,
-                               service_type=resource_class.service_type)
-            result = pecan.request.dbapi.create_resource_class(rc.as_dict())
+            result = pecan.request.dbapi.create_resource_class(resource_class)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
-        return ResourceClass.from_db_model(result)
+
+        # 201 Created require Location header pointing to newly created
+        #     resource
+        #
+        # FIXME(mfojtik): For some reason, Pecan does not return 201 here
+        #                 as configured above
+        #
+        rc = ResourceClass.marshall(result, pecan.request.host_url)
+        pecan.response.headers['Location'] = str(rc.links[0].href)
+        pecan.response.status_code = 201
+        return rc
+
 
     @wsme_pecan.wsexpose([ResourceClass])
     def get_all(self):
-        """Retrieve a list of all resource classes"""
-        result = pecan.request.dbapi.get_resource_classes(None)
-        return [ResourceClass.from_db_model(resource_class) for resource_class in result]
+        """Retrieve a list of all Resource Classes"""
+        result = []
+        for rc in pecan.request.dbapi.get_resource_classes(None):
+            result.append(ResourceClass.marshall(rc, pecan.request.host_url))
+        return result
+
+
+    @wsme_pecan.wsexpose(ResourceClass, unicode)
+    def get_one(self, resource_class_id):
+        """Retrieve information about the given Resource Class."""
+        resource_class = pecan.request.dbapi.get_resource_class(resource_class_id)
+        links = [_make_link('self', pecan.request.host_url, 'resource_classes',
+                resource_class.id)]
+        return ResourceClass.marshall(resource_class, pecan.request.host_url)
+
+
+    @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
+    def delete(self, resource_class_id):
+        """Remove the Resource Class"""
+        pecan.request.dbapi.delete_resource_class(resource_class_id)
 
 class Controller(object):
     """Version 1 API controller root."""
