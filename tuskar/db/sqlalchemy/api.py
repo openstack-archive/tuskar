@@ -81,17 +81,48 @@ class Connection(api.Connection):
 
         return result
 
+    def get_racks_by_resource_class(self, resource_class_id):
+        session = get_session()
+        return session.query(models.Rack
+                            ).filter_by(resource_class_id=resource_class_id
+                            ).all()
+
     def get_resource_classes(self, columns):
         session = get_session()
         return session.query(models.ResourceClass).all()
 
-    def create_resource_class(self, values):
-        rc = models.ResourceClass()
-        # FIXME: This should be DB transaction ;-)
-        #
-        rc.update(values)
-        rc.save()
+    def get_resource_class(self, resource_class_id):
+        session = get_session()
+        try:
+            result = session.query(models.ResourceClass
+                                ).filter_by(id=resource_class_id).one()
+        except NoResultFound:
+            raise exception.ResourceClassNotFound(resource_class=resource_class_id)
+
+        return result
+
+    def create_resource_class(self, new_resource_class):
+        session = get_session()
+        session.begin()
+        try:
+            rc = models.ResourceClass(name=new_resource_class.name,
+                                      service_type=new_resource_class.service_type)
+            session.add(rc)
+            if new_resource_class.racks:
+                racks = []
+                for r in new_resource_class.racks:
+                    # FIXME surely there is a better way of doing this.
+                    rack = self.get_rack(r.get_id())
+                    session.add(rack)
+                    rack.resource_class = rc
+        except:
+            session.rollback()
+            raise
+
+        session.commit()
+        session.refresh(rc)
         return rc
+
 
     def create_rack(self, new_rack):
         session = get_session()
@@ -137,6 +168,19 @@ class Connection(api.Connection):
             session.delete(rack)
             for c in rack.capacities:
                 session.delete(c)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+
+    def delete_resource_class(self, resource_class_id):
+        session = get_session()
+        session.begin()
+        try:
+            # FIXME (mtaylor) we should also set the foreign key to None for
+            # all associated Racks
+            session.query(models.ResourceClass
+                          ).filter_by(id=resource_class_id).delete()
             session.commit()
         except:
             session.rollback()
