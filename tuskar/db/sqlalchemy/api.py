@@ -146,6 +146,18 @@ class Connection(api.Connection):
         session = get_session()
         return session.query(models.Flavor).all()
 
+    def get_flavor(self, flavor_id):
+        session = get_session()
+        try:
+            flavor = session.query(models.Flavor).options(
+                    subqueryload('capacities'),
+                    ).filter_by(id=flavor_id).one()
+        except NoResultFound:
+            raise exception.FlavorNotFound(flavor=flavor_id)
+        return flavor
+
+
+
     def create_flavor(self, new_flavor):
         session = get_session()
         with session.begin():

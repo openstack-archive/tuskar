@@ -142,6 +142,13 @@ class Flavor(Base):
     name = wsattr(wtypes.text, mandatory=False)
     capacities = [Capacity]
 
+    @classmethod
+    def add_capacities(self, flavor):
+        capacities = []
+        for c in flavor.capacities:
+            capacities.append(Capacity(name=c.name, value=c.value, unit=c.unit))
+        return Flavor(capacities=capacities, **(flavor.as_dict()))
+
 class RacksController(rest.RestController):
     """REST controller for Rack"""
 
@@ -235,8 +242,17 @@ class FlavorsController(rest.RestController):
     @wsme_pecan.wsexpose([Flavor])
     def get_all(self):
         """Retrieve a list of all flavors"""
-        result = pecan.request.dbapi.get_flavors(None)
-        return [Flavor.from_db_model(flavor) for flavor in result]
+        flavors=[]
+        for flavor in pecan.request.dbapi.get_flavors(None):
+            flavors.append(Flavor.add_capacities(flavor))
+        return flavors
+        #return [Flavor.from_db_model(flavor) for flavor in result]
+
+    @wsme_pecan.wsexpose(Flavor, unicode)
+    def get_one(self, flavor_id):
+        """Retrieve a specific flavor."""
+        flavor = pecan.request.dbapi.get_flavor(flavor_id)
+        return Flavor.add_capacities(flavor)
 
 class Controller(object):
     """Version 1 API controller root."""
