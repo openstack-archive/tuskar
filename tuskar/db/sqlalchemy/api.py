@@ -135,8 +135,7 @@ class Connection(api.Connection):
         session.begin()
         try:
             session.delete(rack)
-            for c in rack.capacities:
-                session.delete(c)
+            self.delete_capacities(rack, session)
             session.commit()
         except:
             session.rollback()
@@ -156,12 +155,9 @@ class Connection(api.Connection):
             raise exception.FlavorNotFound(flavor=flavor_id)
         return flavor
 
-
-
     def create_flavor(self, new_flavor):
         session = get_session()
         with session.begin():
-            import pdb; pdb.set_trace()
             flavor = models.Flavor(name=new_flavor.name)
             session.add(flavor)
             for c in new_flavor.capacities:
@@ -170,6 +166,23 @@ class Connection(api.Connection):
                 flavor.capacities.append(capacity)
                 session.add(flavor)
             return flavor
+
+    def delete_flavor(self, flavor_id):
+        session = get_session()
+        flavor = self.get_flavor(flavor_id)
+        with session.begin():
+            if self.delete_capacities(flavor, session):
+                session.delete(flavor)
+                return True
+
+    def delete_capacities(self, resource, session):
+        try:
+            for c in resource.capacities:
+                session.delete(c)
+        except:
+            session.rollback()
+            return false
+        return True
 
 
 

@@ -141,13 +141,15 @@ class Flavor(Base):
     id = wsattr(int, mandatory=True)
     name = wsattr(wtypes.text, mandatory=False)
     capacities = [Capacity]
+    links = [Link]
 
     @classmethod
     def add_capacities(self, flavor):
         capacities = []
         for c in flavor.capacities:
             capacities.append(Capacity(name=c.name, value=c.value, unit=c.unit))
-        return Flavor(capacities=capacities, **(flavor.as_dict()))
+        links = [_make_link('self', pecan.request.host_url, 'flavors', flavor.id)]
+        return Flavor(capacities=capacities, links=links, **(flavor.as_dict()))
 
 class RacksController(rest.RestController):
     """REST controller for Rack"""
@@ -253,6 +255,12 @@ class FlavorsController(rest.RestController):
         """Retrieve a specific flavor."""
         flavor = pecan.request.dbapi.get_flavor(flavor_id)
         return Flavor.add_capacities(flavor)
+
+    @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
+    def delete(self, flavor_id):
+        """Delete a Flavor"""
+        #pecan.response.status_code = 204
+        pecan.request.dbapi.delete_flavor(flavor_id)
 
 class Controller(object):
     """Version 1 API controller root."""
