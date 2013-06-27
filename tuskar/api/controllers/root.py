@@ -25,7 +25,18 @@ class RootController(object):
 
     v1 = v1.Controller()
 
-    @pecan.expose(generic=True)
+    @pecan.expose('json')
     def index(self):
-        # FIXME: GET / should return more than just ''
-        return ''
+        return {
+            'versions': {
+                'values': [{
+                    'status': 'development',
+                    'media-types': [ {'base': 'application/json'} ],
+                    'id': 'v1.0',
+                    'links': [{
+                        'href': '/v1/',
+                        'rel': 'self',
+                    }]
+                }]
+            }
+        }

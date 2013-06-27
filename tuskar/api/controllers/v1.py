@@ -216,3 +216,17 @@ class Controller(object):
     racks = RacksController()
 
     resource_classes = ResourceClassesController()
+
+    @pecan.expose('json')
+    def index(self):
+        return {
+            'version': {
+                'status': 'stable',
+                'media-types': [ {'base': 'application/json'} ],
+                'id': 'v1.0',
+                'links': [{
+                    'href': '/v1/',
+                    'rel': 'self',
+                }]
+            }
+        }
