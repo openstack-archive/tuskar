@@ -41,8 +41,7 @@ Then::
 You can verify this was successful (in addition to seeing no error output)
 with::
 
-  $ sqlite3 tuskar.sqlite
-  $ .schema
+  $ sqlite3 tuskar.sqlite .schema
 
 Then, launch the app and try curl to see if it works::
 
