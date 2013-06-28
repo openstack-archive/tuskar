@@ -28,12 +28,8 @@ the following::
 
 The config file changes are::
 
-  #sqlite_db=tuskar.sqlite
-  #change to:
-  sqlite_db=tuskar.sqlite
-  #connection=sqlite:////tuskar/openstack/common/db/$sqlite_db
-  #change to:
-  connection=sqlite:///$sqlite_db
+  $ openstack-config --set etc/tuskar/tuskar.conf database connection sqlite:///tuskar.sqlite
+  $ openstack-config --set etc/tuskar/tuskar.conf DEFAULT debug true
 
 Then::
 
