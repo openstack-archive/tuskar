@@ -22,8 +22,8 @@ Set up tuskar development environment.
 This assumes you have done all the basic setup as described in the README.  Run
 the following::
 
-  $ python setup.py develop
   # creates symlinks for installed code.  Used for dev environment.
+  $ python setup.py develop
   $ cp etc/tuskar/tuskar.conf.sample etc/tuskar/tuskar.conf
 
 The config file changes are::
@@ -33,10 +33,10 @@ The config file changes are::
 
 Then::
 
-  $ tuskar-dbsync --config-file etc/tuskar/tuskar.conf
   # if you delete tuskar.sqlite this will force creation of tables again - e.g.
   # if you added a new resource table definitions etc in an existing migration
   # file
+  $ tuskar-dbsync --config-file etc/tuskar/tuskar.conf
 
 You can verify this was successful (in addition to seeing no error output)
 with::
