@@ -2,14 +2,9 @@
 Contributing to tuskar
 ======================
 
-While we hope to one day be an incubated openstack project, at the current time
-we are not, so we are also not following the openstack way, using gerrit,
-launchpad etc. Instead, for the time being, we are following standard github
-practice and asking for contributions to be made by pull request.  Once we are
-far enough along to have valid bugs, we will also accept issues via github
-issues (keeping in mind this is meant to also be temporary).  As this project is
-highly experimental at the moment, feature requests don't make much sense, but
-if you have one, you are more than welcome to add it, and we will take a look.
+Pretty soon, tuskar will move to stackforge, using gerrit for reviews and
+launchpad for bugs and blueprints. We're just getting started at this point
+so, in the interim, we accept pull requests via github.
 
 Coding Standards
 ----------------
