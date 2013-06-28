@@ -23,6 +23,7 @@ import pecan
 from pecan import rest
 import wsme
 from wsme import types as wtypes
+from wsme import wsattr
 import wsmeext.pecan as wsme_pecan
 from oslo.config import cfg
 
@@ -47,7 +48,7 @@ def _ironic_link(rel_name, resource_id):
     return Link(href=('%s/%s') % (CONF.ironic_url, resource_id), rel=rel_name)
 
 
-class Base(wtypes.Base):
+class Base(wsme.types.Base):
 
     def __init__(self, **kwargs):
         self.fields = list(kwargs)
@@ -96,6 +97,7 @@ class Capacity(Base):
 
     name = wtypes.text
     value = wtypes.text
+    unit = wtypes.text
 
 class Node(Base):
     """A Node representation"""
@@ -161,6 +163,24 @@ class ResourceClass(Base):
                     racks.append(rack)
             return ResourceClass(links=links, racks=racks,
                                  **(resource_class.as_dict()))
+
+
+class Flavor(Base):
+    """A representation of Flavor in HTTP body"""
+    #FIXME - I want id to be UUID - String
+    id = wsattr(int, mandatory=True)
+    name = wsattr(wtypes.text, mandatory=False)
+    capacities = [Capacity]
+    links = [Link]
+
+    @classmethod
+    def add_capacities(self, flavor):
+        capacities = []
+        for c in flavor.capacities:
+            capacities.append(Capacity(name=c.name, value=c.value, unit=c.unit))
+        links = [_make_link('self', pecan.request.host_url, 'flavors', flavor.id)]
+        return Flavor(capacities=capacities, links=links, **(flavor.as_dict()))
+
 
 class RacksController(rest.RestController):
     """REST controller for Rack"""
@@ -279,12 +299,49 @@ class ResourceClassesController(rest.RestController):
         """Remove the Resource Class"""
         pecan.request.dbapi.delete_resource_class(resource_class_id)
 
+class FlavorsController(rest.RestController):
+    """REST controller for Flavor"""
+
+    @wsme.validate(Flavor)
+    @wsme_pecan.wsexpose(Flavor, body=Flavor, status_code=201)
+    def post(self, flavor):
+        """Create a new Flavor."""
+        try:
+            result = pecan.request.dbapi.create_flavor(flavor)
+        except Exception as e:
+            LOG.exception(e)
+            raise wsme.exc.ClientSideError(_("Invalid data"))
+        return Flavor.from_db_model(result)
+
+    @wsme_pecan.wsexpose([Flavor])
+    def get_all(self):
+        """Retrieve a list of all flavors"""
+        flavors=[]
+        for flavor in pecan.request.dbapi.get_flavors(None):
+            flavors.append(Flavor.add_capacities(flavor))
+        return flavors
+        #return [Flavor.from_db_model(flavor) for flavor in result]
+
+    @wsme_pecan.wsexpose(Flavor, unicode)
+    def get_one(self, flavor_id):
+        """Retrieve a specific flavor."""
+        flavor = pecan.request.dbapi.get_flavor(flavor_id)
+        return Flavor.add_capacities(flavor)
+
+    @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
+    def delete(self, flavor_id):
+        """Delete a Flavor"""
+        #pecan.response.status_code = 204
+        pecan.request.dbapi.delete_flavor(flavor_id)
+
 class Controller(object):
     """Version 1 API controller root."""
 
     racks = RacksController()
 
     resource_classes = ResourceClassesController()
+
+    flavors = FlavorsController()
 
     @pecan.expose('json')
     def index(self):

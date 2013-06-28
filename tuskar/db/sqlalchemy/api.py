@@ -238,3 +238,46 @@ class Connection(api.Connection):
         except:
             session.rollback()
             raise
+
+    def get_flavors(self, columns):
+        session = get_session()
+        return session.query(models.Flavor).all()
+
+    def get_flavor(self, flavor_id):
+        session = get_session()
+        try:
+            flavor = session.query(models.Flavor).options(
+                    subqueryload('capacities'),
+                    ).filter_by(id=flavor_id).one()
+        except NoResultFound:
+            raise exception.FlavorNotFound(flavor=flavor_id)
+        return flavor
+
+    def create_flavor(self, new_flavor):
+        session = get_session()
+        with session.begin():
+            flavor = models.Flavor(name=new_flavor.name)
+            session.add(flavor)
+            for c in new_flavor.capacities:
+                capacity = models.Capacity(name=c.name, value=c.value, unit=c.unit)
+                session.add(capacity)
+                flavor.capacities.append(capacity)
+                session.add(flavor)
+            return flavor
+
+    def delete_flavor(self, flavor_id):
+        session = get_session()
+        flavor = self.get_flavor(flavor_id)
+        with session.begin():
+            if self.delete_capacities(flavor, session):
+                session.delete(flavor)
+                return True
+
+    def delete_capacities(self, resource, session):
+        try:
+            for c in resource.capacities:
+                session.delete(c)
+        except:
+            session.rollback()
+            return false
+        return True
