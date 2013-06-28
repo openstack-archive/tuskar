@@ -117,7 +117,7 @@ class Connection(api.Connection):
                     rack = self.get_rack(r.get_id())
                     session.add(rack)
                     rack.resource_class = rc
-        except:
+        except Exception:
             session.rollback()
             raise
 
@@ -173,7 +173,7 @@ class Connection(api.Connection):
             session.commit()
             session.refresh(rack)
             return rack
-        except:
+        except Exception:
             session.rollback()
             raise
 
@@ -209,7 +209,7 @@ class Connection(api.Connection):
             session.commit()
             session.refresh(rack)
             return rack
-        except:
+        except Exception:
             session.rollback()
             raise
 
@@ -222,7 +222,7 @@ class Connection(api.Connection):
             [session.delete(c) for c in rack.capacities]
             [session.delete(n) for n in rack.nodes]
             session.commit()
-        except:
+        except Exception:
             session.rollback()
             raise
 
@@ -235,7 +235,7 @@ class Connection(api.Connection):
             session.query(models.ResourceClass
                           ).filter_by(id=resource_class_id).delete()
             session.commit()
-        except:
+        except Exception:
             session.rollback()
             raise
 
@@ -259,7 +259,9 @@ class Connection(api.Connection):
             flavor = models.Flavor(name=new_flavor.name)
             session.add(flavor)
             for c in new_flavor.capacities:
-                capacity = models.Capacity(name=c.name, value=c.value, unit=c.unit)
+                capacity = models.Capacity(name=c.name,
+                                           value=c.value,
+                                           unit=c.unit)
                 session.add(capacity)
                 flavor.capacities.append(capacity)
                 session.add(flavor)
@@ -277,7 +279,7 @@ class Connection(api.Connection):
         try:
             for c in resource.capacities:
                 session.delete(c)
-        except:
+        except Exception:
             session.rollback()
-            return false
+            return False
         return True

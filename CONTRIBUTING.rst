@@ -12,6 +12,11 @@ Coding Standards
 We attempt to comply with the openstack coding standards, defined in
 https://github.com/openstack-dev/hacking/blob/master/HACKING.rst
 
+Before pushing your code, make sure it complies with the standards by
+running:
+
+  $ tox -e pep8
+
 Getting Started
 ---------------
 

@@ -19,13 +19,12 @@
 Version 1 of the Tuskar API
 """
 
+from oslo.config import cfg
 import pecan
 from pecan import rest
 import wsme
 from wsme import types as wtypes
-from wsme import wsattr
 import wsmeext.pecan as wsme_pecan
-from oslo.config import cfg
 
 from tuskar.openstack.common import log
 
@@ -40,9 +39,11 @@ ironic_opts = [
 
 CONF.register_opts(ironic_opts)
 
+
 def _make_link(rel_name, url, type, type_arg):
     return Link(href=('%s/v1/%s/%s') % (url, type, type_arg),
                 rel=rel_name)
+
 
 def _ironic_link(rel_name, resource_id):
     return Link(href=('%s/%s') % (CONF.ironic_url, resource_id), rel=rel_name)
@@ -70,44 +71,46 @@ class Base(wsme.types.Base):
                 getattr(self, k) != wsme.Unset)
 
     def get_id(self):
-        """Returns the ID of this resource as specified in the self link"""
+        """Returns the ID of this resource as specified in the self link."""
 
         # FIXME(mtaylor) We should use a more robust method for parsing the URL
         return self.links[0].href.split("/")[-1]
 
+
 class Link(Base):
-    """A link representation"""
+    """A link representation."""
 
     href = wtypes.text
-    "The url of a link"
+    "The url of a link."
 
     rel = wtypes.text
-    "The name of a link"
+    "The name of a link."
 
 
 class Chassis(Base):
-    """A chassis representation"""
+    """A chassis representation."""
 
-    id    = wtypes.text
+    id = wtypes.text
     links = [Link]
 
 
 class Capacity(Base):
-    """A capacity representation"""
+    """A capacity representation."""
 
     name = wtypes.text
     value = wtypes.text
     unit = wtypes.text
 
-class Node(Base):
-    """A Node representation"""
 
-    id    = wtypes.text
+class Node(Base):
+    """A Node representation."""
+
+    id = wtypes.text
     links = [Link]
 
 
 class Rack(Base):
-    """A representation of Rack in HTTP body"""
+    """A representation of Rack in HTTP body."""
 
     id = int
     name = wtypes.text
@@ -122,13 +125,17 @@ class Rack(Base):
     def convert_with_links(self, rack, links):
 
         if rack.chassis_id:
-            chassis = Chassis(id=rack.chassis_id, links=[_ironic_link('chassis', rack.chassis_id)])
+            chassis = Chassis(id=rack.chassis_id,
+                              links=[_ironic_link('chassis', rack.chassis_id)])
         else:
             chassis = Chassis()
 
-        capacities = [Capacity(name=c.name, value=c.value) for c in rack.capacities]
+        capacities = [Capacity(name=c.name, value=c.value)
+                      for c in rack.capacities]
 
-        nodes = [Node(id=n.node_id, links=[_ironic_link('node', n.node_id)]) for n in rack.nodes]
+        nodes = [Node(id=n.node_id,
+                      links=[_ironic_link('node', n.node_id)])
+                 for n in rack.nodes]
 
         return Rack(links=links, chassis=chassis, capacities=capacities,
                 nodes=nodes, **(rack.as_dict()))
@@ -140,8 +147,9 @@ class Rack(Base):
         if minimal:
             return Rack(links=links, id=str(rack.id))
 
+
 class ResourceClass(Base):
-    """A representation of Resource Class in HTTP body"""
+    """A representation of Resource Class in HTTP body."""
 
     id = int
     name = wtypes.text
@@ -166,10 +174,10 @@ class ResourceClass(Base):
 
 
 class Flavor(Base):
-    """A representation of Flavor in HTTP body"""
+    """A representation of Flavor in HTTP body."""
     #FIXME - I want id to be UUID - String
-    id = wsattr(int, mandatory=True)
-    name = wsattr(wtypes.text, mandatory=False)
+    id = wsme.wsattr(int, mandatory=True)
+    name = wsme.wsattr(wtypes.text, mandatory=False)
     capacities = [Capacity]
     links = [Link]
 
@@ -177,13 +185,18 @@ class Flavor(Base):
     def add_capacities(self, flavor):
         capacities = []
         for c in flavor.capacities:
-            capacities.append(Capacity(name=c.name, value=c.value, unit=c.unit))
-        links = [_make_link('self', pecan.request.host_url, 'flavors', flavor.id)]
+            capacities.append(Capacity(name=c.name,
+                                       value=c.value,
+                                       unit=c.unit))
+
+        links = [_make_link('self', pecan.request.host_url,
+                            'flavors', flavor.id)]
+
         return Flavor(capacities=capacities, links=links, **(flavor.as_dict()))
 
 
 class RacksController(rest.RestController):
-    """REST controller for Rack"""
+    """REST controller for Rack."""
 
     @wsme.validate(Rack)
     @wsme_pecan.wsexpose(Rack, body=Rack, status_code=201)
@@ -210,7 +223,7 @@ class RacksController(rest.RestController):
     @wsme.validate(Rack)
     @wsme_pecan.wsexpose(Rack, body=Rack, status_code=200)
     def put(self, rack):
-        """Update the Rack"""
+        """Update the Rack."""
 
         try:
             result = pecan.request.dbapi.update_rack(rack)
@@ -221,10 +234,9 @@ class RacksController(rest.RestController):
             raise wsme.exc.ClientSideError(_("Invalid data"))
         return Rack.convert_with_links(result, links)
 
-
     @wsme_pecan.wsexpose([Rack])
     def get_all(self):
-        """Retrieve a list of all racks"""
+        """Retrieve a list of all racks."""
         result = []
         links = []
         for rack in pecan.request.dbapi.get_racks(None):
@@ -243,7 +255,7 @@ class RacksController(rest.RestController):
 
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self, rack_id):
-        """Remove the Rack"""
+        """Remove the Rack."""
 
         # FIXME(mfojtik: For some reason, Pecan does not return 201 here
         #                as configured above
@@ -251,8 +263,9 @@ class RacksController(rest.RestController):
         pecan.response.status_code = 204
         pecan.request.dbapi.delete_rack(rack_id)
 
+
 class ResourceClassesController(rest.RestController):
-    """REST controller for Resource Class"""
+    """REST controller for Resource Class."""
 
     @wsme.validate(ResourceClass)
     @wsme_pecan.wsexpose(ResourceClass, body=ResourceClass, status_code=201)
@@ -275,32 +288,29 @@ class ResourceClassesController(rest.RestController):
         pecan.response.status_code = 201
         return rc
 
-
     @wsme_pecan.wsexpose([ResourceClass])
     def get_all(self):
-        """Retrieve a list of all Resource Classes"""
+        """Retrieve a list of all Resource Classes."""
         result = []
         for rc in pecan.request.dbapi.get_resource_classes(None):
             result.append(ResourceClass.convert(rc, pecan.request.host_url))
         return result
 
-
     @wsme_pecan.wsexpose(ResourceClass, unicode)
     def get_one(self, resource_class_id):
         """Retrieve information about the given Resource Class."""
-        resource_class = pecan.request.dbapi.get_resource_class(resource_class_id)
-        links = [_make_link('self', pecan.request.host_url, 'resource_classes',
-                resource_class.id)]
+        dbapi = pecan.request.dbapi
+        resource_class = dbapi.get_resource_class(resource_class_id)
         return ResourceClass.convert(resource_class, pecan.request.host_url)
-
 
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self, resource_class_id):
-        """Remove the Resource Class"""
+        """Remove the Resource Class."""
         pecan.request.dbapi.delete_resource_class(resource_class_id)
 
+
 class FlavorsController(rest.RestController):
-    """REST controller for Flavor"""
+    """REST controller for Flavor."""
 
     @wsme.validate(Flavor)
     @wsme_pecan.wsexpose(Flavor, body=Flavor, status_code=201)
@@ -315,8 +325,8 @@ class FlavorsController(rest.RestController):
 
     @wsme_pecan.wsexpose([Flavor])
     def get_all(self):
-        """Retrieve a list of all flavors"""
-        flavors=[]
+        """Retrieve a list of all flavors."""
+        flavors = []
         for flavor in pecan.request.dbapi.get_flavors(None):
             flavors.append(Flavor.add_capacities(flavor))
         return flavors
@@ -330,9 +340,10 @@ class FlavorsController(rest.RestController):
 
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self, flavor_id):
-        """Delete a Flavor"""
+        """Delete a Flavor."""
         #pecan.response.status_code = 204
         pecan.request.dbapi.delete_flavor(flavor_id)
+
 
 class Controller(object):
     """Version 1 API controller root."""
@@ -348,7 +359,7 @@ class Controller(object):
         return {
             'version': {
                 'status': 'stable',
-                'media-types': [ {'base': 'application/json'} ],
+                'media-types': [{'base': 'application/json'}],
                 'id': 'v1.0',
                 'links': [{
                     'href': '/v1/',

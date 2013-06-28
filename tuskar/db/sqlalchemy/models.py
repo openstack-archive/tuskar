@@ -20,8 +20,8 @@ SQLAlchemy models.
 """
 
 import json
-import urlparse
 import logging
+import urlparse
 
 from oslo.config import cfg
 
@@ -95,8 +95,9 @@ class Capacity(Base):
     value = Column(String(length=128))
     unit = Column(String(length=24))
 
+
 class RackCapacities(Base):
-    """Represents a many-to-many relation between Rack and Capacity"""
+    """Represents a many-to-many relation between Rack and Capacity."""
 
     __tablename__ = 'rack_capacities'
     id = Column(Integer, primary_key=True)
@@ -104,8 +105,9 @@ class RackCapacities(Base):
     capacity_id = Column(Integer, ForeignKey('capacities.id'),
             primary_key=True)
 
+
 class FlavorCapacities(Base):
-    """Represents a many-to-many relation between Flavor and Capacity"""
+    """Represents a many-to-many relation between Flavor and Capacity."""
     __tablename__ = 'flavor_capacities'
     id = Column(Integer, primary_key=True)
     #FIXME - I want flavor.id to be UUID String
@@ -113,8 +115,9 @@ class FlavorCapacities(Base):
     capacity_id = Column(Integer, ForeignKey('capacities.id'),
             primary_key=True)
 
+
 class Node(Base):
-    """Represents a Node """
+    """Represents a Node."""
 
     __tablename__ = 'nodes'
     id = Column(Integer, primary_key=True)

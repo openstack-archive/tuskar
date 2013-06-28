@@ -31,7 +31,7 @@ class RootController(object):
             'versions': {
                 'values': [{
                     'status': 'development',
-                    'media-types': [ {'base': 'application/json'} ],
+                    'media-types': [{'base': 'application/json'}],
                     'id': 'v1.0',
                     'links': [{
                         'href': '/v1/',
