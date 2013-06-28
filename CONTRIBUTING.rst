@@ -52,6 +52,10 @@ Assuming this is your first time running with a new database, you should simply
 get '[]' back from curl above. Currently the api supports only json return type,
 so we request that in the example call.
 
+Next, you can run a script to populate the DB with some sample data:
+
+ $ python tools/sample_data.py
+
 Finding your way around
 ~~~~~~~~~~~~~~~~~~~~~~~
 
