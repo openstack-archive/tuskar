@@ -125,11 +125,11 @@ class Connection(api.Connection):
         session.refresh(rc)
         return rc
 
-    def update_rack(self, new_rack):
+    def update_rack(self, rack_id, new_rack):
         session = get_session()
         session.begin()
         try:
-            rack = self.get_rack(new_rack.id)
+            rack = self.get_rack(rack_id)
 
             # FIXME(mfojtik): The update below is a bit retar*ed,
             # There must be a better way how to do 'update' in sqlalchemy.

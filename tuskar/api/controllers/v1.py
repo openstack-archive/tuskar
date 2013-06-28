@@ -221,12 +221,12 @@ class RacksController(rest.RestController):
         return Rack.convert_with_links(result, links)
 
     @wsme.validate(Rack)
-    @wsme_pecan.wsexpose(Rack, body=Rack, status_code=200)
-    def put(self, rack):
-        """Update the Rack."""
+    @wsme_pecan.wsexpose(Rack, wtypes.text, body=Rack, status_code=200)
+    def put(self, rack_id, rack):
+        """Update the Rack"""
 
         try:
-            result = pecan.request.dbapi.update_rack(rack)
+            result = pecan.request.dbapi.update_rack(rack_id, rack)
             links = [_make_link('self', pecan.request.host_url, 'racks',
                     result.id)]
         except Exception as e:
