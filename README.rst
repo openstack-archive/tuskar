@@ -47,3 +47,9 @@ Setting up a local environment for development can be done with tox::
 
     # deactivate the virtualenv
     deactivate
+
+------------
+Contributing
+------------
+
+Please see our CONTRIBUTING.rst for details and a getting started guide.
