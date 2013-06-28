@@ -45,7 +45,7 @@ with::
 
 Then, launch the app and try curl to see if it works::
 
-  $ tuskar-api --config-file etc/tuskar/tuskar.conf --debug
+  $ tuskar-api --config-file etc/tuskar/tuskar.conf
   $ curl -X GET -H 'Accept: application/json' http://0.0.0.0:6385/v1/racks
 
 Assuming this is your first time running with a new database, you should simply
