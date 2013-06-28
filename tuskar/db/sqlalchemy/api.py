@@ -28,6 +28,7 @@ from tuskar.db import api
 from tuskar.db.sqlalchemy import models
 from tuskar.openstack.common.db.sqlalchemy import session as db_session
 from tuskar.openstack.common import log
+from wsme import types as wtypes
 
 CONF = cfg.CONF
 CONF.import_opt('connection',
@@ -97,7 +98,9 @@ class Connection(api.Connection):
             result = session.query(models.ResourceClass
                                 ).filter_by(id=resource_class_id).one()
         except NoResultFound:
-            raise exception.ResourceClassNotFound(resource_class=resource_class_id)
+            raise exception.ResourceClassNotFound(
+                    resource_class=resource_class_id
+                    )
 
         return result
 
@@ -106,10 +109,9 @@ class Connection(api.Connection):
         session.begin()
         try:
             rc = models.ResourceClass(name=new_resource_class.name,
-                                      service_type=new_resource_class.service_type)
+             service_type=new_resource_class.service_type)
             session.add(rc)
             if new_resource_class.racks:
-                racks = []
                 for r in new_resource_class.racks:
                     # FIXME surely there is a better way of doing this.
                     rack = self.get_rack(r.get_id())
@@ -123,6 +125,57 @@ class Connection(api.Connection):
         session.refresh(rc)
         return rc
 
+    def update_rack(self, new_rack):
+        session = get_session()
+        session.begin()
+        try:
+            rack = self.get_rack(new_rack.id)
+
+            # FIXME(mfojtik): The update below is a bit retar*ed,
+            # There must be a better way how to do 'update' in sqlalchemy.
+            #
+            if new_rack.name:
+                rack.name = new_rack.name
+
+            if new_rack.slots:
+                rack.slots = new_rack.slots
+
+            if new_rack.subnet:
+                rack.subnet = new_rack.subnet
+
+            if new_rack.chassis:
+                rack.chassis_id = new_rack.chassis.id
+
+            session.add(rack)
+
+            # TODO(mfojtik): Since the 'PUT' does not behave like PATCH, we
+            # need to replace all capacities, even if you want to add/update a
+            # value of single item
+            #
+            if not isinstance(new_rack.capacities, wtypes.UnsetType):
+                [session.delete(c) for c in rack.capacities]
+
+                for c in new_rack.capacities:
+                    capacity = models.Capacity(name=c.name, value=c.value)
+                    session.add(capacity)
+                    rack.capacities.append(capacity)
+                    session.add(rack)
+
+            if not isinstance(new_rack.nodes, wtypes.UnsetType):
+                [session.delete(n) for n in rack.nodes]
+
+                for n in new_rack.nodes:
+                    node = models.Node(node_id=n.id)
+                    session.add(node)
+                    rack.nodes.append(node)
+                    session.add(rack)
+
+            session.commit()
+            session.refresh(rack)
+            return rack
+        except:
+            session.rollback()
+            raise
 
     def create_rack(self, new_rack):
         session = get_session()
@@ -135,7 +188,7 @@ class Connection(api.Connection):
                    )
 
             if new_rack.chassis:
-                rack.chassis_id=new_rack.chassis.id
+                rack.chassis_id = new_rack.chassis.id
 
             session.add(rack)
 
@@ -166,8 +219,8 @@ class Connection(api.Connection):
         session.begin()
         try:
             session.delete(rack)
-            for c in rack.capacities:
-                session.delete(c)
+            [session.delete(c) for c in rack.capacities]
+            [session.delete(n) for n in rack.nodes]
             session.commit()
         except:
             session.rollback()
