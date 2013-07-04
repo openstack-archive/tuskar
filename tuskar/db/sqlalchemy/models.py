@@ -134,7 +134,8 @@ class Rack(Base):
     slots = Column(Integer)
     subnet = Column(String(length=64))
     chassis_id = Column(String(length=64))
-    resource_class_id = Column(Integer, ForeignKey('resource_classes.id'))
+    resource_class_id = Column(Integer, ForeignKey('resource_classes.id',
+                                                   onupdate="cascade"))
     capacities = relationship("Capacity",
             secondary=Base.metadata.tables['rack_capacities'],
             cascade="all, delete",
@@ -152,7 +153,8 @@ class ResourceClass(Base):
     racks = relationship("Rack",
                          backref="resource_class",
                          lazy='joined',
-                         cascade="all")
+                         cascade="all",
+                         passive_updates=False)
 
 
 class Flavor(Base):

@@ -288,6 +288,18 @@ class ResourceClassesController(rest.RestController):
         pecan.response.status_code = 201
         return rc
 
+    @wsme.validate(ResourceClass)
+    @wsme_pecan.wsexpose(ResourceClass, wtypes.text, body=ResourceClass,
+                         status_code=200)
+    def put(self, resource_class_id, resource_class):
+        try:
+            result = pecan.request.dbapi.update_resource_class(resource_class_id,
+                                                               resource_class)
+        except Exception as e:
+            LOG.exception(e)
+            raise wsme.exc.ClientSideError(_("Invalid data"))
+        return ResourceClass.convert(result, pecan.request.host_url)
+
     @wsme_pecan.wsexpose([ResourceClass])
     def get_all(self):
         """Retrieve a list of all Resource Classes."""
