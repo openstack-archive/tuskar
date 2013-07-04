@@ -90,7 +90,9 @@ class Connection(api.Connection):
 
     def get_resource_classes(self, columns):
         session = get_session()
-        return session.query(models.ResourceClass).all()
+        resource_classes = session.query(models.ResourceClass).all()
+        session.close()
+        return resource_classes
 
     def get_resource_class(self, resource_class_id):
         session = get_session()
@@ -101,7 +103,7 @@ class Connection(api.Connection):
             raise exception.ResourceClassNotFound(
                     resource_class=resource_class_id
                     )
-
+        session.close()
         return result
 
     def create_resource_class(self, new_resource_class):
@@ -109,7 +111,7 @@ class Connection(api.Connection):
         session.begin()
         try:
             rc = models.ResourceClass(name=new_resource_class.name,
-             service_type=new_resource_class.service_type)
+            service_type=new_resource_class.service_type)
             session.add(rc)
             if new_resource_class.racks:
                 for r in new_resource_class.racks:
@@ -123,6 +125,37 @@ class Connection(api.Connection):
 
         session.commit()
         session.refresh(rc)
+        session.close()
+        return rc
+
+    def update_resource_class(self, resource_class_id, new_resource_class):
+        rc = self.get_resource_class(resource_class_id)
+
+        session = get_session()
+        session.begin()
+        try:
+            if new_resource_class.name:
+                rc.name = new_resource_class.name
+
+            if new_resource_class.service_type:
+                rc.service_type = new_resource_class.service_type
+
+            session.add(rc)
+
+            if not isinstance(new_resource_class.racks, wtypes.UnsetType):
+                rc.racks = []
+                for r in new_resource_class.racks:
+                    rack = self.get_rack(r.get_id())
+                    session.add(rack)
+                    rc.racks.append(rack)
+
+        except Exception:
+            session.rollback()
+            raise
+
+        session.commit()
+        session.refresh(rc)
+        session.close()
         return rc
 
     def update_rack(self, rack_id, new_rack):
