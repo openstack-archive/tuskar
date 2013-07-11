@@ -203,6 +203,17 @@ class TestCase(testtools.TestCase):
         for k, v in kw.iteritems():
             CONF.set_override(k, v, group)
 
+    def path_get(self, project_file=None):
+        root = os.path.abspath(os.path.join(os.path.dirname(__file__),
+            '..',
+            '..',
+            )
+            )
+        if project_file:
+            return os.path.join(root, project_file)
+        else:
+            return root
+
 
 class TimeOverride(fixtures.Fixture):
     """Fixture to start and remove time override."""
