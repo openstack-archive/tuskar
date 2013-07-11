@@ -119,6 +119,11 @@ class Connection(api.Connection):
                     rack = self.get_rack(r.get_id())
                     session.add(rack)
                     rack.resource_class = rc
+            if new_resource_class.flavors:
+                for flav in new_resource_class.flavors:
+                    flavor = self.create_flavor(flav)
+                    session.add(flavor)
+                    flavor.resource_class = rc
         except Exception:
             session.rollback()
             raise
@@ -149,6 +154,25 @@ class Connection(api.Connection):
                     session.add(rack)
                     rc.racks.append(rack)
 
+        except Exception:
+            session.rollback()
+            raise
+
+        session.commit()
+        session.refresh(rc)
+        session.close()
+        return rc
+
+    def update_resource_class_flavors(self, resource_class_id, new_flavor):
+
+        rc = self.get_resource_class(resource_class_id)
+        session = get_session()
+        session.begin()
+        try:
+            flavor = self.create_flavor(new_flavor)
+            session.add(flavor)
+            flavor.resource_class = rc
+            rc.flavors.append(flavor)
         except Exception:
             session.rollback()
             raise
@@ -288,6 +312,8 @@ class Connection(api.Connection):
 
     def create_flavor(self, new_flavor):
         session = get_session()
+        #CALL NOVA AT THIS POINT (code in tuskar/compute/nova.py)
+        #NOT YET TESTED - FIXME
         with session.begin():
             flavor = models.Flavor(name=new_flavor.name)
             session.add(flavor)

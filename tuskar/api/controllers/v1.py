@@ -148,31 +148,6 @@ class Rack(Base):
             return Rack(links=links, id=str(rack.id))
 
 
-class ResourceClass(Base):
-    """A representation of Resource Class in HTTP body."""
-
-    id = int
-    name = wtypes.text
-    service_type = wtypes.text
-    racks = [Rack]
-    links = [Link]
-
-    @classmethod
-    def convert(self, resource_class, base_url, minimal=False):
-        links = [_make_link('self', pecan.request.host_url, 'resource_classes',
-                             resource_class.id)]
-        if minimal:
-            return ResourceClass(links=links, id=str(resource_class.id))
-        else:
-            racks = []
-            if resource_class.racks:
-                for r in resource_class.racks:
-                    rack = Rack.convert(r, base_url, True)
-                    racks.append(rack)
-            return ResourceClass(links=links, racks=racks,
-                                 **(resource_class.as_dict()))
-
-
 class Flavor(Base):
     """A representation of Flavor in HTTP body."""
     #FIXME - I want id to be UUID - String
@@ -193,6 +168,38 @@ class Flavor(Base):
                             'flavors', flavor.id)]
 
         return Flavor(capacities=capacities, links=links, **(flavor.as_dict()))
+
+
+class ResourceClass(Base):
+    """A representation of Resource Class in HTTP body."""
+
+    id = int
+    name = wtypes.text
+    service_type = wtypes.text
+    racks = [Rack]
+    flavors = [Flavor]
+    links = [Link]
+
+    @classmethod
+    def convert(self, resource_class, base_url, minimal=False):
+        links = [_make_link('self', pecan.request.host_url, 'resource_classes',
+                             resource_class.id)]
+        if minimal:
+            return ResourceClass(links=links, id=str(resource_class.id))
+        else:
+            racks = []
+            if resource_class.racks:
+                for r in resource_class.racks:
+                    rack = Rack.convert(r, base_url, True)
+                    racks.append(rack)
+            flavors = []
+            if resource_class.flavors:
+                for flav in resource_class.flavors:
+
+                    flavor = Flavor.add_capacities(flav)
+                    flavors.append(flavor)
+            return ResourceClass(links=links, racks=racks, flavors=flavors,
+                                 **(resource_class.as_dict()))
 
 
 class RacksController(rest.RestController):
@@ -263,9 +270,73 @@ class RacksController(rest.RestController):
         pecan.response.status_code = 204
         pecan.request.dbapi.delete_rack(rack_id)
 
+class FlavorsController(rest.RestController):
+    """REST controller for Flavor."""
+
+    #FOR NOW COMMENT OUT. Current assumption is that you cannot
+    #create a flavor as a stand-alone operation. Flavors are defined
+    #in the POST body for creation of a ResourceClass.
+    #This is why flavorsController is instantiated within
+    #ResourceClassesController. So no stand alone 'create flavor' - must
+    #be part of create or update a ResourceClass
+    """
+    @wsme.validate(Flavor)
+    @wsme_pecan.wsexpose(Flavor, body=Flavor, status_code=201)
+    def post(self, flavor):
+        #""Create a new Flavor.""
+        try:
+            import pdb; pdb.set_trace()
+            result = pecan.request.dbapi.create_flavor(flavor)
+        except Exception as e:
+            LOG.exception(e)
+            raise wsme.exc.ClientSideError(_("Invalid data"))
+        return Flavor.from_db_model(result)
+    """
+    #Do we need this, i.e. GET /api/resource_classes/1/flavors
+    #i.e. return just the flavors for a given resource_class?
+    @wsme_pecan.wsexpose([Flavor], wtypes.text)
+    def get_all(self, resource_class_id):
+        """Retrieve a list of all flavors."""
+        flavors = []
+        for flavor in pecan.request.dbapi.get_flavors(None):
+            flavors.append(Flavor.add_capacities(flavor))
+        return flavors
+        #return [Flavor.from_db_model(flavor) for flavor in result]
+
+    @wsme_pecan.wsexpose(Flavor, wtypes.text, wtypes.text)
+    def get_one(self, resource_id, flavor_id):
+        """Retrieve a specific flavor."""
+        flavor = pecan.request.dbapi.get_flavor(flavor_id)
+        return Flavor.add_capacities(flavor)
+
+    @wsme.validate(Flavor)
+    @wsme_pecan.wsexpose(ResourceClass, wtypes.text, body=Flavor)
+    def put(self, resource_class_id, flavor):
+
+        """Add Flavor to a ResourceClass"""
+        try:
+            result = pecan.request.dbapi.update_resource_class_flavors(resource_class_id, flavor)
+        except Exception as e:
+            LOG.exception(e)
+            raise wsme.exc.ClientSideError(_("Invalid data"))
+        return ResourceClass.convert(result, pecan.request.host_url)
+
+    @wsme_pecan.wsexpose(None, wtypes.text, wtypes.text, status_code=204)
+    def delete(self, resource_class_id, flavor_id):
+        """Delete a Flavor."""
+        #pecan.response.status_code = 204
+        pecan.request.dbapi.delete_flavor(flavor_id)
 
 class ResourceClassesController(rest.RestController):
     """REST controller for Resource Class."""
+
+    flavors = FlavorsController()
+
+    """
+    _custom_actions = {
+        'flavors': ['GET', 'POST', 'DELETE', 'PUT']
+    }
+    """
 
     @wsme.validate(ResourceClass)
     @wsme_pecan.wsexpose(ResourceClass, body=ResourceClass, status_code=201)
@@ -319,44 +390,23 @@ class ResourceClassesController(rest.RestController):
     def delete(self, resource_class_id):
         """Remove the Resource Class."""
         pecan.request.dbapi.delete_resource_class(resource_class_id)
-
-
-class FlavorsController(rest.RestController):
-    """REST controller for Flavor."""
-
-    @wsme.validate(Flavor)
-    @wsme_pecan.wsexpose(Flavor, body=Flavor, status_code=201)
-    def post(self, flavor):
-        """Create a new Flavor."""
-        try:
-            result = pecan.request.dbapi.create_flavor(flavor)
-        except Exception as e:
-            LOG.exception(e)
-            raise wsme.exc.ClientSideError(_("Invalid data"))
-        return Flavor.from_db_model(result)
-
-    @wsme_pecan.wsexpose([Flavor])
-    def get_all(self):
-        """Retrieve a list of all flavors."""
-        flavors = []
-        for flavor in pecan.request.dbapi.get_flavors(None):
-            flavors.append(Flavor.add_capacities(flavor))
-        return flavors
-        #return [Flavor.from_db_model(flavor) for flavor in result]
-
-    @wsme_pecan.wsexpose(Flavor, unicode)
-    def get_one(self, flavor_id):
-        """Retrieve a specific flavor."""
-        flavor = pecan.request.dbapi.get_flavor(flavor_id)
-        return Flavor.add_capacities(flavor)
-
-    @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
-    def delete(self, flavor_id):
-        """Delete a Flavor."""
-        #pecan.response.status_code = 204
-        pecan.request.dbapi.delete_flavor(flavor_id)
-
-
+    """
+    @wsme_pecan.wsexpose(None, wtypes.text, wtypes.text, status_code=204)
+    def flavors(self, foo_id, resource_class_id):
+        #Retrieve Flavors for a given Resource Class""
+        import pdb;pdb.set_trace()
+        method = pecan.request.method
+        if method=="GET":
+            return "GET"
+        elif method=="POST":
+            return "POST"
+        elif method=="DELETE":
+            return "DELETE"
+        elif method=="PUT":
+            return "PUT"
+        else:
+            return "ERROR"
+    """
 class Controller(object):
     """Version 1 API controller root."""
 
@@ -364,7 +414,6 @@ class Controller(object):
 
     resource_classes = ResourceClassesController()
 
-    flavors = FlavorsController()
 
     @pecan.expose('json')
     def index(self):

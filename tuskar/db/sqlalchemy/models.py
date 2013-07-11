@@ -142,6 +142,19 @@ class Rack(Base):
             lazy='joined')
     nodes = relationship("Node", cascade="all, delete")
 
+class Flavor(Base):
+    """Represents a Flavor Class."""
+
+    __tablename__ = 'flavors'
+    #FIXME - I want flavor.id to be UUID String
+    id = Column(Integer, primary_key=True)
+    name = Column(Text, unique=True)
+    resource_class_id = Column(Integer, ForeignKey('resource_classes.id',
+                                                   onupdate="cascade"))
+    capacities = relationship("Capacity",
+            secondary=Base.metadata.tables['flavor_capacities'],
+            cascade="all, delete",
+            lazy='joined')
 
 class ResourceClass(Base):
     """Represents a Resource Class."""
@@ -155,16 +168,9 @@ class ResourceClass(Base):
                          lazy='joined',
                          cascade="all",
                          passive_updates=False)
+    flavors = relationship("Flavor",
+                         backref="resource_class",
+                         lazy='joined',
+                         cascade="all",
+                         passive_updates=False)
 
-
-class Flavor(Base):
-    """Represents a Flavor Class."""
-
-    __tablename__ = 'flavors'
-    #FIXME - I want flavor.id to be UUID String
-    id = Column(Integer, primary_key=True)
-    name = Column(Text, unique=True)
-    capacities = relationship("Capacity",
-            secondary=Base.metadata.tables['flavor_capacities'],
-            cascade="all, delete",
-            lazy='joined')
