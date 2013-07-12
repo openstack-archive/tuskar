@@ -73,6 +73,13 @@ class FunctionalTest(base.TestCase):
                               headers=headers, extra_environ=extra_environ,
                               status=status, method="put")
 
+    def delete_json(self, path, expect_errors=False, headers=None,
+                 extra_environ=None, status=None):
+        return self.post_json(path=path, params={},
+                              expect_errors=expect_errors,
+                              headers=headers, extra_environ=extra_environ,
+                              status=status, method="delete")
+
     def post_json(self, path, params, expect_errors=False, headers=None,
                   method="post", extra_environ=None, status=None):
         full_path = self.PATH_PREFIX + path
