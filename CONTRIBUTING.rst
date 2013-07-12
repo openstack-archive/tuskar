@@ -36,6 +36,9 @@ The config file changes are::
   $ openstack-config --set etc/tuskar/tuskar.conf database connection sqlite:///tuskar.sqlite
   $ openstack-config --set etc/tuskar/tuskar.conf DEFAULT debug true
 
+The command above is part of the openstack-utils package, so you will have to install 
+that if you have not already.
+
 Then::
 
   # if you delete tuskar.sqlite this will force creation of tables again - e.g.
