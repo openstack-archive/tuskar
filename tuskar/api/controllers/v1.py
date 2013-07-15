@@ -157,7 +157,7 @@ class Flavor(Base):
     links = [Link]
 
     @classmethod
-    def add_capacities(self, flavor):
+    def add_capacities(self, rc_id, flavor):
         capacities = []
         for c in flavor.capacities:
             capacities.append(Capacity(name=c.name,
@@ -165,7 +165,7 @@ class Flavor(Base):
                                        unit=c.unit))
 
         links = [_make_link('self', pecan.request.host_url,
-                            'flavors', flavor.id)]
+                            "resource_classes/%s/flavors" %rc_id, flavor.id)]
 
         return Flavor(capacities=capacities, links=links, **(flavor.as_dict()))
 
@@ -196,7 +196,7 @@ class ResourceClass(Base):
             if resource_class.flavors:
                 for flav in resource_class.flavors:
 
-                    flavor = Flavor.add_capacities(flav)
+                    flavor = Flavor.add_capacities(resource_class.id, flav)
                     flavors.append(flavor)
             return ResourceClass(links=links, racks=racks, flavors=flavors,
                                  **(resource_class.as_dict()))
@@ -298,8 +298,8 @@ class FlavorsController(rest.RestController):
     def get_all(self, resource_class_id):
         """Retrieve a list of all flavors."""
         flavors = []
-        for flavor in pecan.request.dbapi.get_flavors(None):
-            flavors.append(Flavor.add_capacities(flavor))
+        for flavor in pecan.request.dbapi.get_flavors(resource_class_id):
+            flavors.append(Flavor.add_capacities(resource_class_id, flavor))
         return flavors
         #return [Flavor.from_db_model(flavor) for flavor in result]
 
@@ -307,7 +307,7 @@ class FlavorsController(rest.RestController):
     def get_one(self, resource_id, flavor_id):
         """Retrieve a specific flavor."""
         flavor = pecan.request.dbapi.get_flavor(flavor_id)
-        return Flavor.add_capacities(flavor)
+        return Flavor.add_capacities(resource_id, flavor)
 
     @wsme.validate(Flavor)
     @wsme_pecan.wsexpose(ResourceClass, wtypes.text, body=Flavor)

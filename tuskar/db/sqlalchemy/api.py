@@ -296,9 +296,9 @@ class Connection(api.Connection):
             session.rollback()
             raise
 
-    def get_flavors(self, columns):
+    def get_flavors(self, resource_class_id):
         session = get_session()
-        return session.query(models.Flavor).all()
+        return session.query(models.Flavor).filter_by(resource_class_id=resource_class_id)
 
     def get_flavor(self, flavor_id):
         session = get_session()
