@@ -22,6 +22,7 @@ import pecan
 from tuskar.api import acl
 from tuskar.api import config
 from tuskar.api import hooks
+from tuskar.api import renderers
 
 auth_opts = [
     cfg.StrOpt('auth_strategy',
@@ -56,6 +57,7 @@ def setup_app(pecan_config=None, extra_hooks=None):
 # TODO(deva): add middleware.ParsableErrorMiddleware from Ceilometer
     app = pecan.make_app(
         pecan_config.app.root,
+        custom_renderers=dict(wsmejson=renderers.JSonRenderer),
         static_root=pecan_config.app.static_root,
         template_path=pecan_config.app.template_path,
         debug=CONF.debug,
