@@ -23,9 +23,11 @@ from oslo.config import cfg
 import pecan
 from pecan import rest
 import wsme
+from wsme import api
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
+from tuskar.common import exception
 from tuskar.openstack.common import log
 
 LOG = log.getLogger(__name__)
@@ -85,6 +87,13 @@ class Link(Base):
 
     rel = wtypes.text
     "The name of a link."
+
+
+class Error(Base):
+    """An error representation."""
+
+    faultcode = int
+    faultstring = wtypes.text
 
 
 class Chassis(Base):
@@ -255,7 +264,13 @@ class RacksController(rest.RestController):
     @wsme_pecan.wsexpose(Rack, unicode)
     def get_one(self, rack_id):
         """Retrieve information about the given Rack."""
-        rack = pecan.request.dbapi.get_rack(rack_id)
+        try:
+            rack = pecan.request.dbapi.get_rack(rack_id)
+        except exception.TuskarException, e:
+            response = api.Response(
+                Error(faultcode=e.code, faultstring=str(e)),
+                status_code=e.code)
+            return response
         links = [_make_link('self', pecan.request.host_url, 'racks',
                 rack.id)]
         return Rack.convert_with_links(rack, links)
