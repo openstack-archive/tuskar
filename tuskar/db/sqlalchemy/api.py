@@ -21,7 +21,7 @@ from oslo.config import cfg
 
 # TODO(deva): import MultipleResultsFound and handle it appropriately
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import subqueryload
+from sqlalchemy.orm import subqueryload, joinedload
 
 from tuskar.common import exception
 from tuskar.db import api
@@ -62,6 +62,12 @@ class Connection(api.Connection):
 
     def __init__(self):
         pass
+
+    def get_heat_data(self):
+        session = get_session()
+        return session.query(models.ResourceClass).options(
+                    joinedload(models.ResourceClass.racks),
+                ).all()
 
     def get_racks(self, columns):
         session = get_session()

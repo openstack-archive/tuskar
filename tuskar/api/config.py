@@ -9,7 +9,7 @@ app = {
     'root': 'tuskar.api.controllers.root.RootController',
     'modules': ['tuskar.api'],
     'static_root': '%(confdir)s/public',
-    'template_path': '%(confdir)s/tuskar/api/templates',
+    'template_path': '%(confdir)s/templates',
     'debug': False,
     'enable_acl': False,
 }
