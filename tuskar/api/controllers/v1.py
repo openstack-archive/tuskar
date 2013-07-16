@@ -390,6 +390,7 @@ class ResourceClassesController(rest.RestController):
     def delete(self, resource_class_id):
         """Remove the Resource Class."""
         pecan.request.dbapi.delete_resource_class(resource_class_id)
+
     """
     @wsme_pecan.wsexpose(None, wtypes.text, wtypes.text, status_code=204)
     def flavors(self, foo_id, resource_class_id):
@@ -407,6 +408,20 @@ class ResourceClassesController(rest.RestController):
         else:
             return "ERROR"
     """
+
+
+class DataCentreController(object):
+    """Controller for provisioning the Tuskar data centre description as an
+    overcloud on Triple O"""
+
+    # TODO (mtaylor) Currently this returns an OverCloud HEAT template.  It
+    # should push the overcloud template to HEAT.
+    @pecan.expose(template='overcloud.yaml')
+    def index(self):
+        rcs = pecan.request.dbapi.get_heat_data()
+        return dict(resource_classes=rcs)
+
+
 class Controller(object):
     """Version 1 API controller root."""
 
@@ -414,6 +429,7 @@ class Controller(object):
 
     resource_classes = ResourceClassesController()
 
+    data_centres = DataCentreController()
 
     @pecan.expose('json')
     def index(self):
