@@ -133,6 +133,7 @@ class Rack(Base):
     name = Column(Text, unique=True)
     slots = Column(Integer)
     subnet = Column(String(length=64))
+    location = Column(String(length=128))
     chassis_id = Column(String(length=64))
     resource_class_id = Column(Integer, ForeignKey('resource_classes.id',
                                                    onupdate="cascade"))

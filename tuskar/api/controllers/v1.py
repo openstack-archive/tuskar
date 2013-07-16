@@ -137,7 +137,9 @@ class Rack(Base):
     name = wtypes.text
     slots = int
     subnet = wtypes.text
+    location = wtypes.text
     chassis = Chassis
+    resource_class = Link
     capacities = [Capacity]
     nodes = [Node]
     links = [Link]
@@ -164,8 +166,15 @@ class Rack(Base):
                       links=[_ironic_link('node', n.node_id)])
                  for n in rack.nodes]
 
+        if rack.resource_class_id:
+            resource_class = _make_link('resource_class',
+                    pecan.request.host_url, 'resource_classes',
+                    rack.resource_class_id)
+        else:
+            resource_class = Link()
+
         return Rack(links=links, chassis=chassis, capacities=capacities,
-                nodes=nodes, **(rack.as_dict()))
+                nodes=nodes, resource_class=resource_class, **(rack.as_dict()))
 
     @classmethod
     def convert(self, rack, base_url, minimal=False):

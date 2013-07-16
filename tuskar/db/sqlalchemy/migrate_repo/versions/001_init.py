@@ -48,6 +48,7 @@ def upgrade(migrate_engine):
         Column('name', String(length=128)),
         Column('slots', Integer),
         Column('subnet', String(length=128)),
+        Column('location', String(length=128)),
         Column('resource_class_id', Integer,
                ForeignKey('resource_classes.id')),
         Column('chassis_id', String(length=64)),

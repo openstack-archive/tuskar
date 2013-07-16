@@ -214,6 +214,9 @@ class Connection(api.Connection):
                 session.add(rc)
                 rack.resource_class = rc
 
+            if new_rack.location:
+                rack.location = new_rack.location
+
             session.add(rack)
 
             # TODO(mfojtik): Since the 'PUT' does not behave like PATCH, we
@@ -253,6 +256,7 @@ class Connection(api.Connection):
                      name=new_rack.name,
                      slots=new_rack.slots,
                      subnet=new_rack.subnet,
+                     location=new_rack.location
                    )
 
             if new_rack.chassis:
@@ -279,13 +283,12 @@ class Connection(api.Connection):
                     rack.nodes.append(node)
                     session.add(rack)
 
-
             session.commit()
             session.refresh(rack)
             return rack
-        except Exception:
+        except Exception as e:
             session.rollback()
-            raise
+            raise e
 
     def delete_rack(self, rack_id):
         session = get_session()
@@ -296,6 +299,7 @@ class Connection(api.Connection):
             [session.delete(c) for c in rack.capacities]
             [session.delete(n) for n in rack.nodes]
             session.commit()
+            return True
         except Exception:
             session.rollback()
             raise
@@ -315,7 +319,9 @@ class Connection(api.Connection):
 
     def get_flavors(self, resource_class_id):
         session = get_session()
-        return session.query(models.Flavor).filter_by(resource_class_id=resource_class_id)
+        return session.query(models.Flavor).filter_by(
+                resource_class_id=resource_class_id
+                )
 
     def get_flavor(self, flavor_id):
         session = get_session()

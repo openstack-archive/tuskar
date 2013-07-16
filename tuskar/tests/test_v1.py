@@ -45,6 +45,7 @@ class TestRacks(api.FunctionalTest):
         self.test_rack = self.db.create_rack(
                 v1.Rack(name='test-rack', slots=1,
                     subnet='10.0.0.0/24',
+                    location='nevada',
                     chassis=v1.Chassis(id='123'),
                     capacities=[v1.Capacity(name='cpu', value='10')],
                     nodes=[v1.Node(id='1')]
@@ -96,6 +97,7 @@ class TestRacks(api.FunctionalTest):
                 'name': 'test-rack-create',
                 'subnet': '127.0.0./24',
                 'slots': '10',
+                'location': 'texas',
                 'capacities': [
                     {'name': 'memory', 'value': '1024'}
                 ],
