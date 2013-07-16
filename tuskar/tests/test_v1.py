@@ -111,7 +111,11 @@ class TestRacks(api.FunctionalTest):
 
         self.assertTrue(response.json['id'])
         self.assertEqual(response.json['name'], json['name'])
+
+        self.assertEqual(response.json['state'], 'unprovisioned')
+
         self.assertEqual(str(response.json['slots']), json['slots'])
+        self.assertEqual(str(response.json['location']), json['location'])
         self.assertEqual(response.json['subnet'], json['subnet'])
         self.assertEqual(len(response.json['nodes']), 2)
 

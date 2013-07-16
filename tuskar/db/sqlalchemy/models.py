@@ -131,9 +131,10 @@ class Rack(Base):
     __tablename__ = 'racks'
     id = Column(Integer, primary_key=True)
     name = Column(Text, unique=True)
-    slots = Column(Integer)
-    subnet = Column(String(length=64))
+    slots = Column(Integer, default=0)
+    subnet = Column(String(length=128))
     location = Column(String(length=128))
+    state = Column(String(length=128), default='unprovisioned')
     chassis_id = Column(String(length=64))
     resource_class_id = Column(Integer, ForeignKey('resource_classes.id',
                                                    onupdate="cascade"))

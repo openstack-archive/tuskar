@@ -252,15 +252,20 @@ class Connection(api.Connection):
         session = get_session()
         session.begin()
         try:
+            # FIXME: So actually these two are *mandatory* attributes:
+            #
             rack = models.Rack(
                      name=new_rack.name,
-                     slots=new_rack.slots,
                      subnet=new_rack.subnet,
-                     location=new_rack.location
                    )
 
-            if new_rack.chassis:
-                rack.chassis_id = new_rack.chassis.id
+            # FIXME: And there are 'optional':
+            #
+            if new_rack.location:
+                rack.location = new_rack.location
+
+            if new_rack.slots:
+                rack.slots = new_rack.slots
 
             if not isinstance(new_rack.resource_class, wtypes.UnsetType):
                 rc = self.get_resource_class(new_rack.resource_class.get_id())

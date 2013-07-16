@@ -138,8 +138,8 @@ class Rack(Base):
     slots = int
     subnet = wtypes.text
     location = wtypes.text
+    state = wtypes.text
     chassis = Chassis
-    resource_class = Link
     capacities = [Capacity]
     nodes = [Node]
     links = [Link]
@@ -166,15 +166,8 @@ class Rack(Base):
                       links=[_ironic_link('node', n.node_id)])
                  for n in rack.nodes]
 
-        if rack.resource_class_id:
-            resource_class = _make_link('resource_class',
-                    pecan.request.host_url, 'resource_classes',
-                    rack.resource_class_id)
-        else:
-            resource_class = Link()
-
         return Rack(links=links, chassis=chassis, capacities=capacities,
-                nodes=nodes, resource_class=resource_class, **(rack.as_dict()))
+                nodes=nodes, **(rack.as_dict()))
 
     @classmethod
     def convert(self, rack, base_url, minimal=False):
@@ -201,7 +194,8 @@ class Flavor(Base):
                                        unit=c.unit))
 
         links = [_make_link('self', pecan.request.host_url,
-                            "resource_classes/%s/flavors" %rc_id, flavor.id)]
+                            "resource_classes/%s/flavors" % rc_id, flavor.id
+                            )]
 
         return Flavor(capacities=capacities, links=links, **(flavor.as_dict()))
 
@@ -314,6 +308,7 @@ class RacksController(rest.RestController):
         pecan.response.status_code = 204
         pecan.request.dbapi.delete_rack(rack_id)
 
+
 class FlavorsController(rest.RestController):
     """REST controller for Flavor."""
 
@@ -359,7 +354,10 @@ class FlavorsController(rest.RestController):
 
         """Add Flavor to a ResourceClass"""
         try:
-            result = pecan.request.dbapi.update_resource_class_flavors(resource_class_id, flavor)
+            result = pecan.request.dbapi.update_resource_class_flavors(
+                    resource_class_id,
+                    flavor
+                    )
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
@@ -370,6 +368,7 @@ class FlavorsController(rest.RestController):
         """Delete a Flavor."""
         #pecan.response.status_code = 204
         pecan.request.dbapi.delete_flavor(flavor_id)
+
 
 class ResourceClassesController(rest.RestController):
     """REST controller for Resource Class."""
@@ -408,8 +407,9 @@ class ResourceClassesController(rest.RestController):
                          status_code=200)
     def put(self, resource_class_id, resource_class):
         try:
-            result = pecan.request.dbapi.update_resource_class(resource_class_id,
-                                                               resource_class)
+            result = pecan.request.dbapi.update_resource_class(
+                    resource_class_id,
+                    resource_class)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
