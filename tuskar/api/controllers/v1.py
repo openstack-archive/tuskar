@@ -76,7 +76,12 @@ class Base(wsme.types.Base):
         """Returns the ID of this resource as specified in the self link."""
 
         # FIXME(mtaylor) We should use a more robust method for parsing the URL
-        return self.links[0].href.split("/")[-1]
+        if not isinstance(self.id, wtypes.UnsetType):
+            return self.id
+        elif not isinstance(self.links, wtypes.UnsetType):
+            return self.links[0].href.split("/")[-1]
+        else:
+            raise wsme.exc.ClientSideError(_("No ID or URL Set for Resource"))
 
 
 class Link(Base):
@@ -94,6 +99,13 @@ class Error(Base):
 
     faultcode = int
     faultstring = wtypes.text
+
+
+class Relation(Base):
+    """A representation of a 1 to 1 or 1 to many relation in the database"""
+
+    id = int
+    links = [Link]
 
 
 class Chassis(Base):
@@ -129,6 +141,7 @@ class Rack(Base):
     capacities = [Capacity]
     nodes = [Node]
     links = [Link]
+    resource_class = Relation
 
     @classmethod
     def convert_with_links(self, rack, links):
@@ -138,6 +151,11 @@ class Rack(Base):
                               links=[_ironic_link('chassis', rack.chassis_id)])
         else:
             chassis = Chassis()
+
+        if rack.resource_class_id:
+            l = [_make_link('self', pecan.request.host_url, 'resource_classes',
+                                rack.resource_class_id)]
+            self.resource_class = Relation(id=rack.resource_class_id, links=l)
 
         capacities = [Capacity(name=c.name, value=c.value)
                       for c in rack.capacities]
@@ -185,7 +203,7 @@ class ResourceClass(Base):
     id = int
     name = wtypes.text
     service_type = wtypes.text
-    racks = [Rack]
+    racks = [Relation]
     flavors = [Flavor]
     links = [Link]
 
@@ -199,7 +217,9 @@ class ResourceClass(Base):
             racks = []
             if resource_class.racks:
                 for r in resource_class.racks:
-                    rack = Rack.convert(r, base_url, True)
+                    l = [_make_link('self', pecan.request.host_url,
+                                        'racks', r.id)]
+                    rack = Relation(id=r.id, links=l)
                     racks.append(rack)
             flavors = []
             if resource_class.flavors:
