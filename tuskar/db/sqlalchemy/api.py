@@ -209,6 +209,11 @@ class Connection(api.Connection):
             if new_rack.chassis:
                 rack.chassis_id = new_rack.chassis.id
 
+            if not isinstance(new_rack.resource_class, wtypes.UnsetType):
+                rc = self.get_resource_class(new_rack.resource_class.get_id())
+                session.add(rc)
+                rack.resource_class = rc
+
             session.add(rack)
 
             # TODO(mfojtik): Since the 'PUT' does not behave like PATCH, we
@@ -253,6 +258,11 @@ class Connection(api.Connection):
             if new_rack.chassis:
                 rack.chassis_id = new_rack.chassis.id
 
+            if not isinstance(new_rack.resource_class, wtypes.UnsetType):
+                rc = self.get_resource_class(new_rack.resource_class.get_id())
+                session.add(rc)
+                rack.resource_class = rc
+
             session.add(rack)
 
             if new_rack.capacities:
@@ -268,6 +278,7 @@ class Connection(api.Connection):
                     session.add(node)
                     rack.nodes.append(node)
                     session.add(rack)
+
 
             session.commit()
             session.refresh(rack)

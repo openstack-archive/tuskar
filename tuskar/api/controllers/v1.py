@@ -76,7 +76,12 @@ class Base(wsme.types.Base):
         """Returns the ID of this resource as specified in the self link."""
 
         # FIXME(mtaylor) We should use a more robust method for parsing the URL
-        return self.links[0].href.split("/")[-1]
+        if not isinstance(self.id, wtypes.UnsetType):
+            return self.id
+        elif not isinstance(self.links, wtypes.UnsetType):
+            return self.links[0].href.split("/")[-1]
+        else:
+            raise wsme.exc.ClientSideError(_("No ID or URL Set for Resource"))
 
 
 class Link(Base):
@@ -148,8 +153,6 @@ class Rack(Base):
             chassis = Chassis()
 
         if rack.resource_class_id:
-            import IPython
-            IPython.embed()
             l = [_make_link('self', pecan.request.host_url, 'resource_classes',
                                 rack.resource_class_id)]
             self.resource_class = Relation(id=rack.resource_class_id, links=l)
@@ -200,7 +203,7 @@ class ResourceClass(Base):
     id = int
     name = wtypes.text
     service_type = wtypes.text
-    racks = [Rack]
+    racks = [Relation]
     flavors = [Flavor]
     links = [Link]
 
@@ -214,7 +217,9 @@ class ResourceClass(Base):
             racks = []
             if resource_class.racks:
                 for r in resource_class.racks:
-                    rack = Rack.convert(r, base_url, True)
+                    l = [_make_link('self', pecan.request.host_url,
+                                        'racks', r.id)]
+                    rack = Relation(id=r.id, links=l)
                     racks.append(rack)
             flavors = []
             if resource_class.flavors:
