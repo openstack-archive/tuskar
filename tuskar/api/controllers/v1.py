@@ -96,6 +96,13 @@ class Error(Base):
     faultstring = wtypes.text
 
 
+class Relation(Base):
+    """A representation of a 1 to 1 or 1 to many relation in the database"""
+
+    id = int
+    links = [Link]
+
+
 class Chassis(Base):
     """A chassis representation."""
 
@@ -129,6 +136,7 @@ class Rack(Base):
     capacities = [Capacity]
     nodes = [Node]
     links = [Link]
+    resource_class = Relation
 
     @classmethod
     def convert_with_links(self, rack, links):
@@ -138,6 +146,13 @@ class Rack(Base):
                               links=[_ironic_link('chassis', rack.chassis_id)])
         else:
             chassis = Chassis()
+
+        if rack.resource_class_id:
+            import IPython
+            IPython.embed()
+            l = [_make_link('self', pecan.request.host_url, 'resource_classes',
+                                rack.resource_class_id)]
+            self.resource_class = Relation(id=rack.resource_class_id, links=l)
 
         capacities = [Capacity(name=c.name, value=c.value)
                       for c in rack.capacities]
