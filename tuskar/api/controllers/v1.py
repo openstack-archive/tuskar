@@ -137,6 +137,8 @@ class Rack(Base):
     name = wtypes.text
     slots = int
     subnet = wtypes.text
+    location = wtypes.text
+    state = wtypes.text
     chassis = Chassis
     capacities = [Capacity]
     nodes = [Node]
@@ -192,7 +194,8 @@ class Flavor(Base):
                                        unit=c.unit))
 
         links = [_make_link('self', pecan.request.host_url,
-                            "resource_classes/%s/flavors" %rc_id, flavor.id)]
+                            "resource_classes/%s/flavors" % rc_id, flavor.id
+                            )]
 
         return Flavor(capacities=capacities, links=links, **(flavor.as_dict()))
 
@@ -305,6 +308,7 @@ class RacksController(rest.RestController):
         pecan.response.status_code = 204
         pecan.request.dbapi.delete_rack(rack_id)
 
+
 class FlavorsController(rest.RestController):
     """REST controller for Flavor."""
 
@@ -350,7 +354,10 @@ class FlavorsController(rest.RestController):
 
         """Add Flavor to a ResourceClass"""
         try:
-            result = pecan.request.dbapi.update_resource_class_flavors(resource_class_id, flavor)
+            result = pecan.request.dbapi.update_resource_class_flavors(
+                    resource_class_id,
+                    flavor
+                    )
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
@@ -361,6 +368,7 @@ class FlavorsController(rest.RestController):
         """Delete a Flavor."""
         #pecan.response.status_code = 204
         pecan.request.dbapi.delete_flavor(flavor_id)
+
 
 class ResourceClassesController(rest.RestController):
     """REST controller for Resource Class."""
@@ -399,8 +407,9 @@ class ResourceClassesController(rest.RestController):
                          status_code=200)
     def put(self, resource_class_id, resource_class):
         try:
-            result = pecan.request.dbapi.update_resource_class(resource_class_id,
-                                                               resource_class)
+            result = pecan.request.dbapi.update_resource_class(
+                    resource_class_id,
+                    resource_class)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
