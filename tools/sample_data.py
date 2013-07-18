@@ -125,8 +125,8 @@ def set_nodes_on_rack(conn, base_url, rack_url, nodes):
                         body=dict(nodes=nodes))
 
 
-def create_flavor(conn, base_url, flavor):
-    return json_request(conn, base_url, '/flavors', 'POST', body=flavor)
+def create_flavor(conn, base_url, resource_class_url, flavor):
+    return json_request(conn, base_url + resource_class_url, '/flavors', 'PUT', body=flavor)
 
 
 def get_location(base_url, resp):
@@ -190,4 +190,4 @@ if __name__ == '__main__':
              ]),
     ]
     for flavor in flavors:
-        create_flavor(conn, base_url, flavor)
+        create_flavor(conn, base_url, m1_url, flavor)
