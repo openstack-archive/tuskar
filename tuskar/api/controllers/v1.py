@@ -312,25 +312,21 @@ class RacksController(rest.RestController):
 class FlavorsController(rest.RestController):
     """REST controller for Flavor."""
 
-    #FOR NOW COMMENT OUT. Current assumption is that you cannot
-    #create a flavor as a stand-alone operation. Flavors are defined
-    #in the POST body for creation of a ResourceClass.
-    #This is why flavorsController is instantiated within
-    #ResourceClassesController. So no stand alone 'create flavor' - must
-    #be part of create or update a ResourceClass
-    """
+    #POST /api/resource_classes/1/flavors
     @wsme.validate(Flavor)
-    @wsme_pecan.wsexpose(Flavor, body=Flavor, status_code=201)
-    def post(self, flavor):
-        #""Create a new Flavor.""
+    @wsme_pecan.wsexpose(Flavor, wtypes.text, body=Flavor, status_code=201)
+    def post(self, resource_class_id, flavor):
+        """Create a new Flavor for a ResourceClass."""
         try:
-            import pdb; pdb.set_trace()
-            result = pecan.request.dbapi.create_flavor(flavor)
+            flavor = pecan.request.dbapi.create_resource_class_flavor(
+                                            resource_class_id,flavor)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
-        return Flavor.from_db_model(result)
-    """
+        pecan.response.status_code = 201
+        return Flavor.add_capacities(resource_class_id, flavor)
+
+
     #Do we need this, i.e. GET /api/resource_classes/1/flavors
     #i.e. return just the flavors for a given resource_class?
     @wsme_pecan.wsexpose([Flavor], wtypes.text)
@@ -349,19 +345,16 @@ class FlavorsController(rest.RestController):
         return Flavor.add_capacities(resource_id, flavor)
 
     @wsme.validate(Flavor)
-    @wsme_pecan.wsexpose(ResourceClass, wtypes.text, body=Flavor)
-    def put(self, resource_class_id, flavor):
-
-        """Add Flavor to a ResourceClass"""
+    @wsme_pecan.wsexpose(Flavor, wtypes.text, wtypes.text, body=Flavor)
+    def put(self, resource_class_id, flavor_id, flavor):
+        """Update an existing ResourceClass Flavor"""
         try:
-            result = pecan.request.dbapi.update_resource_class_flavors(
-                    resource_class_id,
-                    flavor
-                    )
+            flavor = pecan.request.dbapi.update_resource_class_flavor(
+                    resource_class_id, flavor_id, flavor)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
-        return ResourceClass.convert(result, pecan.request.host_url)
+        return Flavor.add_capacities(resource_class_id, flavor)
 
     @wsme_pecan.wsexpose(None, wtypes.text, wtypes.text, status_code=204)
     def delete(self, resource_class_id, flavor_id):

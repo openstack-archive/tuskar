@@ -169,7 +169,9 @@ class Connection(api.Connection):
         session.close()
         return rc
 
-    def update_resource_class_flavors(self, resource_class_id, new_flavor):
+    #creates a new flavor and adds it to the specified resource_clas
+    #returns the new Flavor
+    def create_resource_class_flavor(self, resource_class_id, new_flavor):
 
         rc = self.get_resource_class(resource_class_id)
         session = get_session()
@@ -186,7 +188,37 @@ class Connection(api.Connection):
         session.commit()
         session.refresh(rc)
         session.close()
-        return rc
+        return flavor
+
+    def update_resource_class_flavor(self, resource_class_id, flavor_id, new_flavor):
+        session = get_session()
+        session.begin()
+        try:
+            flavor  = self.get_flavor(flavor_id)
+
+            if new_flavor.name:
+                flavor.name = new_flavor.name
+
+            session.add(flavor)
+
+            for new_c in new_flavor.capacities:
+                #need index here for removal
+                for i in range(len(flavor.capacities)):
+                    old_c = flavor.capacities[i]
+                    if old_c.name == new_c.name:
+                        new_capacity = models.Capacity(name=new_c.name, value=new_c.value, unit=new_c.unit)
+                        flavor.capacities.remove(old_c)
+                        flavor.capacities.append(new_capacity)
+                        session.delete(old_c)
+                        session.add(new_capacity)
+                        session.add(flavor)
+
+            session.commit()
+            session.refresh(flavor)
+            return flavor
+        except Exception:
+            session.rollback()
+            raise
 
     def update_rack(self, rack_id, new_rack):
         session = get_session()
