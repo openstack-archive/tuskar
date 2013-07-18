@@ -211,8 +211,8 @@ class Connection(api.Connection):
 
             if not isinstance(new_rack.resource_class, wtypes.UnsetType):
                 rc = self.get_resource_class(new_rack.resource_class.get_id())
+                rack.resource_class_id = rc.id
                 session.add(rc)
-                rack.resource_class = rc
 
             if new_rack.location:
                 rack.location = new_rack.location
@@ -269,8 +269,8 @@ class Connection(api.Connection):
 
             if not isinstance(new_rack.resource_class, wtypes.UnsetType):
                 rc = self.get_resource_class(new_rack.resource_class.get_id())
+                rack.resource_class_id = rc.id
                 session.add(rc)
-                rack.resource_class = rc
 
             session.add(rack)
 
