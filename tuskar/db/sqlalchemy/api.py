@@ -244,8 +244,9 @@ class Connection(api.Connection):
 
             if not isinstance(new_rack.resource_class, wtypes.UnsetType):
                 rc = self.get_resource_class(new_rack.resource_class.get_id())
-                rack.resource_class_id = rc.id
-                session.add(rc)
+                if rack.resource_class_id != rc.id:
+                    rack.resource_class_id = rc.id
+                    session.add(rc)
 
             if new_rack.location:
                 rack.location = new_rack.location
