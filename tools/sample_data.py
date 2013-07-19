@@ -109,15 +109,18 @@ def json_request(conn, base_url, url, method, **kwargs):
     return resp, body
 
 
-def create_resource_class(conn, base_url, name, service_type):
+def create_resource_class(conn, base_url, name, service_type, racks, flavors):
     return json_request(conn, base_url, '/resource_classes', 'POST',
-                        body=dict(name=name, service_type=service_type))
+                        body=dict(name=name, service_type=service_type,
+                                  racks=racks, flavors=flavors))
 
 
-def create_rack(conn, base_url, name, slots, subnet, capacities):
+def create_rack(conn, base_url, name, slots, location,
+                subnet, capacities, nodes):
     return json_request(conn, base_url, '/racks', 'POST',
-                        body=dict(name=name, slots=slots, subnet=subnet,
-                                  capacities=capacities))
+                        body=dict(name=name, slots=slots,
+                                  subnet=subnet, location=location,
+                                  capacities=capacities,nodes=nodes))
 
 
 def set_nodes_on_rack(conn, base_url, rack_url, nodes):
@@ -137,31 +140,51 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 
-if __name__ == '__main__':
+def generate_data():
     logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
     conn = httplib.HTTPConnection('localhost', 6385)
 
     base_url = '/v1'
 
-    resp, body = create_resource_class(conn, base_url,
-                                       name='m1', service_type='compute')
-    m1_url = get_location(base_url, resp)
-
     capacities = [
-        dict(name='total_cpu', value='12', unit='count'),
-        dict(name='total_memory', value='3072', unit='MB'),
+        dict(name='total_cpu', value='64', unit='count'),
+        dict(name='total_memory', value='16384', unit='MB'),
     ]
-    resp, body = create_rack(conn, base_url,
-                             name='rack1', slots=30,
-                             subnet='192.168.1.0/24',
-                             capacities=capacities)
-    rack1_url = get_location(base_url, resp)
-
     nodes = []
     while len(nodes) < 30:
         nodes.append(dict(id=generate_uuid()))
-    set_nodes_on_rack(conn, base_url, rack1_url, nodes)
+
+    rack_resp1, rack_body1 = create_rack(conn, base_url,
+                                         name='compute_1', slots=3,
+                                         subnet='192.168.1.0/24',
+                                         location='room d2, row 1',
+                                         capacities=capacities,
+                                         nodes=nodes[0:3])
+
+    rack_resp2, rack_body2 = create_rack(conn, base_url,
+                                         name='compute_2', slots=3,
+                                         subnet='192.168.2.0/24',
+                                         location='room d2, row 2',
+                                         capacities=capacities,
+                                         nodes=nodes[3:6])
+
+    compute_racks = [
+            dict(id=rack_body1.get('id'),links=rack_body1.get('links')),
+            dict(id=rack_body2.get('id'),links=rack_body2.get('links')),
+    ]
+
+    rack_resp3, rack_body3 = create_rack(conn, base_url,
+                                         name='not_compute', slots=3,
+                                         subnet='192.168.3.0/24',
+                                         location='room d2, row 3',
+                                         capacities=capacities,
+                                         nodes=[nodes[7]])
+
+    non_compute_racks = [
+            dict(id=rack_body3.get('id'),links=rack_body3.get('links')),
+    ]
+
 
     flavors = [
         dict(name='m1.small',
@@ -189,5 +212,19 @@ if __name__ == '__main__':
                 dict(name='storage', value='1680', unit='GB'),
              ]),
     ]
-    for flavor in flavors:
-        create_flavor(conn, base_url, m1_url, flavor)
+
+    rc_resp1, rc_body1 = create_resource_class(conn, base_url,
+                                               name='compute-rc',
+                                               service_type='compute',
+                                               racks=compute_racks,
+                                               flavors=[flavors[3]])
+
+    rc_resp1, rc_body1 = create_resource_class(conn, base_url,
+                                               name='non-compute-rc',
+                                               service_type='not_compute',
+                                               racks=non_compute_racks,
+                                               flavors=[])
+
+
+if __name__ == '__main__':
+    generate_data()
