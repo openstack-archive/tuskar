@@ -17,6 +17,15 @@ running:
 
   $ tox -e pep8
 
+Also, before submitting your code, please make sure you have completed the
+following checklist:
+
+1. Update the tools/sample_data.py (if needed)
+2. Update the API docs (if needed)
+3. Update the tests (if needed)
+4. Update `cURL commands <https://github.com/tuskar/tuskar/wiki/cURL-commands>`_
+   page (if needed)
+
 Getting Started
 ---------------
 
