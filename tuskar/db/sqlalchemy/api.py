@@ -159,6 +159,7 @@ class Connection(api.Connection):
                     rack = self.get_rack(r.get_id())
                     session.add(rack)
                     rc.racks.append(rack)
+                    session.add(rc)
 
         except Exception:
             session.rollback()
