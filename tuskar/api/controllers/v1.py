@@ -22,10 +22,13 @@ Version 1 of the Tuskar API
 from oslo.config import cfg
 import pecan
 from pecan import rest
+from pecan.core import render
 import wsme
 from wsme import api
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
+
+from tuskar.heat.client import HeatClient as heat_client
 
 from tuskar.common import exception
 from tuskar.openstack.common import log
@@ -447,16 +450,18 @@ class ResourceClassesController(rest.RestController):
     """
 
 
-class DataCentreController(object):
+class DataCenterController(object):
     """Controller for provisioning the Tuskar data centre description as an
     overcloud on Triple O"""
 
-    # TODO (mtaylor) Currently this returns an OverCloud HEAT template.  It
-    # should push the overcloud template to HEAT.
-    @pecan.expose(template='overcloud.yaml')
+    @pecan.expose('json')
     def index(self):
         rcs = pecan.request.dbapi.get_heat_data()
-        return dict(resource_classes=rcs)
+        template_body = render('overcloud.yaml', dict(resource_classes=rcs))
+        if heat_client().validate_template(template_body):
+            # TODO(mfojtik): Use ResourceClass name as Heat Stack name
+            # TODO(mfojtik): How we will pass parameters to heat? (params).
+            heat_client().register_template(rcs[0].name, template_body, params)
 
 
 class Controller(object):
@@ -466,7 +471,7 @@ class Controller(object):
 
     resource_classes = ResourceClassesController()
 
-    data_centres = DataCentreController()
+    data_centers = DataCenterController()
 
     @pecan.expose('json')
     def index(self):

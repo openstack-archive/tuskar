@@ -65,16 +65,33 @@ class Connection(api.Connection):
 
     def get_heat_data(self):
         session = get_session()
-        return session.query(models.ResourceClass).options(
+        result = session.query(models.ResourceClass).options(
                     joinedload(models.ResourceClass.racks),
                 ).all()
+        # FIXME: This idio*ic pre-caching must happen here otherwise you get
+        # this error when rendering the template:
+        #
+        # Parent instance <Rack at 0x2abd5d0> is not bound to a Session; lazy load
+        # operation of attribute 'nodes' cannot proceed
+        #
+        for resource_class in result:
+            for rack in resource_class.racks:
+                for node in rack.nodes:
+                    session.query(models.Rack).options(
+                            subqueryload('capacities'),
+                            subqueryload('nodes')
+                            ).get(rack.id)
+        session.close()
+        return result
 
     def get_racks(self, columns):
         session = get_session()
-        return session.query(models.Rack).options(
+        result = session.query(models.Rack).options(
                     subqueryload('capacities'),
                     subqueryload('nodes')
                 ).all()
+        session.close()
+        return result
 
     def get_rack(self, rack_id):
         session = get_session()
