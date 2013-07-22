@@ -18,3 +18,4 @@ oslo.config>=1.1.0
 Flask==0.9
 pecan>=0.2.0
 wsme>=0.5b1
+boto==2.5.1
