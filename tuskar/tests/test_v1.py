@@ -134,9 +134,6 @@ class TestRacks(api.FunctionalTest):
         # Make sure we delete the Rack we just created
         self.db.delete_rack(response.json['id'])
 
-    # FIXME(mfojtik): This test will fail because of Pecan bug, see:
-    # https://github.com/tuskar/tuskar/issues/18
-    #
     def test_it_returns_404_when_getting_unknown_rack(self):
         response = self.get_json('/racks/unknown',
                 expect_errors=True,
