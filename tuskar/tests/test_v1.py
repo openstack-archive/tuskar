@@ -42,8 +42,10 @@ class TestRacks(api.FunctionalTest):
         """Create 'test_rack'"""
 
         super(TestRacks, self).setUp()
+        self.test_resource_class = None
         self.test_rack = self.db.create_rack(
-                v1.Rack(name='test-rack', slots=1,
+            v1.Rack(name='test-rack',
+                    slots=1,
                     subnet='10.0.0.0/24',
                     location='nevada',
                     chassis=v1.Chassis(id='123'),
@@ -58,7 +60,17 @@ class TestRacks(api.FunctionalTest):
 
     def tearDown(self):
         self.db.delete_rack(self.test_rack.id)
+        if self.test_resource_class:
+            self.db.delete_resource_class(self.test_resource_class.id)
         super(TestRacks, self).tearDown()
+
+    def setup_resource_class(self):
+        if not self.test_resource_class:
+            self.test_resource_class = self.db.create_resource_class(
+                v1.ResourceClass(
+                    name='test resource class',
+                    service_type='compute',
+                ))
 
     def test_it_returns_single_rack(self):
         response = self.get_json('/racks/' + str(self.test_rack.id),
@@ -145,3 +157,30 @@ class TestRacks(api.FunctionalTest):
                 )
 
         self.assertEqual(response.status_int, 404)
+
+    # this is test for https://github.com/tuskar/tuskar/issues/39
+    def test_it_updates_resource_class_id_when_already_present(self):
+        # create needed resource_class
+        self.setup_resource_class()
+
+        # update precreated rack with resource_class_id for test
+        rack_update_json = {
+            'resource_class': {
+                'id': self.test_resource_class.id
+            }
+        }
+        first_update_response = self.put_json(
+            '/racks/' + str(self.test_rack.id),
+            rack_update_json)
+        self.assertEqual(first_update_response.status_int, 200)
+        self.assertEqual(first_update_response.json['resource_class']['id'],
+                         rack_update_json['resource_class']['id'])
+
+        # repeat update of rack - simulates updating resource_class_id when
+        # already present
+        second_update_response = self.put_json(
+            '/racks/' + str(self.test_rack.id),
+            rack_update_json)
+        self.assertEqual(second_update_response.status_int, 200)
+        self.assertEqual(second_update_response.json['resource_class']['id'],
+                         rack_update_json['resource_class']['id'])
