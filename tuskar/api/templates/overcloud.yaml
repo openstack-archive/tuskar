@@ -30,6 +30,7 @@ Parameters:
     Type: String
   notcomputeImage:
     Type: String
+    Default: overcloud-control
 Resources:
   AccessPolicy:
     Properties:
@@ -49,5 +50,5 @@ Resources:
 <% for rc in resource_classes:
        for r in rc.racks:
            for n in r.nodes:
-               templates[rc.service_type].render(n.id)
+               templates[rc.service_type].render(n.node_id)
 %>

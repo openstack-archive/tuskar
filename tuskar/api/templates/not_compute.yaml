@@ -76,5 +76,6 @@
         Ref: InstanceType
       KeyName:
         Ref: KeyName
+      AvailabilityZone: nova::${x}
     Type: AWS::EC2::Instance
 </%def>\
