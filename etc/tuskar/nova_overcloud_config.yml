@@ -1,0 +1,4 @@
+keystone_url: "http://10.34.32.181:5000/v2.0/"
+nova_username: "admin"
+nova_tenantname: "admin"
+nova_password: "bcfa838f13e64436"
