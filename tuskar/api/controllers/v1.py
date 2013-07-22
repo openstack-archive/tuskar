@@ -323,13 +323,12 @@ class FlavorsController(rest.RestController):
         """Create a new Flavor for a ResourceClass."""
         try:
             flavor = pecan.request.dbapi.create_resource_class_flavor(
-                                            resource_class_id,flavor)
+                                            resource_class_id, flavor)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
         pecan.response.status_code = 201
         return Flavor.add_capacities(resource_class_id, flavor)
-
 
     #Do we need this, i.e. GET /api/resource_classes/1/flavors
     #i.e. return just the flavors for a given resource_class?
@@ -451,18 +450,28 @@ class ResourceClassesController(rest.RestController):
     """
 
 
-class DataCenterController(object):
+class DataCenterController(rest.RestController):
     """Controller for provisioning the Tuskar data centre description as an
     overcloud on Triple O"""
 
+    #@pecan.expose('json')
+    #def index(self):
+    #    return {'message': 'hello'}
+
     @pecan.expose('json')
-    def index(self):
+    def post(self, data):
         rcs = pecan.request.dbapi.get_heat_data()
+        # TODO: Currently all Heat parameters are hardcoded in
+        #       template.
+        params = {}
         template_body = render('overcloud.yaml', dict(resource_classes=rcs))
         if heat_client().validate_template(template_body):
-            # TODO(mfojtik): Use ResourceClass name as Heat Stack name
-            # TODO(mfojtik): How we will pass parameters to heat? (params).
-            heat_client().register_template(rcs[0].name, template_body, params)
+            heat_client().update_stack(template_body, params)
+            pecan.response.status_code = 202  # Accepted
+            return heat_client().get_stack()
+        else:
+            raise wsme.exc.ClientSideError(_("The overcloud Heat template" +
+                "could not be validated"))
 
 
 class Controller(object):
