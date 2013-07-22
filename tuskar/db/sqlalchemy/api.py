@@ -171,9 +171,23 @@ class Connection(api.Connection):
             session.add(rc)
 
             if not isinstance(new_resource_class.racks, wtypes.UnsetType):
-                rc.racks = []
-                for r in new_resource_class.racks:
-                    rack = self.get_rack(r.get_id())
+                # Clear associations on Racks that were associated to this
+                # Resource Class but now are not. Make new associations on
+                # Racks that were not previously associated to this Resource
+                # Class but now they are. Leave other associations untouched.
+
+                old_ids = [r.id for r in rc.racks]
+                new_ids = [r.id for r in new_resource_class.racks]
+
+                clear_associations = list(set(old_ids) - set(new_ids))
+                make_associations = list(set(new_ids) - set(old_ids))
+
+                for r_id in clear_associations:
+                    rack = self.get_rack(r_id)
+                    rack.resource_class_id = None
+
+                for r_id in make_associations:
+                    rack = self.get_rack(r_id)
                     session.add(rack)
                     rc.racks.append(rack)
                     session.add(rc)
