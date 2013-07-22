@@ -255,6 +255,17 @@ class Connection(api.Connection):
             session.rollback()
             raise
 
+    def update_rack_state(self, rack, new_state):
+        session = get_session()
+        session.begin()
+        try:
+            rack.state = new_state
+            session.add(rack)
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+
     def update_rack(self, rack_id, new_rack):
         session = get_session()
         session.begin()

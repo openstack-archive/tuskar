@@ -468,6 +468,10 @@ class DataCenterController(rest.RestController):
         if heat_client().validate_template(template_body):
             heat_client().update_stack(template_body, params)
             pecan.response.status_code = 202  # Accepted
+            # Update the state of each Rack to 'provisioned'
+            for rc in rcs:
+                [pecan.request.dbapi.update_rack_state(r, 'provisioned') for r
+                        in rc.racks]
             return heat_client().get_stack()
         else:
             raise wsme.exc.ClientSideError(_("The overcloud Heat template" +
