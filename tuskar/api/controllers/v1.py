@@ -32,7 +32,7 @@ from tuskar.heat.client import HeatClient as heat_client
 
 from tuskar.common import exception
 from tuskar.openstack.common import log
-
+from tuskar.compute.nova import NovaClient
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
@@ -232,13 +232,10 @@ class ResourceClass(Base):
             flavors = []
             if resource_class.flavors:
                 for flav in resource_class.flavors:
-                    flavor = Flavor.add_capacities(resource_class.id,
-                                                   flav)
-                    flavors.append(flavor)
 
-            return ResourceClass(links=links,
-                                 racks=racks,
-                                 flavors=flavors,
+                    flavor = Flavor.add_capacities(resource_class.id, flav)
+                    flavors.append(flavor)
+            return ResourceClass(links=links, racks=racks, flavors=flavors,
                                  **(resource_class.as_dict()))
 
 
@@ -270,7 +267,7 @@ class RacksController(rest.RestController):
     @wsme.validate(Rack)
     @wsme_pecan.wsexpose(Rack, wtypes.text, body=Rack, status_code=200)
     def put(self, rack_id, rack):
-        """Update the Rack."""
+        """Update the Rack"""
 
         try:
             result = pecan.request.dbapi.update_rack(rack_id, rack)
@@ -336,6 +333,8 @@ class RacksController(rest.RestController):
 class FlavorsController(rest.RestController):
     """REST controller for Flavor."""
 
+    nova=NovaClient()
+
     #POST /api/resource_classes/1/flavors
     @wsme.validate(Flavor)
     @wsme_pecan.wsexpose(Flavor, wtypes.text, body=Flavor, status_code=201)
@@ -343,12 +342,16 @@ class FlavorsController(rest.RestController):
         """Create a new Flavor for a ResourceClass."""
         try:
             flavor = pecan.request.dbapi.create_resource_class_flavor(
-                resource_class_id, flavor)
+                                            resource_class_id,flavor)
+            nova_flavor_uuid =  self.nova.create_flavor(flavor,
+                pecan.request.dbapi.get_resource_class(resource_class_id).name)
+            pecan.request.dbapi.update_flavor_nova_uuid(flavor.id, nova_flavor_uuid)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
         pecan.response.status_code = 201
         return Flavor.add_capacities(resource_class_id, flavor)
+
 
     #Do we need this, i.e. GET /api/resource_classes/1/flavors
     #i.e. return just the flavors for a given resource_class?
@@ -358,7 +361,7 @@ class FlavorsController(rest.RestController):
         flavors = []
         for flavor in pecan.request.dbapi.get_flavors(resource_class_id):
             flavors.append(Flavor.add_capacities(resource_class_id, flavor))
-            return flavors
+        return flavors
         #return [Flavor.from_db_model(flavor) for flavor in result]
 
     @wsme_pecan.wsexpose(Flavor, wtypes.text, wtypes.text)
@@ -373,7 +376,7 @@ class FlavorsController(rest.RestController):
         """Update an existing ResourceClass Flavor"""
         try:
             flavor = pecan.request.dbapi.update_resource_class_flavor(
-                resource_class_id, flavor_id, flavor)
+                    resource_class_id, flavor_id, flavor)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
@@ -383,7 +386,8 @@ class FlavorsController(rest.RestController):
     def delete(self, resource_class_id, flavor_id):
         """Delete a Flavor."""
         #pecan.response.status_code = 204
-        pecan.request.dbapi.delete_flavor(flavor_id)
+        nova_flavor_uuid = pecan.request.dbapi.delete_flavor(flavor_id)
+        self.nova.delete_flavor(nova_flavor_uuid)
 
 
 class ResourceClassesController(rest.RestController):
@@ -391,18 +395,16 @@ class ResourceClassesController(rest.RestController):
 
     flavors = FlavorsController()
 
-    """
-    _custom_actions = {
-    'flavors': ['GET', 'POST', 'DELETE', 'PUT']
-    }
-    """
-
     @wsme.validate(ResourceClass)
     @wsme_pecan.wsexpose(ResourceClass, body=ResourceClass, status_code=201)
     def post(self, resource_class):
         """Create a new Resource Class."""
         try:
             result = pecan.request.dbapi.create_resource_class(resource_class)
+            #create any flavors included in this resource_class creation
+            for flav in result.flavors:
+                nova_flavor_uuid = self.flavors.nova.create_flavor(flav, result.name)
+                pecan.request.dbapi.update_flavor_nova_uuid(flav.id, nova_flavor_uuid)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
@@ -440,7 +442,7 @@ class ResourceClassesController(rest.RestController):
         result = []
         for rc in pecan.request.dbapi.get_resource_classes(None):
             result.append(ResourceClass.convert(rc, pecan.request.host_url))
-            return result
+        return result
 
     @wsme_pecan.wsexpose(ResourceClass, unicode)
     def get_one(self, resource_class_id):
@@ -455,25 +457,13 @@ class ResourceClassesController(rest.RestController):
         #
         # TODO(mfojtik): Update the HEAT template at this point
         #
+        #DELETE any resource class flavors from nova too
+        for flav in pecan.request.dbapi.get_flavors(resource_class_id):
+            nova_flavor_uuid = pecan.request.dbapi.delete_flavor(flav.id)
+            self.flavors.nova.delete_flavor(nova_flavor_uuid)
         pecan.request.dbapi.delete_resource_class(resource_class_id)
 
-    """
-    @wsme_pecan.wsexpose(None, wtypes.text, wtypes.text, status_code=204)
-    def flavors(self, foo_id, resource_class_id):
-        #Retrieve Flavors for a given Resource Class""
-        import pdb;pdb.set_trace()
-        method = pecan.request.method
-        if method=="GET":
-            return "GET"
-        elif method=="POST":
-            return "POST"
-        elif method=="DELETE":
-            return "DELETE"
-        elif method=="PUT":
-            return "PUT"
-        else:
-            return "ERROR"
-    """
+
 
 
 class DataCenterController(rest.RestController):
