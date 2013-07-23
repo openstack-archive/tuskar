@@ -264,7 +264,8 @@ class Connection(api.Connection):
             #
             if heat_stack_status == 'CREATE_IN_PROGRESS':
                 rack.state = 'provisioning'
-            elif heat_stack_status == 'UPDATE_COMPLETE':
+            elif heat_stack_status == 'UPDATE_COMPLETE' \
+                and rack.state != 'provisioned':
                 rack.state = 'provisioned'
             session.add(rack)
             session.commit()
