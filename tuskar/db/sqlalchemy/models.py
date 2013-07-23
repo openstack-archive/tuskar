@@ -153,6 +153,7 @@ class Flavor(Base):
     name = Column(Text, unique=True)
     resource_class_id = Column(Integer, ForeignKey('resource_classes.id',
                                                    onupdate="cascade"))
+    max_vms = Column(Integer)
     capacities = relationship("Capacity",
             secondary=Base.metadata.tables['flavor_capacities'],
             cascade="all, delete",

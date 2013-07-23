@@ -105,6 +105,7 @@ def upgrade(migrate_engine):
         Column('name', String(length=128)),
         Column('resource_class_id', Integer,
                ForeignKey('resource_classes.id')),
+        Column('max_vms', Integer),
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
         mysql_engine=ENGINE,
