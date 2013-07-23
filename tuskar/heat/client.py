@@ -22,77 +22,101 @@
 
 """A client library for accessing Heat CloudFormations API using Boto"""
 
-import os
 from oslo.config import cfg
 from tuskar.openstack.common import log as logging
 
 heat_opts = [
-        cfg.StrOpt('boto_config',
-            default='etc/tuskar/boto.conf',
-            help='Location of the Boto configuration file'),
-        cfg.IntOpt('heat_cfn_port',
-            default=8000,
-            help='Heat CloudFormations API port'),
-        cfg.StrOpt('heat_cfn_path',
-            default='/v1',
-            help='Heat CloudFormations API entrypoint URI'),
+
+        cfg.StrOpt('heat_username',
+            default='heat',
+            help='Heat API username'),
+
+        cfg.StrOpt('heat_password',
+            default='heat',
+            help='Heat API password'),
+
+        cfg.StrOpt('heat_auth_url',
+            default='http://10.34.32.181:35357/v2.0/',
+            help='OpenStack Authentication URL (OS_AUTH_URL)'),
+
+        cfg.StrOpt('heat_tenant_name',
+            default='admin',
+            help='Heat API tenant_id'),
+
         cfg.StrOpt('heat_stack_name',
             default='overcloud',
             help='Default Heat overcloud stack name'
+            ),
+
+        cfg.BoolOpt('heat_auth_url_insecure',
+            default=True,
+            help='Use HTTPs to speak with Heat'
             )
 ]
 
 CONF = cfg.CONF
 CONF.register_opts(heat_opts)
+LOG = logging.getLogger(__name__)
 
-# You can overide the 'boto_config' using BOTO_CONFIG environment variable.
-#
-os.environ['BOTO_CONFIG'] = CONF.boto_config
-import boto
-from boto.exception import BotoServerError
-from boto.cloudformation import CloudFormationConnection
-
-boto.log = logging.getLogger(__name__)
+from heatclient.v1.client import Client as heatclient
+from keystoneclient.v2_0 import client as ksclient
 
 
 class HeatClient(object):
     """Heat CloudFormations API client to use in Tuskar"""
 
     def __init__(self):
-        # TODO: The debug here is set to be super-verbose.
-        #       This should be set to 0 when in production.
-        #
-        self.connection = CloudFormationConnection(port=CONF.heat_cfn_port,
-                path=CONF.heat_cfn_path, debug=2)
+        kwargs = {
+            'username': CONF.heat_username,
+            'password': CONF.heat_password,
+            'tenant_name': CONF.heat_tenant_name,
+            'auth_url': CONF.heat_auth_url,
+            'insecure': CONF.heat_auth_url_insecure,
+        }
+
+        def _get_ksclient(**kwargs):
+            """ Setup the Keystone client """
+            return ksclient.Client(username=kwargs.get('username'),
+                                   password=kwargs.get('password'),
+                                   tenant_name=kwargs.get('tenant_name'),
+                                   auth_url=kwargs.get('auth_url'),
+                                   insecure=kwargs.get('insecure'))
+
+        def _get_endpoint(client, **kwargs):
+            """ Get the Heat API endpoint from the Keystone """
+            return client.service_catalog.url_for(
+                service_type='orchestration',
+                endpoint_type='publicURL')
+
+        _ksclient = _get_ksclient(**kwargs)
+        endpoint = _get_endpoint(_ksclient, **kwargs)
+
+        self.connection = heatclient(endpoint=endpoint,
+                token=_ksclient.auth_token)
 
     def validate_template(self, template_body):
         """Validate given Heat template"""
         try:
-            self.connection.validate_template(template_body)
+            self.connection.stacks.validate(template=template_body)
             return True
-        except BotoServerError as e:
-            boto.log.exception(e)
+        except Exception as e:
+            LOG.exception(e)
             return False
 
     def get_stack(self):
         """Get overcloud Heat template"""
-        try:
-            return self.connection.describe_stacks(CONF.heat_stack_name)[0]
-        except Exception as e:
-            boto.log.exception(e)
-            return False
+        return self.connection.stacks.get(CONF.heat_stack_name)
 
     def get_template(self):
         """Get JSON representation of the Heat overcloud template"""
-        try:
-            template_json = self.connection.get_template(
-                    CONF.heat_stack_name)['GetTemplateResponse']
-            return template_json['GetTemplateResult']['TemplateBody']
-        except BotoServerError as e:
-            boto.log.exception(e)
-            return False
+        return self.connection.stacks.template(stack_id=CONF.heat_stack_name)
 
     def update_stack(self, template_body, params):
         """Update the Heat overcloud stack"""
-        return self.connection.update_stack(CONF.heat_stack_name,
-                template_body=template_body, parameters=params)
+        try:
+            self.connection.stacks.update(stack_id=CONF.heat_stack_name,
+                template=template_body, parameters=params)
+            return True
+        except Exception as e:
+            LOG.exception(e)
+            return False

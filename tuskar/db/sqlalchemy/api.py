@@ -267,6 +267,9 @@ class Connection(api.Connection):
             elif heat_stack_status == 'UPDATE_COMPLETE' \
                 and rack.state != 'provisioned':
                 rack.state = 'provisioned'
+            elif heat_stack_status == 'UPDATE_FAILED' \
+                and rack.state != 'error':
+                rack.state = 'error'
             session.add(rack)
             session.commit()
         except Exception:

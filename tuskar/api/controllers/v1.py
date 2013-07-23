@@ -483,15 +483,20 @@ class DataCenterController(rest.RestController):
         #       template.
         params = {}
         rcs = pecan.request.dbapi.get_heat_data()
+        heat = heat_client()
+
         template_body = render('overcloud.yaml', dict(resource_classes=rcs))
-        if heat_client().validate_template(template_body):
-            heat_client().update_stack(template_body, params)
-            pecan.response.status_code = 202  # Accepted
-            # Update the state of each Rack to 'provisioned'
-            for rc in rcs:
-                [pecan.request.dbapi.update_rack_state(r,
-                    'CREATE_IN_PROGRESS') for r in rc.racks]
-            return heat_client().get_template()
+        if heat.validate_template(template_body):
+            if heat.update_stack(template_body, params):
+                for rc in rcs:
+                    [pecan.request.dbapi.update_rack_state(r,
+                        'CREATE_IN_PROGRESS') for r in rc.racks]
+                pecan.response.status_code = 202
+                return {}
+            else:
+                raise wsme.exc.ClientSideError(_(
+                    "Cannot update the Heat overcloud template"
+                    ))
         else:
             raise wsme.exc.ClientSideError(_("The overcloud Heat template" +
                 "could not be validated"))
