@@ -320,14 +320,17 @@ class RacksController(rest.RestController):
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self, rack_id):
         """Remove the Rack."""
-        if pecan.request.dbapi.delete_rack(rack_id):
+        try:
+            pecan.request.dbapi.delete_rack(rack_id)
             pecan.response.status_code = 204
             #
             # TODO(mfojtik): Update the HEAT template at this point
             #
-        else:
-            raise wsme.exc.ClientSideError(_("The overcloud Heat template" +
-                                             "could not be validated"))
+        except exception.TuskarException, e:
+            response = api.Response(
+                Error(faultcode=e.code, faultstring=str(e)),
+                status_code=e.code)
+            return response
 
 
 class FlavorsController(rest.RestController):
