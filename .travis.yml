@@ -6,3 +6,9 @@ install:
   - pip install -q -r test-requirements.txt --use-mirrors
 script:
   - python setup.py testr
+notifications:
+  irc:
+    channels:
+    - "irc.freenode.org#tuskar"
+    use_notice: true
+    skip_join: false
