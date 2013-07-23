@@ -11,7 +11,7 @@ Development
 
 Tuskar source code should be pulled directly from git::
 
-  git clone https://github.com/openstack/tuskar.git
+  git clone https://github.com/tuskar/tuskar.git
 
 Setting up a local environment for development can be done with tox::
 
