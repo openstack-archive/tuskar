@@ -27,31 +27,31 @@ from tuskar.openstack.common import log as logging
 
 heat_opts = [
 
-        cfg.StrOpt('heat_username',
-            default='heat',
-            help='Heat API username'),
+    cfg.StrOpt('heat_username',
+               default='heat',
+               help='Heat API username'),
 
-        cfg.StrOpt('heat_password',
-            default='heat',
-            help='Heat API password'),
+    cfg.StrOpt('heat_password',
+               default='heat',
+               help='Heat API password'),
 
-        cfg.StrOpt('heat_auth_url',
-            default='http://10.34.32.181:35357/v2.0/',
-            help='OpenStack Authentication URL (OS_AUTH_URL)'),
+    cfg.StrOpt('heat_auth_url',
+               default='http://10.34.32.181:35357/v2.0/',
+               help='OpenStack Authentication URL (OS_AUTH_URL)'),
 
-        cfg.StrOpt('heat_tenant_name',
-            default='admin',
-            help='Heat API tenant_id'),
+    cfg.StrOpt('heat_tenant_name',
+               default='admin',
+               help='Heat API tenant_id'),
 
-        cfg.StrOpt('heat_stack_name',
-            default='overcloud',
-            help='Default Heat overcloud stack name'
-            ),
+    cfg.StrOpt('heat_stack_name',
+               default='overcloud',
+               help='Default Heat overcloud stack name'
+               ),
 
-        cfg.BoolOpt('heat_auth_url_insecure',
-            default=True,
-            help='Use HTTPs to speak with Heat'
-            )
+    cfg.BoolOpt('heat_auth_url_insecure',
+                default=True,
+                help='Use HTTPs to speak with Heat'
+                )
 ]
 
 CONF = cfg.CONF
@@ -92,7 +92,7 @@ class HeatClient(object):
         endpoint = _get_endpoint(_ksclient, **kwargs)
 
         self.connection = heatclient(endpoint=endpoint,
-                token=_ksclient.auth_token)
+                                     token=_ksclient.auth_token)
 
     def validate_template(self, template_body):
         """Validate given Heat template"""
@@ -115,7 +115,8 @@ class HeatClient(object):
         """Update the Heat overcloud stack"""
         try:
             self.connection.stacks.update(stack_id=CONF.heat_stack_name,
-                template=template_body, parameters=params)
+                                          template=template_body,
+                                          parameters=params)
             return True
         except Exception as e:
             LOG.exception(e)

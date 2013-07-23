@@ -1,9 +1,9 @@
 """Base classes for API tests.
 """
 
-from tuskar.tests import api
-from tuskar.db.sqlalchemy import api as dbapi
 from tuskar.api.controllers import v1
+from tuskar.db.sqlalchemy import api as dbapi
+from tuskar.tests import api
 
 
 class TestRacks(api.FunctionalTest):
@@ -27,19 +27,19 @@ class TestRacks(api.FunctionalTest):
         print rack.id
         print rack.nodes[0].id
         self.assertEqual(rack_json['nodes'][0]['id'],
-                str(rack.nodes[0].id))
+                         str(rack.nodes[0].id))
         self.assertTrue(rack_json['capacities'])
         self.assertEqual(rack_json['capacities'][0]['name'],
-                rack.capacities[0].name)
+                         rack.capacities[0].name)
         self.assertEqual(rack_json['capacities'][0]['value'],
-                rack.capacities[0].value)
+                         rack.capacities[0].value)
         self.assertTrue(rack_json['links'])
         self.assertEqual(rack_json['links'][0]['rel'], 'self')
         self.assertEqual(rack_json['links'][0]['href'],
-                'http://localhost/v1/racks/' + str(rack.id))
+                         'http://localhost/v1/racks/' + str(rack.id))
 
     def setUp(self):
-        """Create 'test_rack'"""
+        """Create 'test_rack'."""
 
         super(TestRacks, self).setUp()
         self.test_resource_class = None
@@ -74,7 +74,7 @@ class TestRacks(api.FunctionalTest):
 
     def test_it_returns_single_rack(self):
         response = self.get_json('/racks/' + str(self.test_rack.id),
-                expect_errors=True)
+                                 expect_errors=True)
 
         self.assertEqual(response.status_int, 200)
         self.assertEqual(response.content_type, "application/json")
@@ -87,7 +87,7 @@ class TestRacks(api.FunctionalTest):
 
         # The 'test_rack' is present in the racks listing:
         rack_json = filter(lambda r: r['id'] == self.test_rack.id,
-                response.json)
+                           response.json)
         self.assertEqual(len(rack_json), 1)
 
         # And the Rack serialization is correct
@@ -95,10 +95,10 @@ class TestRacks(api.FunctionalTest):
 
     def test_it_updates_rack(self):
         json = {
-                'name': 'test-new-name'
-            }
+            'name': 'test-new-name',
+        }
         response = self.put_json('/racks/' + str(self.test_rack.id),
-                params=json, status=200)
+                                 params=json, status=200)
         self.assertEqual(response.content_type, "application/json")
         self.assertEqual(response.json['name'], json['name'])
         updated_rack = self.db.get_rack(self.test_rack.id)
@@ -106,18 +106,18 @@ class TestRacks(api.FunctionalTest):
 
     def test_it_creates_and_deletes_new_rack(self):
         json = {
-                'name': 'test-rack-create',
-                'subnet': '127.0.0./24',
-                'slots': '10',
-                'location': 'texas',
-                'capacities': [
-                    {'name': 'memory', 'value': '1024'}
-                ],
-                'nodes': [
-                    {'id': '1234567'},
-                    {'id': '7891011'}
-                ]
-               }
+            'name': 'test-rack-create',
+            'subnet': '127.0.0./24',
+            'slots': '10',
+            'location': 'texas',
+            'capacities': [
+                {'name': 'memory', 'value': '1024'}
+            ],
+            'nodes': [
+                {'id': '1234567'},
+                {'id': '7891011'}
+            ]
+        }
         response = self.post_json('/racks', params=json, status=201)
         self.assertEqual(response.content_type, "application/json")
 
@@ -136,10 +136,9 @@ class TestRacks(api.FunctionalTest):
 
     def test_it_returns_404_when_getting_unknown_rack(self):
         response = self.get_json('/racks/unknown',
-                expect_errors=True,
-                headers={"Accept":
-                    "application/json"}
-                )
+                                 expect_errors=True,
+                                 headers={"Accept": "application/json"}
+                                 )
 
         self.assertEqual(response.status_int, 404)
 
@@ -148,10 +147,9 @@ class TestRacks(api.FunctionalTest):
     #
     def test_it_returns_404_when_deleting_unknown_rack(self):
         response = self.delete_json('/racks/unknown',
-                expect_errors=True,
-                headers={"Accept":
-                    "application/json"}
-                )
+                                    expect_errors=True,
+                                    headers={"Accept": "application/json"}
+                                    )
 
         self.assertEqual(response.status_int, 404)
 
@@ -190,9 +188,9 @@ class TestResourceClasses(api.FunctionalTest):
     def setUp(self):
         super(TestResourceClasses, self).setUp()
         self.rc = self.db.create_resource_class(v1.ResourceClass(
-                          name='test resource class',
-                          service_type='compute',
-                          ))
+            name='test resource class',
+            service_type='compute',
+        ))
         self.racks = []
 
     def tearDown(self):
@@ -203,8 +201,9 @@ class TestResourceClasses(api.FunctionalTest):
     def setup_racks(self):
         for rack_num in range(1, 4):
             self.racks.append(self.db.create_rack(v1.Rack(
-                        name='rack no. {0}'.format(rack_num),
-                        subnet='192.168.1.{0}/24'.format(rack_num))))
+                name='rack no. {0}'.format(rack_num),
+                subnet='192.168.1.{0}/24'.format(rack_num))
+            ))
 
     def teardown_racks(self):
         for rack in self.racks:
