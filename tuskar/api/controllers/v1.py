@@ -21,8 +21,8 @@ Version 1 of the Tuskar API
 
 from oslo.config import cfg
 import pecan
-from pecan import rest
 from pecan.core import render
+from pecan import rest
 import wsme
 from wsme import api
 from wsme import types as wtypes
@@ -37,10 +37,10 @@ LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
 ironic_opts = [
-        cfg.StrOpt('ironic_url',
-            default='http://ironic.local:6543/v1',
-            help='Ironic API entrypoint URL'),
-        ]
+    cfg.StrOpt('ironic_url',
+               default='http://ironic.local:6543/v1',
+               help='Ironic API entrypoint URL'),
+]
 
 CONF.register_opts(ironic_opts)
 
@@ -71,9 +71,9 @@ class Base(wsme.types.Base):
 
     def as_dict(self):
         return dict((k, getattr(self, k))
-                for k in self.fields
-                if hasattr(self, k) and
-                getattr(self, k) != wsme.Unset)
+                    for k in self.fields
+                    if hasattr(self, k) and
+                    getattr(self, k) != wsme.Unset)
 
     def get_id(self):
         """Returns the ID of this resource as specified in the self link."""
@@ -105,7 +105,7 @@ class Error(Base):
 
 
 class Relation(Base):
-    """A representation of a 1 to 1 or 1 to many relation in the database"""
+    """A representation of a 1 to 1 or 1 to many relation in the database."""
 
     id = int
     links = [Link]
@@ -159,7 +159,7 @@ class Rack(Base):
 
         if rack.resource_class_id:
             l = [_make_link('self', pecan.request.host_url, 'resource_classes',
-                                rack.resource_class_id)]
+                            rack.resource_class_id)]
             self.resource_class = Relation(id=rack.resource_class_id, links=l)
 
         capacities = [Capacity(name=c.name, value=c.value)
@@ -170,12 +170,12 @@ class Rack(Base):
                  for n in rack.nodes]
 
         return Rack(links=links, chassis=chassis, capacities=capacities,
-                nodes=nodes, **(rack.as_dict()))
+                    nodes=nodes, **(rack.as_dict()))
 
     @classmethod
     def convert(self, rack, base_url, minimal=False):
         links = [_make_link('self', pecan.request.host_url, 'rack',
-                             rack.id)]
+                            rack.id)]
         if minimal:
             return Rack(links=links, id=str(rack.id))
 
@@ -217,7 +217,7 @@ class ResourceClass(Base):
     @classmethod
     def convert(self, resource_class, base_url, minimal=False):
         links = [_make_link('self', pecan.request.host_url, 'resource_classes',
-                             resource_class.id)]
+                            resource_class.id)]
         if minimal:
             return ResourceClass(links=links, id=str(resource_class.id))
         else:
@@ -225,16 +225,20 @@ class ResourceClass(Base):
             if resource_class.racks:
                 for r in resource_class.racks:
                     l = [_make_link('self', pecan.request.host_url,
-                                        'racks', r.id)]
+                                    'racks', r.id)]
                     rack = Relation(id=r.id, links=l)
                     racks.append(rack)
+
             flavors = []
             if resource_class.flavors:
                 for flav in resource_class.flavors:
-
-                    flavor = Flavor.add_capacities(resource_class.id, flav)
+                    flavor = Flavor.add_capacities(resource_class.id,
+                                                   flav)
                     flavors.append(flavor)
-            return ResourceClass(links=links, racks=racks, flavors=flavors,
+
+            return ResourceClass(links=links,
+                                 racks=racks,
+                                 flavors=flavors,
                                  **(resource_class.as_dict()))
 
 
@@ -248,7 +252,7 @@ class RacksController(rest.RestController):
         try:
             result = pecan.request.dbapi.create_rack(rack)
             links = [_make_link('self', pecan.request.host_url, 'racks',
-                    result.id)]
+                                result.id)]
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
@@ -266,12 +270,12 @@ class RacksController(rest.RestController):
     @wsme.validate(Rack)
     @wsme_pecan.wsexpose(Rack, wtypes.text, body=Rack, status_code=200)
     def put(self, rack_id, rack):
-        """Update the Rack"""
+        """Update the Rack."""
 
         try:
             result = pecan.request.dbapi.update_rack(rack_id, rack)
             links = [_make_link('self', pecan.request.host_url, 'racks',
-                    result.id)]
+                                result.id)]
             #
             # TODO(mfojtik): Update the HEAT template at this point
             #
@@ -291,9 +295,9 @@ class RacksController(rest.RestController):
             if heat_stack:
                 db_api.update_rack_state(rack, heat_stack.stack_status)
             links = [_make_link('self', pecan.request.host_url, 'racks',
-                    rack.id)]
+                                rack.id)]
             result.append(Rack.convert_with_links(rack, links))
-        return result
+            return result
 
     @wsme_pecan.wsexpose(Rack, unicode)
     def get_one(self, rack_id):
@@ -310,7 +314,7 @@ class RacksController(rest.RestController):
         if heat_stack:
             db_api.update_rack_state(rack, heat_stack.stack_status)
         links = [_make_link('self', pecan.request.host_url, 'racks',
-                rack.id)]
+                            rack.id)]
         return Rack.convert_with_links(rack, links)
 
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
@@ -323,7 +327,7 @@ class RacksController(rest.RestController):
             #
         else:
             raise wsme.exc.ClientSideError(_("The overcloud Heat template" +
-                "could not be validated"))
+                                             "could not be validated"))
 
 
 class FlavorsController(rest.RestController):
@@ -336,7 +340,7 @@ class FlavorsController(rest.RestController):
         """Create a new Flavor for a ResourceClass."""
         try:
             flavor = pecan.request.dbapi.create_resource_class_flavor(
-                                            resource_class_id, flavor)
+                resource_class_id, flavor)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
@@ -351,7 +355,7 @@ class FlavorsController(rest.RestController):
         flavors = []
         for flavor in pecan.request.dbapi.get_flavors(resource_class_id):
             flavors.append(Flavor.add_capacities(resource_class_id, flavor))
-        return flavors
+            return flavors
         #return [Flavor.from_db_model(flavor) for flavor in result]
 
     @wsme_pecan.wsexpose(Flavor, wtypes.text, wtypes.text)
@@ -366,7 +370,7 @@ class FlavorsController(rest.RestController):
         """Update an existing ResourceClass Flavor"""
         try:
             flavor = pecan.request.dbapi.update_resource_class_flavor(
-                    resource_class_id, flavor_id, flavor)
+                resource_class_id, flavor_id, flavor)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
@@ -386,7 +390,7 @@ class ResourceClassesController(rest.RestController):
 
     """
     _custom_actions = {
-        'flavors': ['GET', 'POST', 'DELETE', 'PUT']
+    'flavors': ['GET', 'POST', 'DELETE', 'PUT']
     }
     """
 
@@ -417,8 +421,8 @@ class ResourceClassesController(rest.RestController):
     def put(self, resource_class_id, resource_class):
         try:
             result = pecan.request.dbapi.update_resource_class(
-                    resource_class_id,
-                    resource_class)
+                resource_class_id,
+                resource_class)
             #
             # TODO(mfojtik): Update the HEAT template at this point
             #
@@ -433,7 +437,7 @@ class ResourceClassesController(rest.RestController):
         result = []
         for rc in pecan.request.dbapi.get_resource_classes(None):
             result.append(ResourceClass.convert(rc, pecan.request.host_url))
-        return result
+            return result
 
     @wsme_pecan.wsexpose(ResourceClass, unicode)
     def get_one(self, resource_class_id):
@@ -471,7 +475,8 @@ class ResourceClassesController(rest.RestController):
 
 class DataCenterController(rest.RestController):
     """Controller for provisioning the Tuskar data centre description as an
-    overcloud on Triple O"""
+    overcloud on Triple O
+    """
 
     #@pecan.expose('json')
     #def index(self):
@@ -489,17 +494,18 @@ class DataCenterController(rest.RestController):
         if heat.validate_template(template_body):
             if heat.update_stack(template_body, params):
                 for rc in rcs:
-                    [pecan.request.dbapi.update_rack_state(r,
-                        'CREATE_IN_PROGRESS') for r in rc.racks]
+                    [pecan.request.dbapi.update_rack_state(
+                        r, 'CREATE_IN_PROGRESS') for r in rc.racks]
+
                 pecan.response.status_code = 202
                 return {}
             else:
                 raise wsme.exc.ClientSideError(_(
                     "Cannot update the Heat overcloud template"
-                    ))
+                ))
         else:
             raise wsme.exc.ClientSideError(_("The overcloud Heat template" +
-                "could not be validated"))
+                                             "could not be validated"))
 
 
 class Controller(object):

@@ -103,7 +103,7 @@ class RackCapacities(Base):
     id = Column(Integer, primary_key=True)
     rack_id = Column(Integer, ForeignKey('racks.id'), primary_key=True)
     capacity_id = Column(Integer, ForeignKey('capacities.id'),
-            primary_key=True)
+                         primary_key=True)
 
 
 class FlavorCapacities(Base):
@@ -113,7 +113,7 @@ class FlavorCapacities(Base):
     #FIXME - I want flavor.id to be UUID String
     flavor_id = Column(Integer, ForeignKey('flavors.id'), primary_key=True)
     capacity_id = Column(Integer, ForeignKey('capacities.id'),
-            primary_key=True)
+                         primary_key=True)
 
 
 class Node(Base):
@@ -139,10 +139,12 @@ class Rack(Base):
     resource_class_id = Column(Integer, ForeignKey('resource_classes.id',
                                                    onupdate="cascade"))
     capacities = relationship("Capacity",
-            secondary=Base.metadata.tables['rack_capacities'],
-            cascade="all, delete",
-            lazy='joined')
+                              secondary=
+                              Base.metadata.tables['rack_capacities'],
+                              cascade="all, delete",
+                              lazy='joined')
     nodes = relationship("Node", cascade="all, delete")
+
 
 class Flavor(Base):
     """Represents a Flavor Class."""
@@ -155,9 +157,11 @@ class Flavor(Base):
                                                    onupdate="cascade"))
     max_vms = Column(Integer)
     capacities = relationship("Capacity",
-            secondary=Base.metadata.tables['flavor_capacities'],
-            cascade="all, delete",
-            lazy='joined')
+                              secondary=
+                              Base.metadata.tables['flavor_capacities'],
+                              cascade="all, delete",
+                              lazy='joined')
+
 
 class ResourceClass(Base):
     """Represents a Resource Class."""
@@ -172,8 +176,7 @@ class ResourceClass(Base):
                          cascade="all",
                          passive_updates=False)
     flavors = relationship("Flavor",
-                         backref="resource_class",
-                         lazy='joined',
-                         cascade="all",
-                         passive_updates=False)
-
+                           backref="resource_class",
+                           lazy='joined',
+                           cascade="all",
+                           passive_updates=False)

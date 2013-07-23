@@ -66,30 +66,31 @@ class Connection(api.Connection):
     def get_heat_data(self):
         session = get_session()
         result = session.query(models.ResourceClass).options(
-                    joinedload(models.ResourceClass.racks),
-                ).all()
+            joinedload(models.ResourceClass.racks),
+        ).all()
         # FIXME: This idio*ic pre-caching must happen here otherwise you get
         # this error when rendering the template:
         #
-        # Parent instance <Rack at 0x2abd5d0> is not bound to a Session; lazy load
-        # operation of attribute 'nodes' cannot proceed
+        # Parent instance <Rack at 0x2abd5d0> is not bound to a Session;
+        # lazy load operation of attribute 'nodes' cannot proceed
         #
         for resource_class in result:
             for rack in resource_class.racks:
                 for node in rack.nodes:
                     session.query(models.Rack).options(
-                            subqueryload('capacities'),
-                            subqueryload('nodes')
-                            ).get(rack.id)
+                        subqueryload('capacities'),
+                        subqueryload('nodes')
+                    ).get(rack.id)
+
         session.close()
         return result
 
     def get_racks(self, columns):
         session = get_session()
         result = session.query(models.Rack).options(
-                    subqueryload('capacities'),
-                    subqueryload('nodes')
-                ).all()
+            subqueryload('capacities'),
+            subqueryload('nodes')
+        ).all()
         session.close()
         return result
 
@@ -97,9 +98,9 @@ class Connection(api.Connection):
         session = get_session()
         try:
             result = session.query(models.Rack).options(
-                    subqueryload('capacities'),
-                    subqueryload('nodes')
-                    ).filter_by(id=rack_id).one()
+                subqueryload('capacities'),
+                subqueryload('nodes')
+            ).filter_by(id=rack_id).one()
         except NoResultFound:
             raise exception.RackNotFound(rack=rack_id)
 
@@ -108,8 +109,8 @@ class Connection(api.Connection):
     def get_racks_by_resource_class(self, resource_class_id):
         session = get_session()
         return session.query(models.Rack
-                            ).filter_by(resource_class_id=resource_class_id
-                            ).all()
+                             ).filter_by(resource_class_id=resource_class_id
+                                         ).all()
 
     def get_resource_classes(self, columns):
         session = get_session()
@@ -121,11 +122,11 @@ class Connection(api.Connection):
         session = get_session()
         try:
             result = session.query(models.ResourceClass
-                                ).filter_by(id=resource_class_id).one()
+                                   ).filter_by(id=resource_class_id).one()
         except NoResultFound:
             raise exception.ResourceClassNotFound(
-                    resource_class=resource_class_id
-                    )
+                resource_class=resource_class_id
+            )
         session.close()
         return result
 
@@ -134,7 +135,8 @@ class Connection(api.Connection):
         session.begin()
         try:
             rc = models.ResourceClass(name=new_resource_class.name,
-            service_type=new_resource_class.service_type)
+                                      service_type=
+                                      new_resource_class.service_type)
             session.add(rc)
             if new_resource_class.racks:
                 for r in new_resource_class.racks:
@@ -142,11 +144,13 @@ class Connection(api.Connection):
                     rack = self.get_rack(r.get_id())
                     session.add(rack)
                     rack.resource_class = rc
+
             if new_resource_class.flavors:
                 for flav in new_resource_class.flavors:
                     flavor = self.create_flavor(flav)
                     session.add(flavor)
                     flavor.resource_class = rc
+
         except Exception:
             session.rollback()
             raise
@@ -222,19 +226,20 @@ class Connection(api.Connection):
         session.close()
         return flavor
 
-    def update_resource_class_flavor(self, resource_class_id, flavor_id, new_flavor):
+    def update_resource_class_flavor(self, resource_class_id,
+                                     flavor_id, new_flavor):
         session = get_session()
         session.begin()
         try:
-            flavor  = self.get_flavor(flavor_id)
+            flavor = self.get_flavor(flavor_id)
 
             if new_flavor.name:
                 flavor.name = new_flavor.name
+
             if new_flavor.max_vms:
                 flavor.max_vms = new_flavor.max_vms
 
             session.add(flavor)
-
 
             if not isinstance(new_flavor.capacities, wtypes.UnsetType):
                 for new_c in new_flavor.capacities:
@@ -242,7 +247,9 @@ class Connection(api.Connection):
                     for i in range(len(flavor.capacities)):
                         old_c = flavor.capacities[i]
                         if old_c.name == new_c.name:
-                            new_capacity = models.Capacity(name=new_c.name, value=new_c.value, unit=new_c.unit)
+                            new_capacity = models.Capacity(name=new_c.name,
+                                                           value=new_c.value,
+                                                           unit=new_c.unit)
                             flavor.capacities.remove(old_c)
                             flavor.capacities.append(new_capacity)
                             session.add(new_capacity)
@@ -344,9 +351,9 @@ class Connection(api.Connection):
             # FIXME: So actually these two are *mandatory* attributes:
             #
             rack = models.Rack(
-                     name=new_rack.name,
-                     subnet=new_rack.subnet,
-                   )
+                name=new_rack.name,
+                subnet=new_rack.subnet,
+            )
 
             # FIXME: And there are 'optional':
             #
@@ -414,15 +421,15 @@ class Connection(api.Connection):
     def get_flavors(self, resource_class_id):
         session = get_session()
         return session.query(models.Flavor).filter_by(
-                resource_class_id=resource_class_id
-                )
+            resource_class_id=resource_class_id
+        )
 
     def get_flavor(self, flavor_id):
         session = get_session()
         try:
             flavor = session.query(models.Flavor).options(
-                    subqueryload('capacities'),
-                    ).filter_by(id=flavor_id).one()
+                subqueryload('capacities'),
+            ).filter_by(id=flavor_id).one()
         except NoResultFound:
             raise exception.FlavorNotFound(flavor=flavor_id)
         return flavor
@@ -433,6 +440,7 @@ class Connection(api.Connection):
             flavor = models.Flavor(name=new_flavor.name)
             if new_flavor.max_vms:
                 flavor.max_vms = new_flavor.max_vms
+
             session.add(flavor)
             for c in new_flavor.capacities:
                 capacity = models.Capacity(name=c.name,
@@ -441,6 +449,7 @@ class Connection(api.Connection):
                 session.add(capacity)
                 flavor.capacities.append(capacity)
                 session.add(flavor)
+
             return flavor
 
     def delete_flavor(self, flavor_id):

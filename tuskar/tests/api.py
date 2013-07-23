@@ -18,14 +18,15 @@
 """Base classes for API tests.
 """
 
-import urllib
-from oslo.config import cfg
+# import urllib
 
+
+from oslo.config import cfg
 import pecan
 import pecan.testing
 
-from tuskar.openstack.common import jsonutils
 from tuskar.api import acl
+# from tuskar.openstack.common import jsonutils
 from tuskar.tests import base
 
 
@@ -74,7 +75,7 @@ class FunctionalTest(base.TestCase):
                               status=status, method="put")
 
     def delete_json(self, path, expect_errors=False, headers=None,
-                 extra_environ=None, status=None):
+                    extra_environ=None, status=None):
         return self.post_json(path=path, params={},
                               expect_errors=expect_errors,
                               headers=headers, extra_environ=extra_environ,
