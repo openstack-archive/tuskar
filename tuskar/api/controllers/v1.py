@@ -185,6 +185,7 @@ class Flavor(Base):
     #FIXME - I want id to be UUID - String
     id = wsme.wsattr(int, mandatory=True)
     name = wsme.wsattr(wtypes.text, mandatory=False)
+    max_vms = wsme.wsattr(int, mandatory=False)
     capacities = [Capacity]
     links = [Link]
 

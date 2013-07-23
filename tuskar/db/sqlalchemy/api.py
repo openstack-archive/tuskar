@@ -216,20 +216,23 @@ class Connection(api.Connection):
 
             if new_flavor.name:
                 flavor.name = new_flavor.name
+            if new_flavor.max_vms:
+                flavor.max_vms = new_flavor.max_vms
 
             session.add(flavor)
 
-            for new_c in new_flavor.capacities:
-                #need index here for removal
-                for i in range(len(flavor.capacities)):
-                    old_c = flavor.capacities[i]
-                    if old_c.name == new_c.name:
-                        new_capacity = models.Capacity(name=new_c.name, value=new_c.value, unit=new_c.unit)
-                        flavor.capacities.remove(old_c)
-                        flavor.capacities.append(new_capacity)
-                        session.delete(old_c)
-                        session.add(new_capacity)
-                        session.add(flavor)
+
+            if not isinstance(new_flavor.capacities, wtypes.UnsetType):
+                for new_c in new_flavor.capacities:
+                    #need index here for removal
+                    for i in range(len(flavor.capacities)):
+                        old_c = flavor.capacities[i]
+                        if old_c.name == new_c.name:
+                            new_capacity = models.Capacity(name=new_c.name, value=new_c.value, unit=new_c.unit)
+                            flavor.capacities.remove(old_c)
+                            flavor.capacities.append(new_capacity)
+                            session.add(new_capacity)
+                            session.add(flavor)
 
             session.commit()
             session.refresh(flavor)
@@ -391,10 +394,10 @@ class Connection(api.Connection):
 
     def create_flavor(self, new_flavor):
         session = get_session()
-        #CALL NOVA AT THIS POINT (code in tuskar/compute/nova.py)
-        #NOT YET TESTED - FIXME
         with session.begin():
             flavor = models.Flavor(name=new_flavor.name)
+            if new_flavor.max_vms:
+                flavor.max_vms = new_flavor.max_vms
             session.add(flavor)
             for c in new_flavor.capacities:
                 capacity = models.Capacity(name=c.name,
