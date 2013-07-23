@@ -272,6 +272,9 @@ class RacksController(rest.RestController):
             result = pecan.request.dbapi.update_rack(rack_id, rack)
             links = [_make_link('self', pecan.request.host_url, 'racks',
                     result.id)]
+            #
+            # TODO(mfojtik): Update the HEAT template at this point
+            #
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
@@ -282,7 +285,11 @@ class RacksController(rest.RestController):
         """Retrieve a list of all racks."""
         result = []
         links = []
-        for rack in pecan.request.dbapi.get_racks(None):
+        db_api = pecan.request.dbapi
+        heat_stack = heat_client().get_stack()
+        for rack in db_api.get_racks(None):
+            if heat_stack:
+                db_api.update_rack_state(rack, heat_stack.stack_status)
             links = [_make_link('self', pecan.request.host_url, 'racks',
                     rack.id)]
             result.append(Rack.convert_with_links(rack, links))
@@ -291,13 +298,17 @@ class RacksController(rest.RestController):
     @wsme_pecan.wsexpose(Rack, unicode)
     def get_one(self, rack_id):
         """Retrieve information about the given Rack."""
+        db_api = pecan.request.dbapi
         try:
-            rack = pecan.request.dbapi.get_rack(rack_id)
+            rack = db_api.get_rack(rack_id)
         except exception.TuskarException, e:
             response = api.Response(
                 Error(faultcode=e.code, faultstring=str(e)),
                 status_code=e.code)
             return response
+        heat_stack = heat_client().get_stack()
+        if heat_stack:
+            db_api.update_rack_state(rack, heat_stack.stack_status)
         links = [_make_link('self', pecan.request.host_url, 'racks',
                 rack.id)]
         return Rack.convert_with_links(rack, links)
@@ -305,12 +316,14 @@ class RacksController(rest.RestController):
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self, rack_id):
         """Remove the Rack."""
-
-        # FIXME(mfojtik: For some reason, Pecan does not return 201 here
-        #                as configured above
-        #
-        pecan.response.status_code = 204
-        pecan.request.dbapi.delete_rack(rack_id)
+        if pecan.request.dbapi.delete_rack(rack_id):
+            pecan.response.status_code = 204
+            #
+            # TODO(mfojtik): Update the HEAT template at this point
+            #
+        else:
+            raise wsme.exc.ClientSideError(_("The overcloud Heat template" +
+                "could not be validated"))
 
 
 class FlavorsController(rest.RestController):
@@ -323,13 +336,12 @@ class FlavorsController(rest.RestController):
         """Create a new Flavor for a ResourceClass."""
         try:
             flavor = pecan.request.dbapi.create_resource_class_flavor(
-                                            resource_class_id,flavor)
+                                            resource_class_id, flavor)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
         pecan.response.status_code = 201
         return Flavor.add_capacities(resource_class_id, flavor)
-
 
     #Do we need this, i.e. GET /api/resource_classes/1/flavors
     #i.e. return just the flavors for a given resource_class?
@@ -407,6 +419,9 @@ class ResourceClassesController(rest.RestController):
             result = pecan.request.dbapi.update_resource_class(
                     resource_class_id,
                     resource_class)
+            #
+            # TODO(mfojtik): Update the HEAT template at this point
+            #
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
@@ -430,6 +445,9 @@ class ResourceClassesController(rest.RestController):
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self, resource_class_id):
         """Remove the Resource Class."""
+        #
+        # TODO(mfojtik): Update the HEAT template at this point
+        #
         pecan.request.dbapi.delete_resource_class(resource_class_id)
 
     """
@@ -451,18 +469,37 @@ class ResourceClassesController(rest.RestController):
     """
 
 
-class DataCenterController(object):
+class DataCenterController(rest.RestController):
     """Controller for provisioning the Tuskar data centre description as an
     overcloud on Triple O"""
 
+    #@pecan.expose('json')
+    #def index(self):
+    #    return {'message': 'hello'}
+
     @pecan.expose('json')
-    def index(self):
+    def post(self, data):
+        # TODO: Currently all Heat parameters are hardcoded in
+        #       template.
+        params = {}
         rcs = pecan.request.dbapi.get_heat_data()
+        heat = heat_client()
+
         template_body = render('overcloud.yaml', dict(resource_classes=rcs))
-        if heat_client().validate_template(template_body):
-            # TODO(mfojtik): Use ResourceClass name as Heat Stack name
-            # TODO(mfojtik): How we will pass parameters to heat? (params).
-            heat_client().register_template(rcs[0].name, template_body, params)
+        if heat.validate_template(template_body):
+            if heat.update_stack(template_body, params):
+                for rc in rcs:
+                    [pecan.request.dbapi.update_rack_state(r,
+                        'CREATE_IN_PROGRESS') for r in rc.racks]
+                pecan.response.status_code = 202
+                return {}
+            else:
+                raise wsme.exc.ClientSideError(_(
+                    "Cannot update the Heat overcloud template"
+                    ))
+        else:
+            raise wsme.exc.ClientSideError(_("The overcloud Heat template" +
+                "could not be validated"))
 
 
 class Controller(object):

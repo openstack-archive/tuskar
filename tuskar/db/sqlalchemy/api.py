@@ -255,6 +255,27 @@ class Connection(api.Connection):
             session.rollback()
             raise
 
+    def update_rack_state(self, rack, heat_stack_status):
+        session = get_session()
+        session.begin()
+        try:
+            # TODO(mfojtik): Add more Heat states here
+            # See: http://goo.gl/QS4cY3
+            #
+            if heat_stack_status == 'CREATE_IN_PROGRESS':
+                rack.state = 'provisioning'
+            elif heat_stack_status == 'UPDATE_COMPLETE' \
+                and rack.state != 'provisioned':
+                rack.state = 'provisioned'
+            elif heat_stack_status == 'UPDATE_FAILED' \
+                and rack.state != 'error':
+                rack.state = 'error'
+            session.add(rack)
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+
     def update_rack(self, rack_id, new_rack):
         session = get_session()
         session.begin()
