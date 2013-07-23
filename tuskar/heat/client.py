@@ -70,16 +70,26 @@ class HeatClient(object):
         try:
             self.connection.validate_template(template_body)
             return True
-        except BotoServerError:
+        except BotoServerError as e:
+            boto.log.exception(e)
             return False
 
     def get_stack(self):
+        """Get overcloud Heat template"""
+        try:
+            return self.connection.describe_stacks(CONF.heat_stack_name)[0]
+        except Exception as e:
+            boto.log.exception(e)
+            return False
+
+    def get_template(self):
         """Get JSON representation of the Heat overcloud template"""
         try:
             template_json = self.connection.get_template(
                     CONF.heat_stack_name)['GetTemplateResponse']
             return template_json['GetTemplateResult']['TemplateBody']
-        except BotoServerError:
+        except BotoServerError as e:
+            boto.log.exception(e)
             return False
 
     def update_stack(self, template_body, params):
