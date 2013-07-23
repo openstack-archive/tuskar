@@ -1,5 +1,7 @@
 Tuskar
 ======
+.. image:: https://travis-ci.org/tuskar/tuskar.png?branch=master
+   :target: http://travis-ci.org/tuskar/tuskar
 
 Tuskar is playground for some ideas for an OpenStack management API.
 
