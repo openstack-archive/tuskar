@@ -294,7 +294,7 @@ class RacksController(rest.RestController):
             links = [_make_link('self', pecan.request.host_url, 'racks',
                                 rack.id)]
             result.append(Rack.convert_with_links(rack, links))
-            return result
+        return result
 
     @wsme_pecan.wsexpose(Rack, unicode)
     def get_one(self, rack_id):
