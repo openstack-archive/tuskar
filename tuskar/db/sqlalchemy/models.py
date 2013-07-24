@@ -156,12 +156,11 @@ class Flavor(Base):
     resource_class_id = Column(Integer, ForeignKey('resource_classes.id',
                                                    onupdate="cascade"))
     max_vms = Column(Integer)
+    nova_flavor_uuid = Column(String(length=128))
     capacities = relationship("Capacity",
-                              secondary=
-                              Base.metadata.tables['flavor_capacities'],
-                              cascade="all, delete",
-                              lazy='joined')
-
+            secondary=Base.metadata.tables['flavor_capacities'],
+            cascade="all, delete",
+            lazy='joined')
 
 class ResourceClass(Base):
     """Represents a Resource Class."""

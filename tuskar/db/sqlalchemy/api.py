@@ -226,8 +226,20 @@ class Connection(api.Connection):
         session.close()
         return flavor
 
-    def update_resource_class_flavor(self, resource_class_id,
-                                     flavor_id, new_flavor):
+    def update_flavor_nova_uuid(self, flavor_id, nova_uuid):
+        session = get_session()
+        session.begin()
+        try:
+            flavor = self.get_flavor(flavor_id)
+            flavor.nova_flavor_uuid = nova_uuid
+            session.add(flavor)
+            session.commit()
+            return True
+        except Exception:
+            session.rollback()
+            raise
+
+    def update_resource_class_flavor(self, resource_class_id, flavor_id, new_flavor):
         session = get_session()
         session.begin()
         try:
@@ -458,7 +470,7 @@ class Connection(api.Connection):
         with session.begin():
             if self.delete_capacities(flavor, session):
                 session.delete(flavor)
-                return True
+                return flavor.nova_flavor_uuid
 
     def delete_capacities(self, resource, session):
         try:
