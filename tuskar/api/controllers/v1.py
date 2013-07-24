@@ -294,6 +294,7 @@ class RacksController(rest.RestController):
             links = [_make_link('self', pecan.request.host_url, 'racks',
                                 rack.id)]
             result.append(Rack.convert_with_links(rack, links))
+
         return result
 
     @wsme_pecan.wsexpose(Rack, unicode)
@@ -361,6 +362,7 @@ class FlavorsController(rest.RestController):
         flavors = []
         for flavor in pecan.request.dbapi.get_flavors(resource_class_id):
             flavors.append(Flavor.add_capacities(resource_class_id, flavor))
+            
         return flavors
         #return [Flavor.from_db_model(flavor) for flavor in result]
 
@@ -442,6 +444,7 @@ class ResourceClassesController(rest.RestController):
         result = []
         for rc in pecan.request.dbapi.get_resource_classes(None):
             result.append(ResourceClass.convert(rc, pecan.request.host_url))
+
         return result
 
     @wsme_pecan.wsexpose(ResourceClass, unicode)
