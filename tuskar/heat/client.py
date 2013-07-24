@@ -86,7 +86,7 @@ class HeatClient(object):
                                          token=keystone.auth_token)
         except Exception as e:
             LOG.exception(e)
-            raise e
+            self.connection = None
 
     def validate_template(self, template_body):
         """Validate given Heat template"""
@@ -99,7 +99,8 @@ class HeatClient(object):
 
     def get_stack(self):
         """Get overcloud Heat template"""
-        return self.connection.stacks.get(CONF.heat['stack_name'])
+        if self.connection:
+            return self.connection.stacks.get(CONF.heat['stack_name'])
 
     def get_template(self):
         """Get JSON representation of the Heat overcloud template"""
