@@ -83,7 +83,9 @@ class HeatClient(object):
                     service_type=CONF.heat['service_type'],
                     endpoint_type=CONF.heat['endpoint_type'])
             self.connection = heatclient(endpoint=endpoint,
-                                         token=keystone.auth_token)
+                                         token=keystone.auth_token,
+                                         username=CONF.heat_keystone['username'],
+                                         password=CONF.heat_keystone['password'])
         except Exception as e:
             LOG.exception(e)
             self.connection = None
