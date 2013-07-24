@@ -44,6 +44,13 @@ The config file changes are::
 
   $ openstack-config --set etc/tuskar/tuskar.conf database connection sqlite:///tuskar.sqlite
   $ openstack-config --set etc/tuskar/tuskar.conf DEFAULT debug true
+  $ openstack-config --set etc/tuskar/tuskar.conf heat stack_name overcloud
+  $ openstack-config --set etc/tuskar/tuskar.conf heat service_type orchestration
+  $ openstack-config --set etc/tuskar/tuskar.conf heat_keystone username heat
+  $ openstack-config --set etc/tuskar/tuskar.conf heat_keystone password heat
+  $ openstack-config --set etc/tuskar/tuskar.conf heat_keystone tenant_name admin
+  $ openstack-config --set etc/tuskar/tuskar.conf heat_keystone auth_url http://10.34.32.181:35357/v2.0
+  $ openstack-config --set etc/tuskar/tuskar.conf heat_keystone insecure True
 
 The command above is part of the openstack-utils package, so you will have to install 
 that if you have not already.
