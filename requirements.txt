@@ -21,3 +21,4 @@ wsme>=0.5b1
 boto==2.5.1
 python-novaclient
 simpleyaml
+python-heatclient
