@@ -22,40 +22,51 @@
 
 """A client library for accessing Heat CloudFormations API using Boto"""
 
+from os import environ as env
 from oslo.config import cfg
 from tuskar.openstack.common import log as logging
 
 heat_opts = [
-
-    cfg.StrOpt('heat_username',
-               default='heat',
-               help='Heat API username'),
-
-    cfg.StrOpt('heat_password',
-               default='heat',
-               help='Heat API password'),
-
-    cfg.StrOpt('heat_auth_url',
-               default='http://10.34.32.181:35357/v2.0/',
-               help='OpenStack Authentication URL (OS_AUTH_URL)'),
-
-    cfg.StrOpt('heat_tenant_name',
-               default='admin',
-               help='Heat API tenant_id'),
-
-    cfg.StrOpt('heat_stack_name',
+    cfg.StrOpt('stack_name',
                default='overcloud',
-               help='Default Heat overcloud stack name'
+               help='Name of the overcloud Heat stack'
                ),
+    cfg.StrOpt('service_type',
+               default='orchestration',
+               help='Heat API service type registered in keystone'
+               ),
+    cfg.StrOpt('endpoint_type',
+               default='publicURL',
+               help='Heat API service endpoint type in keystone'
+               )
+]
 
-    cfg.BoolOpt('heat_auth_url_insecure',
-                default=True,
-                help='Use HTTPs to speak with Heat'
-                )
+heat_keystone_opts = [
+    cfg.StrOpt('username',
+               default=env.get('OS_USERNAME') or 'heat',
+               help='Heat API username'
+               ),
+    cfg.StrOpt('password',
+               default=env.get('OS_PASSWORD') or 'heat',
+               help='Heat API user password'
+               ),
+    cfg.StrOpt('tenant_name',
+               default=env.get('OS_TENANT_NAME') or 'admin',
+               help='Heat API keystone tenant name'
+               ),
+    cfg.StrOpt('auth_url',
+               default=env.get('OS_AUTH_URL') or 'http://localhost:35357/v2.0',
+               help='Keystone authentication URL'
+               ),
+    cfg.BoolOpt('insecure',
+               default=True,
+               help='Set to False when Heat API uses HTTPS'
+               )
 ]
 
 CONF = cfg.CONF
-CONF.register_opts(heat_opts)
+CONF.register_opts(heat_opts, group='heat')
+CONF.register_opts(heat_keystone_opts, group='heat_keystone')
 LOG = logging.getLogger(__name__)
 
 from heatclient.v1.client import Client as heatclient
@@ -66,33 +77,16 @@ class HeatClient(object):
     """Heat CloudFormations API client to use in Tuskar"""
 
     def __init__(self):
-        kwargs = {
-            'username': CONF.heat_username,
-            'password': CONF.heat_password,
-            'tenant_name': CONF.heat_tenant_name,
-            'auth_url': CONF.heat_auth_url,
-            'insecure': CONF.heat_auth_url_insecure,
-        }
-
-        def _get_ksclient(**kwargs):
-            """ Setup the Keystone client """
-            return ksclient.Client(username=kwargs.get('username'),
-                                   password=kwargs.get('password'),
-                                   tenant_name=kwargs.get('tenant_name'),
-                                   auth_url=kwargs.get('auth_url'),
-                                   insecure=kwargs.get('insecure'))
-
-        def _get_endpoint(client, **kwargs):
-            """ Get the Heat API endpoint from the Keystone """
-            return client.service_catalog.url_for(
-                service_type='orchestration',
-                endpoint_type='publicURL')
-
-        _ksclient = _get_ksclient(**kwargs)
-        endpoint = _get_endpoint(_ksclient, **kwargs)
-
-        self.connection = heatclient(endpoint=endpoint,
-                                     token=_ksclient.auth_token)
+        try:
+            keystone = ksclient.Client(**CONF.heat_keystone)
+            endpoint = keystone.service_catalog.url_for(
+                    service_type=CONF.heat['service_type'],
+                    endpoint_type=CONF.heat['endpoint_type'])
+            self.connection = heatclient(endpoint=endpoint,
+                                         token=keystone.auth_token)
+        except Exception as e:
+            LOG.exception(e)
+            raise e
 
     def validate_template(self, template_body):
         """Validate given Heat template"""
@@ -105,16 +99,18 @@ class HeatClient(object):
 
     def get_stack(self):
         """Get overcloud Heat template"""
-        return self.connection.stacks.get(CONF.heat_stack_name)
+        return self.connection.stacks.get(CONF.heat['stack_name'])
 
     def get_template(self):
         """Get JSON representation of the Heat overcloud template"""
-        return self.connection.stacks.template(stack_id=CONF.heat_stack_name)
+        return self.connection.stacks.template(
+                stack_id=CONF.heat['stack_name']
+                )
 
     def update_stack(self, template_body, params):
         """Update the Heat overcloud stack"""
         try:
-            self.connection.stacks.update(stack_id=CONF.heat_stack_name,
+            self.connection.stacks.update(stack_id=CONF.heat['stack_name'],
                                           template=template_body,
                                           parameters=params)
             return True
