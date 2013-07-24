@@ -471,9 +471,10 @@ class DataCenterController(rest.RestController):
     overcloud on Triple O
     """
 
-    #@pecan.expose('json')
-    #def index(self):
-    #    return {'message': 'hello'}
+    @pecan.expose('json')
+    def get_all(self):
+        heat = heat_client()
+        return heat.get_stack().to_dict()
 
     @pecan.expose('json')
     def post(self, data):
