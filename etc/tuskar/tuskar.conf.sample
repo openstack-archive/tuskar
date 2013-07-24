@@ -497,5 +497,12 @@
 # value)
 #connection_trace=false
 
+[heat_keystone]
 
-# Total option count: 100
+# Heat API keystone configuration.
+
+#username = heat
+#password = heat
+#tenant_name = admin
+#auth_url = http://10.34.32.181:35357/v2.0
+#insecure = True
