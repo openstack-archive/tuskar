@@ -489,7 +489,13 @@ class DataCenterController(rest.RestController):
 
         template_body = render('overcloud.yaml', dict(resource_classes=rcs))
         if heat.validate_template(template_body):
-            if heat.update_stack(template_body, params):
+
+            if heat.exists_stack():
+                res = heat.update_stack(template_body, params)
+            else:
+                res = heat.create_stack(template_body, params)
+
+            if res:
                 for rc in rcs:
                     [pecan.request.dbapi.update_rack_state(
                         r, 'CREATE_IN_PROGRESS') for r in rc.racks]
