@@ -151,26 +151,30 @@ class Rack(Base):
     @classmethod
     def convert_with_links(self, rack, links):
 
+        kwargs = rack.as_dict() # returns a new dict, overwriting keys is safe
+
         if rack.chassis_id:
-            chassis = Chassis(id=rack.chassis_id,
-                              links=[_ironic_link('chassis', rack.chassis_id)])
+            kwargs['chassis'] = Chassis(id=rack.chassis_id,
+                                        links=[_ironic_link('chassis',
+                                                            rack.chassis_id)])
         else:
-            chassis = Chassis()
+            kwargs['chassis'] = Chassis()
 
         if rack.resource_class_id:
             l = [_make_link('self', pecan.request.host_url, 'resource_classes',
                             rack.resource_class_id)]
-            self.resource_class = Relation(id=rack.resource_class_id, links=l)
+            kwargs['resource_class'] = Relation(id=rack.resource_class_id,
+                                                links=l)
 
-        capacities = [Capacity(name=c.name, value=c.value, unit=c.unit)
-                      for c in rack.capacities]
+        kwargs['capacities'] = [Capacity(name=c.name, value=c.value,
+                                         unit=c.unit)
+                                for c in rack.capacities]
 
-        nodes = [Node(id=n.node_id,
-                      links=[_ironic_link('node', n.node_id)])
-                 for n in rack.nodes]
+        kwargs['nodes'] = [Node(id=n.node_id,
+                                links=[_ironic_link('node', n.node_id)])
+                           for n in rack.nodes]
 
-        return Rack(links=links, chassis=chassis, capacities=capacities,
-                    nodes=nodes, **(rack.as_dict()))
+        return Rack(links=links, **kwargs)
 
     @classmethod
     def convert(self, rack, base_url, minimal=False):
