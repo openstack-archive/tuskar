@@ -120,3 +120,23 @@ class HeatClient(object):
         except Exception as e:
             LOG.exception(e)
             return False
+
+    def create_stack(self, template_body, params):
+        """Update the Heat overcloud stack"""
+        try:
+            self.connection.stacks.create(stack_name=CONF.heat['stack_name'],
+                                          template=template_body,
+                                          parameters=params)
+            return True
+        except Exception as e:
+            LOG.exception(e)
+            return False
+
+
+    def exists_stack(self):
+        try:
+            self.get_stack()
+            return True
+        # TODO (mtaylor) we should check for the correct exception here
+        except Exception as e:
+             return False
