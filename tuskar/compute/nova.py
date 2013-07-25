@@ -62,15 +62,22 @@ class NovaClient(object):
             name = "%s.%s" %(rc_name, flavor_data.name)
             nova_flavor = self.nova_client.flavors.create(name, ram, cpu, disk)
             return nova_flavor.id
-        except Exception:
-            raise
-        return nova_flavor
+        except Exception as e:
+            if ("Instance Type with name %s already exists" %(name)) in e.message:
+                for flav in self.get_flavors():
+                    if flav.name == name:
+                        return flav.id
+            else:
+                raise
 
     def delete_flavor(self, nova_flavor_id):
         try:
             self.nova_client.flavors.delete(nova_flavor_id)
-        except Exception:
-            raise
+        except Exception as e:
+            if ("%s could not be found" %(nova_flavor_id)) in e.message:
+                return True
+            else:
+                raise
         return True
 
     def __extract_from_capacities(self, flavor_data):
