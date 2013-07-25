@@ -83,5 +83,24 @@
       KeyName:
         Ref: KeyName
       AvailabilityZone: nova::${x}
+      UserData:
+        Fn::Base64:
+          |
+          #!/bin/bash -v
+          /opt/aws/bin/cfn-init
+          # Setup the keystone:
+          # FIXME: Add OS_USERNAME, OS_PASSWORD, OS_AUTH_URL, etc here with
+          # valid credentials (config.nova_keystone... ?)
+          #
+          # FIXME: List just 'compute' resource classes here?
+      % for rc in resource_classes:
+        % for f in rc.flavors:
+          nova-manage instance_type list compute.${f.name} &> /dev/null
+          if [ $? == 1 ]; then
+            nova-manage instance_type create compute.${f.name} 32768 16 320 0 0 0 # FIXME: Add f.cpus / etc here
+          fi
+        % endfor
+      % endfor
+
     Type: AWS::EC2::Instance
 </%def>\
