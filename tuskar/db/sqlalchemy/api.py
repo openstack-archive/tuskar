@@ -335,7 +335,8 @@ class Connection(api.Connection):
                 [session.delete(c) for c in rack.capacities]
 
                 for c in new_rack.capacities:
-                    capacity = models.Capacity(name=c.name, value=c.value)
+                    capacity = models.Capacity(name=c.name, value=c.value,
+                            unit=c.unit)
                     session.add(capacity)
                     rack.capacities.append(capacity)
                     session.add(rack)
@@ -384,7 +385,8 @@ class Connection(api.Connection):
 
             if new_rack.capacities:
                 for c in new_rack.capacities:
-                    capacity = models.Capacity(name=c.name, value=c.value)
+                    capacity = models.Capacity(name=c.name, value=c.value,
+                            unit=c.unit)
                     session.add(capacity)
                     rack.capacities.append(capacity)
                     session.add(rack)
