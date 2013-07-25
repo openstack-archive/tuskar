@@ -95,7 +95,10 @@
           # FIXME: List just 'compute' resource classes here?
       % for rc in resource_classes:
         % for f in rc.flavors:
-          nova-manage instance_type create ${f.name} 32768 16 320 0 0 0 # FIXME: Add f.cpus / etc here
+          nova-manage instance_type list compute.${f.name} &> /dev/null
+          if [ $? == 1 ]; then
+            nova-manage instance_type create compute.${f.name} 32768 16 320 0 0 0 # FIXME: Add f.cpus / etc here
+          fi
         % endfor
       % endfor
 
