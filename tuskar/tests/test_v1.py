@@ -49,7 +49,8 @@ class TestRacks(api.FunctionalTest):
                     subnet='10.0.0.0/24',
                     location='nevada',
                     chassis=v1.Chassis(id='123'),
-                    capacities=[v1.Capacity(name='cpu', value='10')],
+                    capacities=[v1.Capacity(name='cpu', value='10',
+                        unit='count')],
                     nodes=[v1.Node(id='1')]
                     ))
         # FIXME: For some reason the 'self.test_rack' does not
@@ -111,7 +112,7 @@ class TestRacks(api.FunctionalTest):
             'slots': '10',
             'location': 'texas',
             'capacities': [
-                {'name': 'memory', 'value': '1024'}
+                {'name': 'memory', 'value': '1024', 'unit': 'MB'}
             ],
             'nodes': [
                 {'id': '1234567'},
@@ -130,6 +131,8 @@ class TestRacks(api.FunctionalTest):
         self.assertEqual(str(response.json['location']), json['location'])
         self.assertEqual(response.json['subnet'], json['subnet'])
         self.assertEqual(len(response.json['nodes']), 2)
+        print dict(response.json['capacities'][0])
+        self.assertEqual(str(response.json['capacities'][0]['unit']), 'MB')
 
         # Make sure we delete the Rack we just created
         self.db.delete_rack(response.json['id'])
