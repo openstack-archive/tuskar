@@ -481,7 +481,8 @@ class DataCenterController(rest.RestController):
     @pecan.expose()
     def template(self):
         rcs = pecan.request.dbapi.get_heat_data()
-        return render('overcloud.yaml', dict(resource_classes=rcs))
+        return render('overcloud.yaml', dict(resource_classes=rcs,
+            config=CONF))
 
     @pecan.expose('json')
     def post(self, data):
@@ -491,7 +492,8 @@ class DataCenterController(rest.RestController):
         rcs = pecan.request.dbapi.get_heat_data()
         heat = heat_client()
 
-        template_body = render('overcloud.yaml', dict(resource_classes=rcs))
+        template_body = render('overcloud.yaml', dict(resource_classes=rcs,
+            config=CONF))
         if heat.validate_template(template_body):
             if heat.update_stack(template_body, params):
                 for rc in rcs:
