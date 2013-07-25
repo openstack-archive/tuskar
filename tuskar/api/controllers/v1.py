@@ -467,17 +467,21 @@ class ResourceClassesController(rest.RestController):
         pecan.request.dbapi.delete_resource_class(resource_class_id)
 
 
-
-
 class DataCenterController(rest.RestController):
     """Controller for provisioning the Tuskar data centre description as an
     overcloud on Triple O
     """
+    _custom_actions = {'template': ['GET']}
 
     @pecan.expose('json')
     def get_all(self):
         heat = heat_client()
         return heat.get_stack().to_dict()
+
+    @pecan.expose()
+    def template(self):
+        rcs = pecan.request.dbapi.get_heat_data()
+        return render('overcloud.yaml', dict(resource_classes=rcs))
 
     @pecan.expose('json')
     def post(self, data):
