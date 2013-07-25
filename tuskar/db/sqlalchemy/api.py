@@ -281,13 +281,14 @@ class Connection(api.Connection):
             # TODO(mfojtik): Add more Heat states here
             # See: http://goo.gl/QS4cY3
             #
-            if heat_stack_status == 'CREATE_IN_PROGRESS':
+            if (heat_stack_status == 'CREATE_IN_PROGRESS'
+                    or heat_stack_status == 'UPDATE_IN_PROGRESS'):
                 rack.state = 'provisioning'
-            elif heat_stack_status == 'UPDATE_COMPLETE' \
-                and rack.state != 'provisioned':
-                rack.state = 'provisioned'
-            elif heat_stack_status == 'UPDATE_FAILED' \
-                and rack.state != 'error':
+            elif (heat_stack_status == 'UPDATE_COMPLETE'
+                or heat_stack_status == 'CREATE_COMPLETE'):
+                rack.state = 'active'
+            elif (heat_stack_status == 'UPDATE_FAILED'
+                or heat_stack_status == 'CREATE_FAILED'):
                 rack.state = 'error'
             session.add(rack)
             session.commit()
