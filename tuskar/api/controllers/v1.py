@@ -162,7 +162,7 @@ class Rack(Base):
                             rack.resource_class_id)]
             self.resource_class = Relation(id=rack.resource_class_id, links=l)
 
-        capacities = [Capacity(name=c.name, value=c.value)
+        capacities = [Capacity(name=c.name, value=c.value, unit=c.unit)
                       for c in rack.capacities]
 
         nodes = [Node(id=n.node_id,
