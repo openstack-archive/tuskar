@@ -291,7 +291,10 @@ class RacksController(rest.RestController):
         result = []
         links = []
         db_api = pecan.request.dbapi
-        heat_stack = heat_client().get_stack()
+        heat_stack = False
+        if heat_client().exists_stack():
+            heat_stack = heat_client().get_stack()
+
         for rack in db_api.get_racks(None):
             if heat_stack:
                 db_api.update_rack_state(rack, heat_stack.stack_status)
@@ -312,7 +315,11 @@ class RacksController(rest.RestController):
                 Error(faultcode=e.code, faultstring=str(e)),
                 status_code=e.code)
             return response
-        heat_stack = heat_client().get_stack()
+
+        heat_stack = False
+        if heat_client().exists_stack():
+            heat_stack = heat_client().get_stack()
+
         if heat_stack:
             db_api.update_rack_state(rack, heat_stack.stack_status)
         links = [_make_link('self', pecan.request.host_url, 'racks',
