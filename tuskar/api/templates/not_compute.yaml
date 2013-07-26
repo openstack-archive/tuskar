@@ -100,9 +100,13 @@
           }
           wait_for 60 10 test -f /opt/stack/boot-stack.ok
           wait_for 60 10 nova list
+          # Declare nodes
+          declare -A BM_HOSTS
           % for rc in resource_classes:
           #1. CREAT HOST AGGREGATE for each resource class
+          declare -A AGGREGATES
           AGGREGATE_ID=\$(nova aggregate-create "${rc.name}-hosts" | tail -n +4 | head -n 1 | tr -s ' ' | cut -d '|' -f2)
+          AGGREGATES["${rc.name}-hosts"]=\$AGGREGATE_ID
           #2. SET HOST AGGREGATE METADATA
           nova aggregate-set-metadata \$AGGREGATE_ID class="${rc.name}"
           #3. CREATE EACH FLAVOR
@@ -120,10 +124,26 @@
           #5. ADD NODES TO HOST AGGREGATE
       % for rack in rc.racks:
         % for node in rack.nodes:
-          nova aggregate-add-host \$AGGREGATE_ID ${node.node_id}
+          % if rc.service_type == "compute":
+          BM_HOSTS["${node.node_id}"]="${rc.name}-hosts"
+          %endif
         % endfor
         % endfor
         % endfor
+          while [ \${'${#BM_HOSTS[@]}'} -gt 0 ]
+          do
+            LIST=\`nova host-list\`
+            for i in \${'${!BM_HOSTS[@]}'}
+            do
+            HOST_ID=\`expr "\$LIST" : ".*\(overcloud-novacompute\$i-\(\w\)\{6\}\)"\`
+            if [ \$HOST_ID != 0 ]
+            then
+              nova aggregate-add-host ${'\${AGGREGATES[\${BM_HOSTS[\$i]}]}'} \$HOST_ID
+              unset BM_HOSTS[\$i]
+            fi
+            done
+            sleep 1m
+          done
           EOL
           chmod +x /root/tuskar-provision.sh
           exec /root/tuskar-provision.sh &> /root/tuskar-provision.log &
