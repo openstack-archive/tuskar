@@ -107,7 +107,7 @@ class TestRacks(api.FunctionalTest):
 
     def test_it_allow_to_update_rack_state(self):
         json = {
-            'state': 'provisioned',
+            'state': 'active',
         }
         response = self.put_json('/racks/' + str(self.test_rack.id),
                                  params=json, status=200)

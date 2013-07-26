@@ -317,7 +317,7 @@ class Connection(api.Connection):
             if new_rack.chassis:
                 rack.chassis_id = new_rack.chassis.id
 
-            if new_rack.state and new_rack.state in ['provisioned',
+            if new_rack.state and new_rack.state in ['active',
                     'unprovisioned', 'provisioning', 'error']:
                     rack.state = new_rack.state
 
