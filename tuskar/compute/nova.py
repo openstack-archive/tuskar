@@ -58,7 +58,7 @@ class NovaClient(object):
     #returns newly created flavor uuid from nova
     def create_flavor(self, flavor_data, rc_name):
         try:
-            ram, cpu, disk = self.__extract_from_capacities(flavor_data)
+            ram, cpu, disk, ephemeral, swap = self.extract_from_capacities(flavor_data)
             name = "%s.%s" %(rc_name, flavor_data.name)
             nova_flavor = self.nova_client.flavors.create(name, ram, cpu, disk)
             return nova_flavor.id
@@ -80,14 +80,18 @@ class NovaClient(object):
                 raise
         return True
 
-    def __extract_from_capacities(self, flavor_data):
-        ram = cpu = disk = ""
+    def extract_from_capacities(self, flavor_data):
+        ram = cpu = root_disk = ephemeral = swap = 0
         for c in flavor_data.capacities:
-            if c.name == "memory":
+            if c.name in ["memory", "ram"]:
                 ram = c.value
-            elif c.name == "cpu":
+            elif c.name in ["cpu", "vcpu"]:
                 cpu = c.value
-            elif c.name == "storage":
-                disk = c.value
-        return ram, cpu, disk
+            elif c.name in ["storage", "root_disk"]:
+                root_disk = c.value
+            elif c.name in ["ephemeral_disk", "ephemeral"]:
+                ephemeral = c.value
+            elif c.name in ["swap", "swap_disk"]:
+                swap = c.value
+        return ram, cpu, root_disk, ephemeral, swap
 

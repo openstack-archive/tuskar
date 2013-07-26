@@ -362,7 +362,7 @@ class FlavorsController(rest.RestController):
         flavors = []
         for flavor in pecan.request.dbapi.get_flavors(resource_class_id):
             flavors.append(Flavor.add_capacities(resource_class_id, flavor))
-            
+
         return flavors
         #return [Flavor.from_db_model(flavor) for flavor in result]
 
@@ -481,19 +481,21 @@ class DataCenterController(rest.RestController):
     @pecan.expose()
     def template(self):
         rcs = pecan.request.dbapi.get_heat_data()
+        nova_utils = NovaClient()
         return render('overcloud.yaml', dict(resource_classes=rcs,
-            config=CONF))
+           nova_util=nova_utils))
 
     @pecan.expose('json')
-    def post(self, data):
+    def post(self):
         # TODO: Currently all Heat parameters are hardcoded in
         #       template.
         params = {}
         rcs = pecan.request.dbapi.get_heat_data()
         heat = heat_client()
+        nova_utils = NovaClient()
 
         template_body = render('overcloud.yaml', dict(resource_classes=rcs,
-            config=CONF))
+            nova_util=nova_utils))
         if heat.validate_template(template_body):
 
             if heat.exists_stack():

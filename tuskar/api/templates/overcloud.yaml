@@ -1,7 +1,7 @@
 <%namespace name="not_compute" file="not_compute.yaml"/>\
 <%namespace name="compute" file="compute.yaml"/>\
 <% # Mapping between resource class service type and a HEAT template
-   # TODO (mtaylor) Move this into Config file or add to model via API call. 
+   # TODO (mtaylor) Move this into Config file or add to model via API call.
    templates = {"compute": compute, "not_compute": not_compute} %>\
 Description: Nova API,Keystone,Heat Engine and API,Glance,Neutron,Dedicated MySQL
   server,Dedicated RabbitMQ Server,Group of Nova Computes
