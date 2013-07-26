@@ -317,6 +317,10 @@ class Connection(api.Connection):
             if new_rack.chassis:
                 rack.chassis_id = new_rack.chassis.id
 
+            if new_rack.state and new_rack.state in ['provisioned',
+                    'unprovisioned', 'provisioning', 'error']:
+                    rack.state = new_rack.state
+
             if not isinstance(new_rack.resource_class, wtypes.UnsetType):
                 rc = self.get_resource_class(new_rack.resource_class.get_id())
                 if rack.resource_class_id != rc.id:
