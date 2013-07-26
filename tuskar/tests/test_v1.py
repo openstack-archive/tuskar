@@ -96,7 +96,7 @@ class TestRacks(api.FunctionalTest):
 
     def test_it_updates_rack(self):
         json = {
-            'name': 'test-new-name',
+            'name': 'blabla',
         }
         response = self.put_json('/racks/' + str(self.test_rack.id),
                                  params=json, status=200)
@@ -104,6 +104,28 @@ class TestRacks(api.FunctionalTest):
         self.assertEqual(response.json['name'], json['name'])
         updated_rack = self.db.get_rack(self.test_rack.id)
         self.assertEqual(updated_rack.name, json['name'])
+
+    def test_it_allow_to_update_rack_state(self):
+        json = {
+            'state': 'provisioned',
+        }
+        response = self.put_json('/racks/' + str(self.test_rack.id),
+                                 params=json, status=200)
+        self.assertEqual(response.content_type, "application/json")
+        self.assertEqual(response.json['state'], json['state'])
+        updated_rack = self.db.get_rack(self.test_rack.id)
+        self.assertEqual(updated_rack.state, json['state'])
+
+    def test_it_not_allow_to_update_rack_state_with_unknown_state(self):
+        json = {
+            'state': 'trololo',
+        }
+        response = self.put_json('/racks/' + str(self.test_rack.id),
+                                 params=json, status=200)
+        self.assertEqual(response.content_type, "application/json")
+        self.assertNotEqual(response.json['state'], json['state'])
+        updated_rack = self.db.get_rack(self.test_rack.id)
+        self.assertNotEqual(updated_rack.state, json['state'])
 
     def test_it_creates_and_deletes_new_rack(self):
         json = {
