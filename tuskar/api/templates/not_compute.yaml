@@ -1,6 +1,27 @@
+<%namespace name="conf" file="provision.conf.mako"/>\
+<%namespace name="sh" file="provision.sh.mako"/>\
 <%def name="render(x=0)">\
   notcompute:
     Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          files:
+            /root/tuskar/provision.conf:
+              content:
+                Fn::Base64:
+                  |
+<% conf.render() %>\
+              mode: "000644"
+              owner: root
+              group: root
+            /root/tuskar/provision.sh:
+              content:
+                Fn::Base64:
+                  |
+<% sh.render() %>\
+              mode: "000700"
+              owner: root
+              group: root
       OpenStack::Heat::Stack: {}
       Openstack::ImageBuilder::Elements:
       - boot-stack
@@ -81,71 +102,14 @@
         Fn::Base64:
           |
           #!/bin/bash -v
-          cat >/root/tuskar-provision.sh <<EOL
-          #!/bin/bash -v
           /opt/aws/bin/cfn-init
-          #0. SOURCE CREDENTIALS FOR NOVA COMMANDS
-          source /root/stackrc
-          wait_for(){
-            LOOPS=\$1
-            SLEEPTIME=\$2
-            shift ; shift
-            i=0
-            while [ \$i -lt \$LOOPS ] ; do
-                i=\$((i + 1))
-                eval "\$@" && return 0 || true
-                sleep \$SLEEPTIME
-            done
-            return 1
-          }
-          wait_for 60 10 test -f /opt/stack/boot-stack.ok
-          wait_for 60 10 nova list
-          # Declare nodes
-          declare -A BM_HOSTS
-          % for rc in resource_classes:
-          #1. CREAT HOST AGGREGATE for each resource class
-          declare -A AGGREGATES
-          AGGREGATE_ID=\$(nova aggregate-create "${rc.name}-hosts" | tail -n +4 | head -n 1 | tr -s ' ' | cut -d '|' -f2)
-          AGGREGATES["${rc.name}-hosts"]=\$AGGREGATE_ID
-          #2. SET HOST AGGREGATE METADATA
-          nova aggregate-set-metadata \$AGGREGATE_ID class="${rc.name}"
-          #3. CREATE EACH FLAVOR
-        % for f in rc.flavors:
-          nova flavor-show "${rc.name}.${f.name}" &> /dev/null
-          if [ \$? == 1 ]; then
-          <%
-            ram, vcpu, disk, ephemeral, swap = nova_util.extract_from_capacities(f)
-          %>
-            nova flavor-create --ephemeral=${ephemeral} --swap=${swap} "${rc.name}.${f.name}" "auto" ${ram} ${disk} ${vcpu}
-          fi
-          #4. SET FLAVOR METADATA
-          nova flavor-key "${rc.name}.${f.name}" set class="${rc.name}"
-        % endfor
-          #5. ADD NODES TO HOST AGGREGATE
-      % for rack in rc.racks:
-        % for node in rack.nodes:
-          % if rc.service_type == "compute":
-          BM_HOSTS["${node.node_id}"]="${rc.name}-hosts"
-          %endif
-        % endfor
-        % endfor
-        % endfor
-          while [ \${'${#BM_HOSTS[@]}'} -gt 0 ]
-          do
-            LIST=\`nova host-list\`
-            for i in \${'${!BM_HOSTS[@]}'}
-            do
-            HOST_ID=\`expr "\$LIST" : ".*\(overcloud-novacompute\$i-\(\w\)\{6\}\)"\`
-            if [ \$HOST_ID != 0 ]
-            then
-              nova aggregate-add-host ${'\${AGGREGATES[\${BM_HOSTS[\$i]}]}'} \$HOST_ID
-              unset BM_HOSTS[\$i]
-            fi
-            done
-            sleep 1m
-          done
-          EOL
-          chmod +x /root/tuskar-provision.sh
-          exec /root/tuskar-provision.sh &> /root/tuskar-provision.log &
+          # The credentials in the cfn-hup config are not needed this is a bug
+          # in the overcloud-control image
+          sed '/credential-file/d' /etc/cfn/cfn-hup.conf > /tmp/cfn-hup.conf
+          mv -f /tmp/cfn-hup.conf /etc/cfn/cfn-hup.conf
+          /opt/aws/bin/cfn-hup
+          # Wait a short while until the files are downloaded
+          sleep 2m
+          exec /root/tuskar/provision.sh &> /root/tuskar/provision.log &
     Type: AWS::EC2::Instance
 </%def>\
