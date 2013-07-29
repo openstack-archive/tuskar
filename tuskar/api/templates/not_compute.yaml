@@ -103,13 +103,10 @@
           |
           #!/bin/bash -v
           /opt/aws/bin/cfn-init
-          # The credentials in the cfn-hup config are not needed this is a bug
-          # in the overcloud-control image
-          sed '/credential-file/d' /etc/cfn/cfn-hup.conf > /tmp/cfn-hup.conf
-          mv -f /tmp/cfn-hup.conf /etc/cfn/cfn-hup.conf
-          /opt/aws/bin/cfn-hup
-          # Wait a short while until the files are downloaded
-          sleep 2m
+          # We need to set the undercloud Heat IP in the boto config.  Atm this
+          # is hardcoded.  We should set a hostname in the tuskar conf.
+          sed -e "s/0.0.0.0/192.0.2.2/g" /var/lib/heat-cfntools/cfn-boto-cfg > /tmp/cfn-boto-cfg
+          mv -f /tmp/cfn-boto-cfg /var/lib/heat-cfntools/cfn-boto-cfg
           exec /root/tuskar/provision.sh &> /root/tuskar/provision.log &
     Type: AWS::EC2::Instance
 </%def>\
