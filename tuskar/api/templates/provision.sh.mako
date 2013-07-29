@@ -72,6 +72,8 @@
                         sleep 1m
                       done
                       echo "Resource Registration Complete"
+                    else
+                      cat /var/cache/heat-cfntools/last_metadata | python -c 'import sys;import json;print json.load(sys.stdin)["AWS::CloudFormation::Init"]["config"]["files"]["/root/tuskar/provision.conf"]["content"]' > /root/tuskar/provision.conf
                     fi
                     sleep 1m
                   done
