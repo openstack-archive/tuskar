@@ -284,11 +284,13 @@ class Connection(api.Connection):
             if (heat_stack_status == 'CREATE_IN_PROGRESS'
                     or heat_stack_status == 'UPDATE_IN_PROGRESS'):
                 rack.state = 'provisioning'
-            elif (heat_stack_status == 'UPDATE_COMPLETE'
-                or heat_stack_status == 'CREATE_COMPLETE'):
+            elif (rack.state == 'provisioning') and (
+                    heat_stack_status == 'UPDATE_COMPLETE' or
+                    heat_stack_status == 'CREATE_COMPLETE'):
                 rack.state = 'active'
-            elif (heat_stack_status == 'UPDATE_FAILED'
-                or heat_stack_status == 'CREATE_FAILED'):
+            elif (rack.state == 'provisioning') and (
+                    heat_stack_status == 'UPDATE_FAILED' or
+                    heat_stack_status == 'CREATE_FAILED'):
                 rack.state = 'error'
             session.add(rack)
             session.commit()
