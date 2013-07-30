@@ -107,9 +107,6 @@
           # is hardcoded.  We should set a hostname in the tuskar conf.
           sed -e "s/0.0.0.0/192.0.2.2/g" /var/lib/heat-cfntools/cfn-boto-cfg > /tmp/cfn-boto-cfg
           mv -f /tmp/cfn-boto-cfg /var/lib/heat-cfntools/cfn-boto-cfg
-          # We must enable host aggregate matching when scheduling
-          echo "scheduler_default_filters=AggregateInstanceExtraSpecsFilter,AvailabilityZoneFilter,RamFilter,ComputeFilter" >> /etc/nova/nova.conf
-          service nova-scheduler restart
           exec /root/tuskar/provision.sh &> /root/tuskar/provision.log &
     Type: AWS::EC2::Instance
 </%def>\

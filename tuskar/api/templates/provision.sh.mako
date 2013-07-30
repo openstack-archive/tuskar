@@ -16,6 +16,9 @@
                   }
                   wait_for 60 10 test -f /opt/stack/boot-stack.ok
                   wait_for 60 10 nova list
+                  # We must enable host aggregate matching when scheduling
+                  echo "scheduler_default_filters=AggregateInstanceExtraSpecsFilter,AvailabilityZoneFilter,RamFilter,ComputeFilter" >> /etc/nova/nova.conf
+                  service nova-scheduler restart
                   # Remove default flavors
                   for i in {1..5}
                   do
