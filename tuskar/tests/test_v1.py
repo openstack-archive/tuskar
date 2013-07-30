@@ -273,3 +273,13 @@ class TestResourceClasses(api.FunctionalTest):
         response = self.put_json('/resource_classes/' + str(self.rc.id),
                                  params=json, status=200)
         self.assert_racks_present(json, response)
+
+
+class TestDataCenters(api.FunctionalTest):
+
+    db = dbapi.get_backend()
+
+    def test_it_returns_the_heat_overcloud_template(self):
+        response = self.app.get('/v1/data_centers/template')
+        self.assertEqual(response.status, '200 OK')
+        self.assertRegexpMatches(response.body, 'HeatTemplateFormatVersion')
