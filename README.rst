@@ -3,17 +3,19 @@ Tuskar
 .. image:: https://travis-ci.org/tuskar/tuskar.png?branch=master
    :target: http://travis-ci.org/tuskar/tuskar
 
-Tuskar is playground for some ideas for an OpenStack management API.
+What is Tuskar?
+---------------
 
-Send pull requests!
+Tuskar is a playground for some ideas for an OpenStack management API.
+For additional information, take a look at the `Tuskar
+website <https://github.com/tuskar/tuskar/blob/master/docs/index.rst>`_.
 
------------
-Development
------------
+Developer Information
+---------------------
 
 Tuskar source code should be pulled directly from git::
 
-  git clone https://github.com/tuskar/tuskar.git
+    git clone https://github.com/tuskar/tuskar.git
 
 Setting up a local environment for development can be done with tox::
 
@@ -50,8 +52,14 @@ Setting up a local environment for development can be done with tox::
     # deactivate the virtualenv
     deactivate
 
-------------
-Contributing
-------------
+For additional developer information, take a look at the `Tuskar
+website <https://github.com/tuskar/tuskar/blob/master/docs/index.md>`_.
 
-Please see our CONTRIBUTING.rst for details and a getting started guide.
+Contributing
+~~~~~~~~~~~~
+
+Please see
+`CONTRIBUTING.md <https://github.com/tuskar/tuskar/blob/master/CONTRIBUTING.md>`_
+for details on how to contribute.
+
+Send pull requests!
