@@ -33,8 +33,9 @@ Getting Started
 Setting up the Tuskar development environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This assumes you have done all the basic setup as described in the
-README. Run the following::
+This assumes you have done all the basic setup as described in
+`INSTALL.rst <https://github.com/tuskar/tuskar/blob/master/INSTALL.rst>`_.
+Run the following::
 
     # creates symlinks for installed code.  Used for dev environment.
     $ python setup.py develop
