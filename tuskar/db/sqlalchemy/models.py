@@ -177,5 +177,5 @@ class ResourceClass(Base):
     flavors = relationship("Flavor",
                            backref="resource_class",
                            lazy='joined',
-                           cascade="all",
+                           cascade="all, delete",
                            passive_updates=False)
