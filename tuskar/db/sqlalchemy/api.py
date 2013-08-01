@@ -196,6 +196,18 @@ class Connection(api.Connection):
                     rc.racks.append(rack)
                     session.add(rc)
 
+               #Deal with Flavors here - don't need to follow approach above
+               #for Racks, since Flavor cannot be referenced (i.e. exist)
+               #outside a ResourceClass. So can just delete
+            if not isinstance(new_resource_class.flavors, wtypes.UnsetType):
+                #first delete all old flavors
+                [session.delete(old_flavor) for old_flavor in rc.flavors]
+                #now add all the new flavors
+                for new_flav in new_resource_class.flavors:
+                    flavor = self.create_flavor(new_flav)
+                    session.add(flavor)
+                    flavor.resource_class = rc
+
         except Exception:
             session.rollback()
             raise
