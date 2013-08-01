@@ -46,9 +46,9 @@ Install and Contribute
 ----------------------
 
 -  `Install
-   Guide <https://github.com/tuskar/tuskar/blob/master/README.md>`_
+   Guide <https://github.com/tuskar/tuskar/blob/master/INSTALL.rst>`_
 -  `Contributing
-   Guide <https://github.com/tuskar/tuskar/blob/master/CONTRIBUTING.md>`_
+   Guide <https://github.com/tuskar/tuskar/blob/master/CONTRIBUTING.rst>`_
 -  `Debugging with
    iPython <https://github.com/tuskar/tuskar/wiki/Debugging-with-iPython>`_
 -  `Demo Data
@@ -77,3 +77,12 @@ Other
 -----
 
 -  *TODO* link to developer portion of FAQ
+
+Contact Us
+==========
+
+Join us on IRC (Internet Relay Chat)::
+
+    Network: Freenode (irc.freenode.net/tuskar)
+    Channel: #tuskar
+
