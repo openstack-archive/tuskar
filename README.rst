@@ -21,7 +21,7 @@ usage metrics, aiding in capacity planning and hardware procurement
 decisions.
 
 For additional information, take a look at the `Tuskar
-website <https://github.com/tuskar/tuskar/blob/master/docs/index.rst>`_.
+documentation <https://github.com/tuskar/tuskar/blob/master/docs/index.rst>`_.
 
 Developer Information
 ---------------------
