@@ -68,8 +68,6 @@ API
 HEAT Integration
 ----------------
 
--  `Using Heat API with
-   Boto <https://github.com/tuskar/tuskar/blob/master/docs/heat/using-heat-api-with-boto.rst>`_
 -  *TODO* How HEAT update works
 -  *TODO* Generation of the HEAT template
 
