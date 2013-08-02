@@ -24,7 +24,7 @@ the following checklist:
 2. Update the API docs (if needed)
 3. Update the tests (if needed)
 4. Update
-   `cURL commands <https://github.com/tuskar/tuskar/wiki/cURL-commands>`_
+   `cURL commands <https://github.com/tuskar/tuskar/blob/master/docs/api/curl.md>`_
    page (if needed)
 
 Getting Started
