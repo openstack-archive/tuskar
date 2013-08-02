@@ -1,4 +1,4 @@
-# OpenStack Management API Draft
+# Tuskar API Draft
 
 ## ERD diagram:
 
@@ -9,7 +9,7 @@
 
 ## Introduction and Concepts
 
-The main resources in the Openstack-M API are:
+The main resources in the Tuskar API are:
 <a name="index"></a>
 
 * [ResourceClass](#resource_class)

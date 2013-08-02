@@ -27,7 +27,7 @@ demo! <https://www.youtube.com/watch?v=VEY035-Lyzo>`_
 -  *TODO* feature examples
 -  *TODO* link to high-level portion of FAQ
 -  `Recommended
-   reading <https://github.com/tuskar/tuskar/wiki/Recommended-reading>`_
+   reading <https://github.com/tuskar/tuskar/blob/master/docs/recommended-reading.rst>`_
 
 Related Projects
 ----------------
@@ -50,9 +50,9 @@ Install and Contribute
 -  `Contributing
    Guide <https://github.com/tuskar/tuskar/blob/master/CONTRIBUTING.rst>`_
 -  `Debugging with
-   iPython <https://github.com/tuskar/tuskar/wiki/Debugging-with-iPython>`_
+   iPython <https://github.com/tuskar/tuskar/blob/master/docs/debugging-with-ipython.rst>`_
 -  `Demo Data
-   Script <https://github.com/tuskar/tuskar/wiki/Demo-Data-Script>`_
+   Script <https://github.com/tuskar/tuskar/blob/master/docs/demo-data-script.rst>`_
 
 API
 ---
@@ -60,16 +60,16 @@ API
 -  `API
    Information <https://github.com/tuskar/tuskar/blob/master/docs/api/api.md>`_
 -  `cURL
-   commands <https://github.com/tuskar/tuskar/wiki/cURL-commands>`_
+   Commands <https://github.com/tuskar/tuskar/blob/master/docs/api/curl.rst>`_
 -  `Resource Class Demo
-   Script <https://github.com/tuskar/tuskar/wiki/Resource-Class-Demo-Script>`_
+   Script <https://github.com/tuskar/tuskar/blob/master/docs/resource-class-demo-script.rst>`_
    (uses cURL)
 
 HEAT Integration
 ----------------
 
 -  `Using Heat API with
-   Boto <https://github.com/tuskar/tuskar/wiki/Using-Heat-API-with-Boto>`_
+   Boto <https://github.com/tuskar/tuskar/blob/master/docs/heat/using-heat-api-with-boto.rst>`_
 -  *TODO* How HEAT update works
 -  *TODO* Generation of the HEAT template
 
