@@ -24,8 +24,6 @@ class TestRacks(api.FunctionalTest):
         self.assertEqual(rack_json['slots'], rack.slots)
         self.assertEqual(rack_json['subnet'], rack.subnet)
         self.assertTrue(rack_json['nodes'])
-        print rack.id
-        print rack.nodes[0].id
         self.assertEqual(rack_json['nodes'][0]['id'],
                          str(rack.nodes[0].id))
         self.assertTrue(rack_json['capacities'])
@@ -279,7 +277,38 @@ class TestDataCenters(api.FunctionalTest):
 
     db = dbapi.get_backend()
 
+    # Setup an ResourceClass with some Rack to trigger also bash script
+    # generation and to add some Racks into the Heat template
+    #
+    def setUp(self):
+        super(TestDataCenters, self).setUp()
+        self.rc = self.db.create_resource_class(v1.ResourceClass(
+            name='t1',
+            service_type='compute',
+        ))
+        self.racks = []
+
+    def tearDown(self):
+        self.db.delete_resource_class(self.rc.id)
+        self.teardown_racks()
+        super(TestDataCenters, self).tearDown()
+
+    def setup_racks(self):
+        for rack_num in range(1, 4):
+            self.racks.append(self.db.create_rack(v1.Rack(
+                name='rack-no-{0}'.format(rack_num),
+                subnet='192.168.2.{0}/24'.format(rack_num),
+                resource_class=v1.Relation(id=self.rc.id),
+                nodes=[v1.Node(id='1'), v1.Node(id='2')]
+                ))
+            )
+
+    def teardown_racks(self):
+        for rack in self.racks:
+            self.db.delete_rack(rack.id)
+
     def test_it_returns_the_heat_overcloud_template(self):
+        self.setup_racks()
         response = self.app.get('/v1/data_centers/template')
         self.assertEqual(response.status, '200 OK')
         self.assertRegexpMatches(response.body, 'HeatTemplateFormatVersion')
