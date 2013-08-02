@@ -80,4 +80,4 @@ Listing Stacks
     # FIXME: The 'port' and 'path' should be stored in config file...
     conn = CloudFormationConnection(port=8000, path='/v1')
 
-    print conn.list\_stacks()
+    print conn.list_stacks()

@@ -7,14 +7,14 @@ Get a Resource Class
 
 ::
 
-    curl -H 'Accept: application/json' http://0.0.0.0:6385/v1/resource\_classes/1
+    curl -H 'Accept: application/json' http://0.0.0.0:6385/v1/resource_classes/1
 
     {
-      "service\_type": "compute",
+      "service_type": "compute",
       "racks": [],
       "id": 1,
       "links": [{
-        "href": "http://0.0.0.0:6385/v1/resource\_classes/1",
+        "href": "http://0.0.0.0:6385/v1/resource_classes/1",
         "rel": "self"
        }],
        "name": "test-chassis"
@@ -25,7 +25,7 @@ Get the Resource Class Collection
 
 ::
 
-    curl -H 'Accept: application/json' http://0.0.0.0:6385/v1/resource\_classes/
+    curl -H 'Accept: application/json' http://0.0.0.0:6385/v1/resource_classes/
 
 Create a Resource Class with a Rack
 -----------------------------------

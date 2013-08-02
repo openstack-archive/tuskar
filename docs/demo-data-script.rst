@@ -2,8 +2,8 @@
 Demo Data Script
 ================
 
-This document details the beginning of the walkthrough script for the
- Tuskar demo
+This document details the beginning of the walkthrough script for the Tuskar
+demo.
 
 To use this, clear your database and run the commands below.  The result
 should be a HEAT template with 6 compute Nodes and 1 non-compute Node.
