@@ -1,11 +1,13 @@
 language: python
 python:
   - 2.7
-install:
-  - pip install -q -r requirements.txt --use-mirrors
-  - pip install -q -r test-requirements.txt --use-mirrors
+env:
+  - TOX_ENV=py27
+  - TOX_ENV=pep8
+before_install:
+  - pip install tox --use-mirrors
 script:
-  - python setup.py testr
+  - tox -e $TOX_ENV
 notifications:
   irc:
     channels:
