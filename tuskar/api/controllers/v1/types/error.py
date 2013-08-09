@@ -11,3 +11,13 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+import wsme
+from wsme import types as wtypes
+from tuskar.api.controllers.v1.types import base
+
+class Error(base.Base):
+    """An error representation."""
+
+    faultcode = int
+    faultstring = wtypes.text
