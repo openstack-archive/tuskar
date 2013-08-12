@@ -25,7 +25,7 @@ develop-eggs
 .tox
 .venv
 .*.swp
-.coverage
+.coverage*
 cover
 AUTHORS
 ChangeLog
