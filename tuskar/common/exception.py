@@ -240,6 +240,8 @@ class RackNotFound(NotFound):
 class FlavorNotFound(NotFound):
     message = _("Flavor %(flavor)s could not be found.")
 
+class ResourceClassNotFound(NotFound):
+    message = _("ResourceClass  %(resource_class)s could not be found.")
 
 class NodeLocked(NotFound):
     message = _("Node %(node)s is locked by another process.")
