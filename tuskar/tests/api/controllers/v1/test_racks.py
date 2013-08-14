@@ -163,7 +163,7 @@ class TestRacks(api.FunctionalTest):
         self.assertEqual(response.status_int, 404)
 
     # FIXME(mfojtik): This test will fail because of Pecan bug, see:
-    # https://github.com/tuskar/tuskar/issues/18
+    # https://github.com/stackforge/tuskar/issues/18
     #
     def test_it_returns_404_when_deleting_unknown_rack(self):
         response = self.delete_json('/racks/unknown',
@@ -173,7 +173,7 @@ class TestRacks(api.FunctionalTest):
 
         self.assertEqual(response.status_int, 404)
 
-    # this is test for https://github.com/tuskar/tuskar/issues/39
+    # this is test for https://github.com/stackforge/tuskar/issues/39
     def test_it_updates_resource_class_id_when_already_present(self):
         # create needed resource_class
         self.setup_resource_class()
