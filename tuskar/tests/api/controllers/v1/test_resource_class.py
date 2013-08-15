@@ -33,9 +33,9 @@ class TestResourceClasses(api.FunctionalTest):
     @staticmethod
     def sorted_ids(resources):
         if resources and hasattr(resources[0], 'id'):
-            sorted([r.id for r in resources])
+            return sorted([r.id for r in resources])
         else:
-            sorted([r['id'] for r in resources])
+            return sorted([r['id'] for r in resources])
 
     def assert_racks_present(self, sent_json, response):
         self.assertEqual(self.sorted_ids(sent_json['racks']),
@@ -55,7 +55,6 @@ class TestResourceClasses(api.FunctionalTest):
 
     def test_update_racks(self):
         self.setup_racks()
-
         # Assign racks for the first time
         json = {'racks': [{'id': self.racks[0].id},
                           {'id': self.racks[1].id}]}
