@@ -173,7 +173,6 @@ class Connection(api.Connection):
                 rc.service_type = new_resource_class.service_type
 
             session.add(rc)
-
             if not isinstance(new_resource_class.racks, wtypes.UnsetType):
                 # Clear associations on Racks that were associated to this
                 # Resource Class but now are not. Make new associations on
@@ -186,10 +185,16 @@ class Connection(api.Connection):
                 clear_associations = list(set(old_ids) - set(new_ids))
                 make_associations = list(set(new_ids) - set(old_ids))
 
+                #remove association from racks to the resource_class
                 for r_id in clear_associations:
                     rack = self.get_rack(r_id)
                     rack.resource_class_id = None
+                    #need to also remove the rack from rc.racks:
+                    for r in rc.racks:
+                        if r.id == r_id:
+                            rc.racks.remove(r)
 
+                #add new racks to rc
                 for r_id in make_associations:
                     rack = self.get_rack(r_id)
                     session.add(rack)
