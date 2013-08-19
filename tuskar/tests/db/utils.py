@@ -41,7 +41,7 @@ def get_test_flavor(**kwargs):
     return flavor
 
 def get_test_rack(**kwargs):
-    rack = Rack(subnet = kwargs.get('subnet', '192.168.1.0/255'),
+    rack = Rack(subnet = kwargs.get('subnet', '192.168.1.0/24'),
                 slots  = kwargs.get('slots', 1),
                 name   = kwargs.get('name', 'my_rack'),
                 capacities = [
@@ -51,10 +51,18 @@ def get_test_rack(**kwargs):
                    Capacity(name = 'total_memory',
                             value=  kwargs.get('total_memory', '8192'),
                             unit = 'MiB' )],
-                nodes  = [
-                   Node(id = '123'),
-                   Node(id = '345')])
+                nodes = [])
+    if kwargs.get('nodes', False):
+      rack.nodes = [ Node(id = '123'), Node(id = '345')]
+    if kwargs.get('resource_class', False):
+      rack.resource_class = Relation(id = kwargs.get('rc_id', 1),
+                                          links = [Link(href = 'http://0.0.0.0:6385/resource_classes/' +
+                                                              str(kwargs.get('rc_id', 1)), rel='self')])
     return rack
+
+def get_test_rack_node(**kwargs):
+    node = Node(id=kwargs.get('id', '1'))
+    return node
 
 def get_test_resource_class_rack(**kwargs):
     rack_id = kwargs.get('id', 1)
