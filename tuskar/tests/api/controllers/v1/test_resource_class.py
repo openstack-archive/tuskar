@@ -2,6 +2,7 @@ from tuskar.db.sqlalchemy import api as dbapi
 from tuskar.tests.api import api
 from tuskar.api.controllers.v1.types import ResourceClass, Rack
 
+
 class TestResourceClasses(api.FunctionalTest):
 
     db = dbapi.get_backend()
@@ -44,6 +45,26 @@ class TestResourceClasses(api.FunctionalTest):
         self.assertEqual(self.sorted_ids(sent_json['racks']),
                          self.sorted_ids(updated_rc.racks))
 
+    def test_list_resource_classes(self):
+        response = self.get_json('/resource_classes/', expect_errors=True)
+        self.assertEqual(response.content_type, 'application/json')
+
+    def test_get_resource_class(self):
+        rc_id = '1'
+        # without expect_errors, the response type is a list
+        response = self.get_json('/resource_classes/' + rc_id,
+                                 expect_errors=True)
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['name'], 'test resource class')
+
+    def test_create_resource_class(self):
+        json = {'name': 'new', 'service_type': 'compute'}
+        response = self.post_json('/resource_classes/', params=json)
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['name'], json['name'])
+        row = self.db.get_resource_class(response.json['id'])
+        self.assertEqual(row.name, json['name'])
+
     def test_update_name_only(self):
         json = {'name': 'updated name'}
         response = self.put_json('/resource_classes/' + str(self.rc.id),
@@ -69,3 +90,7 @@ class TestResourceClasses(api.FunctionalTest):
                                  params=json, status=200)
         self.assert_racks_present(json, response)
 
+    def test_delete_resource_class(self):
+        rc_id = '1'
+        response = self.delete_json('/resource_classes/' + rc_id, status=200)
+        self.assertEqual(response.content_type, 'application/json')
