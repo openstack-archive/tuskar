@@ -1,7 +1,8 @@
+from tuskar.api.controllers.v1.types import Rack
+from tuskar.api.controllers.v1.types import ResourceClass
+from tuskar.common import exception
 from tuskar.db.sqlalchemy import api as dbapi
 from tuskar.tests.api import api
-from tuskar.api.controllers.v1.types import ResourceClass, Rack
-from tuskar.common import exception
 
 
 class TestResourceClasses(api.FunctionalTest):

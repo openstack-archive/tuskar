@@ -12,14 +12,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import pecan
-import wsme
+#import wsme
 from wsme import types as wtypes
+
 from tuskar.api.controllers.v1.types.base import Base
-from tuskar.api.controllers.v1.types.link import Link
-from tuskar.api.controllers.v1.types.relation import Relation
-from tuskar.api.controllers.v1.types.chassis import Chassis
-from tuskar.api.controllers.v1.types.node import Node
 from tuskar.api.controllers.v1.types.capacity import Capacity
+from tuskar.api.controllers.v1.types.chassis import Chassis
+from tuskar.api.controllers.v1.types.link import Link
+from tuskar.api.controllers.v1.types.node import Node
+from tuskar.api.controllers.v1.types.relation import Relation
+
 
 class Rack(Base):
     """A representation of Rack in HTTP body."""
@@ -39,12 +41,12 @@ class Rack(Base):
     @classmethod
     def convert_with_links(self, rack, links):
 
-        kwargs = rack.as_dict() # returns a new dict, overwriting keys is safe
+        kwargs = rack.as_dict()  # returns a new dict, overwriting keys is safe
 
         if rack.chassis_id:
             kwargs['chassis'] = Chassis(id=rack.chassis_id,
-                                        links=[Link.build_ironic_link('chassis',
-                                                            rack.chassis_id)])
+                                        links=[Link.build_ironic_link(
+                                            'chassis', rack.chassis_id)])
         else:
             kwargs['chassis'] = Chassis()
 
@@ -59,8 +61,10 @@ class Rack(Base):
                                                for c in rack.capacities]
 
         kwargs['nodes'] = [Node(id=n.node_id,
-                                      links=[Link.build_ironic_link('node', n.node_id)])
-                                 for n in rack.nodes]
+                                links=[
+                                    Link.build_ironic_link('node', n.node_id)
+                                ])
+                           for n in rack.nodes]
 
         return Rack(links=links, **kwargs)
 

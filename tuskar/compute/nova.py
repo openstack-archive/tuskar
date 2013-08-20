@@ -15,22 +15,25 @@
 #    under the License.
 
 #
+import simpleyaml
+
 from novaclient.v1_1 import client
 from oslo.config import cfg
-import simpleyaml
-from tuskar.common import exception
-from tuskar.openstack.common import jsonutils
+
+#from tuskar.common import exception
+#from tuskar.openstack.common import jsonutils
 from tuskar.openstack.common import log
 
 nova_opts = [
     cfg.StrOpt('nova_overcloud_config',
                default='etc/tuskar/nova_overcloud_config.yml',
                help='nova overcloud keystone uri and credentials'),
-    ]
+]
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 CONF.register_opts(nova_opts)
+
 
 class NovaClient(object):
 
@@ -42,8 +45,11 @@ class NovaClient(object):
             config_file.close()
         except Exception:
             raise
-        self.nova_client = client.Client(client_params['nova_username'], client_params['nova_password'],
-            client_params['nova_tenantname'], client_params['keystone_url'] , service_type="compute")
+        self.nova_client = client.Client(client_params['nova_username'],
+                                         client_params['nova_password'],
+                                         client_params['nova_tenantname'],
+                                         client_params['keystone_url'],
+                                         service_type="compute")
 
     def get_flavors(self):
         """Calls out to Nova for a list of detailed flavor information."""
@@ -52,18 +58,20 @@ class NovaClient(object):
         except Exception:
             raise
         #should convert response to some local Flavor object - controller/db?
-        #TODO ^^^ FIXME - right now we aren't using this method
+        #TODO() ^^^ FIXME - right now we aren't using this method
         return flavors
 
     #returns newly created flavor uuid from nova
     def create_flavor(self, flavor_data, rc_name):
         try:
-            ram, cpu, disk, ephemeral, swap = self.extract_from_capacities(flavor_data)
-            name = "%s.%s" %(rc_name, flavor_data.name)
+            ram, cpu, disk, ephemeral, swap = \
+                self.extract_from_capacities(flavor_data)
+            name = "%s.%s" % (rc_name, flavor_data.name)
             nova_flavor = self.nova_client.flavors.create(name, ram, cpu, disk)
             return nova_flavor.id
         except Exception as e:
-            if ("Instance Type with name %s already exists" %(name)) in e.message:
+            if ("Instance Type with name %s already exists" % (name,)) \
+                    in e.message:
                 for flav in self.get_flavors():
                     if flav.name == name:
                         return flav.id
@@ -74,7 +82,7 @@ class NovaClient(object):
         try:
             self.nova_client.flavors.delete(nova_flavor_id)
         except Exception as e:
-            if ("%s could not be found" %(nova_flavor_id)) in e.message:
+            if ("%s could not be found" % (nova_flavor_id)) in e.message:
                 return True
             else:
                 raise
@@ -94,4 +102,3 @@ class NovaClient(object):
             elif c.name in ["swap", "swap_disk"]:
                 swap = c.value
         return ram, cpu, root_disk, ephemeral, swap
-

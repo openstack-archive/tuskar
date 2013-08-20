@@ -1,7 +1,7 @@
-from oslo.config import cfg
+#from oslo.config import cfg
 
 import pecan
-from pecan.core import render
+#from pecan.core import render
 from pecan import rest
 
 import wsme
@@ -9,13 +9,16 @@ from wsme import api
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
-from tuskar.heat.client import HeatClient as heat_client
+from tuskar.api.controllers.v1.types import Error
+from tuskar.api.controllers.v1.types import Link
+from tuskar.api.controllers.v1.types import Rack
 from tuskar.common import exception
+#from tuskar.compute.nova import NovaClient
+from tuskar.heat.client import HeatClient as heat_client
 from tuskar.openstack.common import log
-from tuskar.compute.nova import NovaClient
-from tuskar.api.controllers.v1.types import Rack, Link, Error
 
 LOG = log.getLogger(__name__)
+
 
 class RacksController(rest.RestController):
     """REST controller for Rack."""
@@ -26,7 +29,10 @@ class RacksController(rest.RestController):
         """Create a new Rack."""
         try:
             result = pecan.request.dbapi.create_rack(rack)
-            links = [Link.build('self', pecan.request.host_url, 'racks', result.id)]
+            links = [Link.build('self',
+                                pecan.request.host_url,
+                                'racks',
+                                result.id)]
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
@@ -44,7 +50,7 @@ class RacksController(rest.RestController):
     @wsme.validate(Rack)
     @wsme_pecan.wsexpose(Rack, wtypes.text, body=Rack, status_code=200)
     def put(self, rack_id, rack):
-        """Update the Rack"""
+        """Update the Rack."""
 
         try:
             result = pecan.request.dbapi.update_rack(rack_id, rack)

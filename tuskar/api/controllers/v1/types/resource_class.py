@@ -12,12 +12,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import pecan
-import wsme
+#import wsme
 from wsme import types as wtypes
+
 from tuskar.api.controllers.v1.types.base import Base
-from tuskar.api.controllers.v1.types.link import Link
 from tuskar.api.controllers.v1.types.flavor import Flavor
+from tuskar.api.controllers.v1.types.link import Link
 from tuskar.api.controllers.v1.types.relation import Relation
+
 
 class ResourceClass(Base):
     """A representation of Resource Class in HTTP body."""

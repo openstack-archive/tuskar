@@ -1,16 +1,18 @@
-from oslo.config import cfg
+#from oslo.config import cfg
 import pecan
 from pecan.core import render
 from pecan import rest
 import wsme
-from wsme import api
-from wsme import types as wtypes
-import wsmeext.pecan as wsme_pecan
+#from wsme import api
+#from wsme import types as wtypes
+#import wsmeext.pecan as wsme_pecan
 
 from tuskar.compute.nova import NovaClient
+from tuskar.heat.client import HeatClient as heat_client
 
-from tuskar.common import exception
-from tuskar.openstack.common import log
+#from tuskar.common import exception
+#from tuskar.openstack.common import log
+
 
 class DataCenterController(rest.RestController):
     """Controller for provisioning the Tuskar data centre description as an
@@ -28,11 +30,11 @@ class DataCenterController(rest.RestController):
         rcs = pecan.request.dbapi.get_heat_data()
         nova_utils = NovaClient()
         return render('overcloud.yaml', dict(resource_classes=rcs,
-           nova_util=nova_utils))
+                                             nova_util=nova_utils))
 
     @pecan.expose('json')
     def post(self):
-        # TODO: Currently all Heat parameters are hardcoded in
+        # TODO(): Currently all Heat parameters are hardcoded in
         #       template.
         params = {}
         rcs = pecan.request.dbapi.get_heat_data()
@@ -60,5 +62,5 @@ class DataCenterController(rest.RestController):
                     "Cannot update the Heat overcloud template"
                 ))
         else:
-            raise wsme.exc.ClientSideError(_("The overcloud Heat template" +
+            raise wsme.exc.ClientSideError(_("The overcloud Heat template"
                                              "could not be validated"))

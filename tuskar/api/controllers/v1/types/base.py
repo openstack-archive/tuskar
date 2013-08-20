@@ -15,6 +15,7 @@
 import wsme
 from wsme import types as wtypes
 
+
 class Base(wsme.types.Base):
 
     def __init__(self, **kwargs):

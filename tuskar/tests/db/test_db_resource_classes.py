@@ -13,10 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from tuskar.common import exception
 from tuskar.db.sqlalchemy import api as dbapi
 from tuskar.tests.db import base as db_base
 from tuskar.tests.db import utils
-from tuskar.common import exception
+
 
 class TestDbResourceClasses(db_base.DbTestCase):
     db = dbapi.get_backend()
@@ -29,32 +30,40 @@ class TestDbResourceClasses(db_base.DbTestCase):
 
     def test_it_can_create_and_delete_a_plain_resource_class(self):
         #get a pecan resource_class:
-        pecan_rc = utils.get_test_resource_class(name = 'test_plain_resource_class',
-                                                service_type = 'compute')
+        pecan_rc = utils.get_test_resource_class(
+            name='test_plain_resource_class',
+            service_type='compute')
         #create it in db:
         db_rc = self.db.create_resource_class(pecan_rc)
-        self.__check_resource_class(db_rc, 'test_plain_resource_class', 'compute')
+        self.__check_resource_class(db_rc,
+                                    'test_plain_resource_class',
+                                    'compute')
         #delete it:
         self.db.delete_resource_class(db_rc.id)
 
     def test_it_can_create_and_delete_resource_class_with_flavors(self):
         #get a pecan resource_class:
-        pecan_rc = utils.get_test_resource_class(name = 'test_plain_resource_class',
-                                                  service_type = 'compute')
+        pecan_rc = utils.get_test_resource_class(
+            name='test_plain_resource_class',
+            service_type='compute')
         #give it some flavors:
         pecan_rc.flavors = [utils.get_test_flavor(name='xyz', value='123'),
                             utils.get_test_flavor(name='abc', value='456')]
         #create it in db:
         db_rc = self.db.create_resource_class(pecan_rc)
-        self.__check_resource_class(db_rc, 'test_plain_resource_class', 'compute',
-              flavor_names=['xyz','abc'], flavor_values=['123', '456'])
+        self.__check_resource_class(db_rc,
+                                    'test_plain_resource_class',
+                                    'compute',
+                                    flavor_names=['xyz', 'abc'],
+                                    flavor_values=['123', '456'])
         #delete it:
         self.db.delete_resource_class(db_rc.id)
 
     def test_it_can_create_and_delete_resource_class_with_racks(self):
         #get a pecan resource_class:
-        pecan_rc = utils.get_test_resource_class(name = 'resource_class_with_racks',
-                                                 service_type = 'compute')
+        pecan_rc = utils.get_test_resource_class(
+            name='resource_class_with_racks',
+            service_type='compute')
         #first create racks in database (ids 1 and 2):
         db_rack1 = self.db.create_rack(utils.get_test_rack(name='rack1'))
         db_rack2 = self.db.create_rack(utils.get_test_rack(name='rack2'))
@@ -64,8 +73,10 @@ class TestDbResourceClasses(db_base.DbTestCase):
         #create rc with racks in db:
         db_rc = self.db.create_resource_class(pecan_rc)
         #check it:
-        self.__check_resource_class(db_rc, 'resource_class_with_racks', 'compute',
-              rack_ids = [db_rack1.id, db_rack2.id])
+        self.__check_resource_class(db_rc,
+                                    'resource_class_with_racks',
+                                    'compute',
+                                    rack_ids=[db_rack1.id, db_rack2.id])
         #delete:
         self.db.delete_resource_class(db_rc.id)
         self.db.delete_rack(db_rack1.id)
@@ -74,9 +85,9 @@ class TestDbResourceClasses(db_base.DbTestCase):
     def test_it_can_retrieve_all_resource_classes(self):
         created_db_rc_ids = []
         #create a four resource classes
-        for i in range(1,5):
-            pecan_rc = utils.get_test_resource_class(name = ('rc_'+str(i)),
-                                                   service_type='foo')
+        for i in range(1, 5):
+            pecan_rc = utils.get_test_resource_class(name=('rc_' + str(i)),
+                                                     service_type='foo')
             db_rc = self.db.create_resource_class(pecan_rc)
             created_db_rc_ids.append(db_rc.id)
         #retrieve the resource classes:
@@ -88,8 +99,8 @@ class TestDbResourceClasses(db_base.DbTestCase):
 
     def test_it_can_retrieve_single_resource_class(self):
         #get a pecan resource_class:
-        pecan_rc = utils.get_test_resource_class(name = 'retrieve_rc_test',
-                                                 service_type = 'compute')
+        pecan_rc = utils.get_test_resource_class(name='retrieve_rc_test',
+                                                 service_type='compute')
         #create it:
         created_rc = self.db.create_resource_class(pecan_rc)
         #retrieve and check:
@@ -99,26 +110,30 @@ class TestDbResourceClasses(db_base.DbTestCase):
         self.db.delete_resource_class(db_rc.id)
 
     def test_it_explodes_when_retrieve_non_existant_resource_class(self):
-        self.assertRaises(exception.ResourceClassNotFound, self.db.get_resource_class, 'fake_id')
+        self.assertRaises(exception.ResourceClassNotFound,
+                          self.db.get_resource_class, 'fake_id')
 
     def test_it_can_update_resource_class_name_and_type(self):
         #get a pecan resource_class:
-        pecan_rc = utils.get_test_resource_class(name = 'a_plain_resource_class',
-                                                 service_type = 'compute')
+        pecan_rc = utils.get_test_resource_class(name='a_plain_resource_class',
+                                                 service_type='compute')
         #create it:
         db_rc = self.db.create_resource_class(pecan_rc)
         #update:
-        pecan_rc.name='updated_plain_resource_class'
+        pecan_rc.name = 'updated_plain_resource_class'
         pecan_rc.service_type = 'storage'
         updated_db_rc = self.db.update_resource_class(db_rc.id, pecan_rc)
         #check
-        self.__check_resource_class(updated_db_rc, 'updated_plain_resource_class', 'storage')
+        self.__check_resource_class(updated_db_rc,
+                                    'updated_plain_resource_class',
+                                    'storage')
         self.db.delete_resource_class(updated_db_rc.id)
 
     def test_it_can_update_resource_class_racks_and_flavors(self):
         #get a pecan resource_class:
-        pecan_rc = utils.get_test_resource_class(name = 'resource_class_update_racks_flavs',
-                                                 service_type = 'compute')
+        pecan_rc = utils.get_test_resource_class(
+            name='resource_class_update_racks_flavs',
+            service_type='compute')
         #create racks in database:
         db_rack1 = self.db.create_rack(utils.get_test_rack(name='rack1'))
         db_rack2 = self.db.create_rack(utils.get_test_rack(name='rack2'))
@@ -141,11 +156,16 @@ class TestDbResourceClasses(db_base.DbTestCase):
         updated_db_rc = self.db.update_resource_class(db_rc.id, pecan_rc)
         #check:
         #FIXME: THERE IS A BUG IN UPDATE RESOURCECLASS - it doesn't remove
-        #the old racks in update operation - adding all ids here so test passes:
-        self.__check_resource_class(updated_db_rc, 'resource_class_update_racks_flavs',
-              'compute', flavor_names=['flav3', 'flav4'], flavor_values=['3','4'],
-              rack_ids=[db_rack1.id, db_rack2.id, db_rack3.id, db_rack4.id])
-        #FIXME: i.e. remove db_rack1.id and db_rack2.id above as they shouldn't be there
+        #the old racks in update operation - adding all ids here so test passes
+        self.__check_resource_class(updated_db_rc,
+                                    'resource_class_update_racks_flavs',
+                                    'compute',
+                                    flavor_names=['flav3', 'flav4'],
+                                    flavor_values=['3', '4'],
+                                    rack_ids=[db_rack1.id, db_rack2.id,
+                                              db_rack3.id, db_rack4.id])
+        #FIXME: i.e. remove db_rack1.id and db_rack2.id above
+        #as they shouldn't be there
         #delete:
         self.db.delete_resource_class(updated_db_rc.id)
         for rack in [db_rack1, db_rack2, db_rack3, db_rack4]:

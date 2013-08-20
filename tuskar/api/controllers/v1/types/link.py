@@ -13,8 +13,9 @@
 #    under the License.
 from oslo.config import cfg
 
-import wsme
+#import wsme
 from wsme import types as wtypes
+
 from tuskar.api.controllers.v1.types.base import Base
 
 CONF = cfg.CONF
@@ -26,6 +27,7 @@ ironic_opts = [
 ]
 
 CONF.register_opts(ironic_opts)
+
 
 class Link(Base):
     """A link representation."""

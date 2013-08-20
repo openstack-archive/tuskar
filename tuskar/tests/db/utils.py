@@ -13,60 +13,80 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from tuskar.api.controllers.v1.types.resource_class import ResourceClass
-from tuskar.api.controllers.v1.types.flavor import Flavor
 from tuskar.api.controllers.v1.types.capacity import Capacity
-from tuskar.api.controllers.v1.types.rack import Rack
-from tuskar.api.controllers.v1.types.relation import Relation
+from tuskar.api.controllers.v1.types.flavor import Flavor
 from tuskar.api.controllers.v1.types.link import Link
 from tuskar.api.controllers.v1.types.node import Node
+from tuskar.api.controllers.v1.types.rack import Rack
+from tuskar.api.controllers.v1.types.relation import Relation
+from tuskar.api.controllers.v1.types.resource_class import ResourceClass
+
 
 def get_test_resource_class(**kwargs):
-    rc = ResourceClass(name = kwargs.get('name', 'test_resource_class'),
-                       service_type = kwargs.get('type', 'compute'))
+    rc = ResourceClass(name=kwargs.get('name', 'test_resource_class'),
+                       service_type=kwargs.get('type', 'compute'))
     return rc
 
+
 def get_test_flavor(**kwargs):
-    flavor = Flavor(name = kwargs.get('name', 'one'),
-                       capacities = [
-                         Capacity(name = 'cpu',
-                                  value=  kwargs.get('value', '1'),
-                                  unit = 'count' ),
-                         Capacity(name = 'memory',
-                                  value=  kwargs.get('value', '1'),
-                                  unit = 'MiB' ),
-                         Capacity(name = 'storage',
-                                  value=  kwargs.get('value', '1'),
-                                  unit = 'GiB' )])
+    flavor = Flavor(name=kwargs.get('name', 'one'),
+                    capacities=[
+                        Capacity(name='cpu',
+                                 value=kwargs.get('value', '1'),
+                                 unit='count'),
+                        Capacity(name='memory',
+                                 value=kwargs.get('value', '1'),
+                                 unit='MiB'),
+                        Capacity(name='storage',
+                                 value=kwargs.get('value', '1'),
+                                 unit='GiB')])
     return flavor
 
+
 def get_test_rack(**kwargs):
-    rack = Rack(subnet = kwargs.get('subnet', '192.168.1.0/24'),
-                slots  = kwargs.get('slots', 1),
-                name   = kwargs.get('name', 'my_rack'),
-                capacities = [
-                   Capacity(name = 'total_cpu',
-                            value=  kwargs.get('total_cpu', '64'),
-                            unit = 'count' ),
-                   Capacity(name = 'total_memory',
-                            value=  kwargs.get('total_memory', '8192'),
-                            unit = 'MiB' )],
-                nodes = [])
+    rack = Rack(subnet=kwargs.get('subnet', '192.168.1.0/24'),
+                slots=kwargs.get('slots', 1),
+                name=kwargs.get('name', 'my_rack'),
+                capacities=[
+                    Capacity(name='total_cpu',
+                             value=kwargs.get('total_cpu', '64'),
+                             unit='count'),
+                    Capacity(name='total_memory',
+                             value=kwargs.get('total_memory', '8192'),
+                             unit='MiB')],
+                nodes=[])
     if kwargs.get('nodes', False):
-      rack.nodes = [ Node(id = '123'), Node(id = '345')]
+        rack.nodes = [Node(id='123'), Node(id='345')]
     if kwargs.get('resource_class', False):
-      rack.resource_class = Relation(id = kwargs.get('rc_id', 1),
-                                          links = [Link(href = 'http://0.0.0.0:6385/resource_classes/' +
-                                                              str(kwargs.get('rc_id', 1)), rel='self')])
+        rack.resource_class = Relation(
+            id=kwargs.get('rc_id', 1),
+            links=[Link(href='http://0.0.0.0:6385/resource_classes/' +
+                        str(kwargs.get('rc_id', 1)), rel='self')])
     return rack
+
 
 def get_test_rack_node(**kwargs):
     node = Node(id=kwargs.get('id', '1'))
     return node
+    rack = Rack(subnet=kwargs.get('subnet', '192.168.1.0/255'),
+                slots=kwargs.get('slots', 1),
+                name=kwargs.get('name', 'my_rack'),
+                capacities=[
+                    Capacity(name='total_cpu',
+                             value=kwargs.get('total_cpu', '64'),
+                             unit='count'),
+                    Capacity(name='total_memory',
+                             value=kwargs.get('total_memory', '8192'),
+                             unit='MiB')],
+                nodes=[
+                    Node(id='123'),
+                    Node(id='345')])
+    return rack
+
 
 def get_test_resource_class_rack(**kwargs):
     rack_id = kwargs.get('id', 1)
-    rc_rack = Relation( id = rack_id,
-                     links = [Link(href = 'http://0.0.0.0:6385/v1/racks/' +
-                              str(rack_id), rel  = 'self')])
+    rc_rack = Relation(id=rack_id,
+                       links=[Link(href='http://0.0.0.0:6385/v1/racks/' +
+                                   str(rack_id), rel='self')])
     return rc_rack

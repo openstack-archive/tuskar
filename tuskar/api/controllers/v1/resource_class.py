@@ -1,20 +1,23 @@
-from oslo.config import cfg
+#from oslo.config import cfg
 import pecan
-from pecan.core import render
+#from pecan.core import render
 from pecan import rest
 import wsme
-from wsme import api
+#from wsme import api
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
-from tuskar.common import exception
+#from tuskar.common import exception
 from tuskar.openstack.common import log
 
 from tuskar.api.controllers.v1.flavor import FlavorsController
-from tuskar.api.controllers.v1.types import Base, Relation, ResourceClass,\
-                                            Flavor
+#from tuskar.api.controllers.v1.types import Base
+#from tuskar.api.controllers.v1.types import Flavor
+#from tuskar.api.controllers.v1.types import Relation
+from tuskar.api.controllers.v1.types import ResourceClass
 
 LOG = log.getLogger(__name__)
+
 
 class ResourceClassesController(rest.RestController):
     """REST controller for Resource Class."""
@@ -27,10 +30,12 @@ class ResourceClassesController(rest.RestController):
         """Create a new Resource Class."""
         try:
             result = pecan.request.dbapi.create_resource_class(resource_class)
-            #create in nova any flavors included in this resource_class creation
-            #for flav in result.flavors:
-                #nova_flavor_uuid = self.flavors.nova.create_flavor(flav, result.name)
-                #pecan.request.dbapi.update_flavor_nova_uuid(flav.id, nova_flavor_uuid)
+            #create in nova any flavors included in this resource_class
+            #creation for flav in result.flavors:
+            #nova_flavor_uuid = self.flavors.nova.create_flavor(flav,
+            #                                                   result.name)
+            #pecan.request.dbapi.update_flavor_nova_uuid(flav.id,
+            #                                            nova_flavor_uuid)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))

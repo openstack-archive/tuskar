@@ -1,7 +1,11 @@
+from tuskar.api.controllers.v1.types import Capacity
+from tuskar.api.controllers.v1.types import Chassis
+from tuskar.api.controllers.v1.types import Node
+from tuskar.api.controllers.v1.types import Rack
+from tuskar.api.controllers.v1.types import ResourceClass
 from tuskar.db.sqlalchemy import api as dbapi
 from tuskar.tests.api import api
-from tuskar.api.controllers.v1.types import Rack, Chassis, Capacity, Node,\
-                                            ResourceClass
+
 
 class TestRacks(api.FunctionalTest):
 
@@ -40,14 +44,14 @@ class TestRacks(api.FunctionalTest):
         self.test_resource_class = None
         self.test_rack = self.db.create_rack(
             Rack(name='test-rack',
-                    slots=1,
-                    subnet='10.0.0.0/24',
-                    location='nevada',
-                    chassis=Chassis(id='123'),
-                    capacities=[Capacity(name='cpu', value='10',
-                        unit='count')],
-                    nodes=[Node(id='1')]
-                    ))
+                 slots=1,
+                 subnet='10.0.0.0/24',
+                 location='nevada',
+                 chassis=Chassis(id='123'),
+                 capacities=[Capacity(name='cpu', value='10',
+                                      unit='count')],
+                 nodes=[Node(id='1')]
+                 ))
         # FIXME: For some reason the 'self.test_rack' does not
         #        lazy-load the 'nodes' and other attrs when
         #        having more than 1 test method...
@@ -199,4 +203,3 @@ class TestRacks(api.FunctionalTest):
         self.assertEqual(second_update_response.status_int, 200)
         self.assertEqual(second_update_response.json['resource_class']['id'],
                          rack_update_json['resource_class']['id'])
-

@@ -13,10 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from tuskar.common import exception
 from tuskar.db.sqlalchemy import api as dbapi
 from tuskar.tests.db import base as db_base
 from tuskar.tests.db import utils
-from tuskar.common import exception
+
 
 class TestDbRacks(db_base.DbTestCase):
     db = dbapi.get_backend()
@@ -30,10 +31,13 @@ class TestDbRacks(db_base.DbTestCase):
         self.db_rc1 = self.db.create_resource_class(pecan_rc1)
         self.db_rc2 = self.db.create_resource_class(pecan_rc2)
         #define 2 pecan racks, one without nodes:
-        pecan_rack1 = utils.get_test_rack(name='rack_no_nodes', resource_class=True,
-                                                rc_id=self.db_rc1.id)
-        pecan_rack2 = utils.get_test_rack(name='rack_has_nodes', nodes=True,
-                                                resource_class=True, rc_id=self.db_rc2.id)
+        pecan_rack1 = utils.get_test_rack(name='rack_no_nodes',
+                                          resource_class=True,
+                                          rc_id=self.db_rc1.id)
+        pecan_rack2 = utils.get_test_rack(name='rack_has_nodes',
+                                          nodes=True,
+                                          resource_class=True,
+                                          rc_id=self.db_rc2.id)
         #create them in db
         self.rack1 = self.db.create_rack(pecan_rack1)
         self.rack2 = self.db.create_rack(pecan_rack2)
@@ -67,7 +71,6 @@ class TestDbRacks(db_base.DbTestCase):
         #cleanup
         self.db.delete_rack(db_rack.id)
 
-
     def test_it_can_create_a_rack_with_nodes(self):
         #define pecan rack with nodes
         pecan_rack = utils.get_test_rack(name='rack_with_nodes', nodes=True)
@@ -77,10 +80,11 @@ class TestDbRacks(db_base.DbTestCase):
         #cleanup
         self.db.delete_rack(db_rack.id)
 
-
     def test_it_can_update_rack_basic_attributes(self):
         #define a pecan rack:
-        pecan_rack = utils.get_test_rack(name='a_rack', slots=1, subnet='192.168.0.0/16')
+        pecan_rack = utils.get_test_rack(name='a_rack',
+                                         slots=1,
+                                         subnet='192.168.0.0/16')
         #create in db:
         db_rack = self.db.create_rack(pecan_rack)
         #now update it
@@ -96,12 +100,12 @@ class TestDbRacks(db_base.DbTestCase):
 
     def test_it_can_update_rack_nodes(self):
         #define a pecan rack with nodes:
-        pecan_rack = utils.get_test_rack(name='rack_1', nodes = True)
+        pecan_rack = utils.get_test_rack(name='rack_1', nodes=True)
         #create in db
         db_rack = self.db.create_rack(pecan_rack)
         #update nodes:
         pecan_rack.nodes = []
-        for i in range(1,11):
+        for i in range(1, 11):
             pecan_rack.nodes.append(utils.get_test_rack_node(id=str(i)))
         db_rack = self.db.update_rack(db_rack.id, pecan_rack)
         self.__check_racks([db_rack], ['rack_1'])
@@ -118,4 +122,3 @@ class TestDbRacks(db_base.DbTestCase):
             self.assertTrue(rack.subnet != None)
             for capacity in rack.capacities:
                 self.assertTrue(capacity.name in ['total_cpu', 'total_memory'])
-

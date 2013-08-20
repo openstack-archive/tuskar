@@ -1,18 +1,19 @@
-from oslo.config import cfg
+#from oslo.config import cfg
 import pecan
-from pecan.core import render
-from pecan import rest
-import wsme
-from wsme import api
-from wsme import types as wtypes
-import wsmeext.pecan as wsme_pecan
+#from pecan.core import render
+#from pecan import rest
+#import wsme
+#from wsme import api
+#from wsme import types as wtypes
+#import wsmeext.pecan as wsme_pecan
 
-from tuskar.common import exception
-from tuskar.openstack.common import log
+#from tuskar.common import exception
+#from tuskar.openstack.common import log
 
+from tuskar.api.controllers.v1.data_center import DataCenterController
 from tuskar.api.controllers.v1.rack import RacksController
 from tuskar.api.controllers.v1.resource_class import ResourceClassesController
-from tuskar.api.controllers.v1.data_center import DataCenterController
+
 
 class Controller(object):
     """Version 1 API controller root."""

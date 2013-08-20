@@ -256,7 +256,8 @@ class Connection(api.Connection):
             session.rollback()
             raise
 
-    def update_resource_class_flavor(self, resource_class_id, flavor_id, new_flavor):
+    def update_resource_class_flavor(self, resource_class_id,
+                                     flavor_id, new_flavor):
         session = get_session()
         session.begin()
         try:
