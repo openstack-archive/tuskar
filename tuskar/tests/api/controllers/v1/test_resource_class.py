@@ -1,6 +1,8 @@
+from tuskar.api.controllers.v1.types import Rack
+from tuskar.api.controllers.v1.types import ResourceClass
 from tuskar.db.sqlalchemy import api as dbapi
 from tuskar.tests.api import api
-from tuskar.api.controllers.v1.types import ResourceClass, Rack
+
 
 class TestResourceClasses(api.FunctionalTest):
 
@@ -68,4 +70,3 @@ class TestResourceClasses(api.FunctionalTest):
         response = self.put_json('/resource_classes/' + str(self.rc.id),
                                  params=json, status=200)
         self.assert_racks_present(json, response)
-

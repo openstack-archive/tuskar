@@ -22,5 +22,5 @@ from tuskar.api.controllers.v1.types.rack import Rack
 from tuskar.api.controllers.v1.types.relation import Relation
 from tuskar.api.controllers.v1.types.resource_class import ResourceClass
 
-__all__ = (Base, Capacity, Chassis, Error, Link, Node, Rack,
+__all__ = (Base, Capacity, Chassis, Error, Flavor, Link, Node, Rack,
            Relation, ResourceClass)

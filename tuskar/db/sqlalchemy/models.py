@@ -162,6 +162,7 @@ class Flavor(Base):
             cascade="all, delete",
             lazy='joined')
 
+
 class ResourceClass(Base):
     """Represents a Resource Class."""
 

@@ -1,6 +1,10 @@
+from tuskar.api.controllers.v1.types import Node
+from tuskar.api.controllers.v1.types import Rack
+from tuskar.api.controllers.v1.types import Relation
+from tuskar.api.controllers.v1.types import ResourceClass
 from tuskar.db.sqlalchemy import api as dbapi
 from tuskar.tests.api import api
-from tuskar.api.controllers.v1.types import ResourceClass, Rack, Relation, Node
+
 
 class TestDataCenters(api.FunctionalTest):
 
@@ -29,7 +33,7 @@ class TestDataCenters(api.FunctionalTest):
                 subnet='192.168.2.{0}/24'.format(rack_num),
                 resource_class=Relation(id=self.rc.id),
                 nodes=[Node(id='1'), Node(id='2')]
-                ))
+            ))
             )
 
     def teardown_racks(self):

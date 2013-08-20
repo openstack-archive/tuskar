@@ -12,10 +12,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import wsme
+#import wsme
 from wsme import types as wtypes
+
 from tuskar.api.controllers.v1.types.base import Base
 from tuskar.api.controllers.v1.types.link import Link
+
 
 class Chassis(Base):
     """A chassis representation."""

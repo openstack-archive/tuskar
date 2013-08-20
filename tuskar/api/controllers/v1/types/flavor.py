@@ -14,9 +14,11 @@
 import pecan
 import wsme
 from wsme import types as wtypes
+
 from tuskar.api.controllers.v1.types.base import Base
-from tuskar.api.controllers.v1.types.link import Link
 from tuskar.api.controllers.v1.types.capacity import Capacity
+from tuskar.api.controllers.v1.types.link import Link
+
 
 class Flavor(Base):
     """A representation of Flavor in HTTP body."""

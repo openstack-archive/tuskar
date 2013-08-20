@@ -12,9 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import wsme
+#import wsme
 from wsme import types as wtypes
+
 from tuskar.api.controllers.v1.types import base
+
 
 class Error(base.Base):
     """An error representation."""
