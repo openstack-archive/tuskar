@@ -34,6 +34,7 @@ import fixtures
 import mox
 import stubout
 import testtools
+import unittest2
 
 from oslo.config import cfg
 
@@ -145,7 +146,9 @@ class TestingException(Exception):
     pass
 
 
-class TestCase(testtools.TestCase):
+# The unittest2.TestCase mixin provides assertRegexpMatches, which isn't
+# available on Python 2.6 by default.
+class TestCase(testtools.TestCase, unittest2.TestCase):
     """Test case base class for all unit tests."""
 
     def setUp(self):

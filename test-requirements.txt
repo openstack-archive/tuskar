@@ -16,3 +16,4 @@ python-subunit
 sphinx>=1.1.2
 testrepository>=0.0.13
 testtools>=0.9.27
+unittest2
