@@ -20,7 +20,9 @@ from tuskar.api.controllers.v1.types.node import Node
 from tuskar.api.controllers.v1.types.rack import Rack
 from tuskar.api.controllers.v1.types.relation import Relation
 from tuskar.api.controllers.v1.types.resource_class import ResourceClass
-
+import sqlalchemy
+import os.path
+from tuskar.openstack.common.db.sqlalchemy import session as db_session
 
 def get_test_resource_class(**kwargs):
     rc = ResourceClass(name=kwargs.get('name', 'test_resource_class'),
@@ -90,3 +92,8 @@ def get_test_resource_class_rack(**kwargs):
                        links=[Link(href='http://0.0.0.0:6385/v1/racks/' +
                                    str(rack_id), rel='self')])
     return rc_rack
+
+def get_db_table(table_name):
+    metadata = sqlalchemy.MetaData()
+    metadata.bind = db_session.get_engine()
+    return sqlalchemy.Table(table_name, metadata, autoload=True)
