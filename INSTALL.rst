@@ -4,7 +4,7 @@ Installation Guide
 
 Tuskar source code should be pulled directly from git::
 
-    git clone https://github.com/tuskar/tuskar.git
+    git clone https://github.com/stackforge/tuskar.git
 
 Setting up a local environment for development can be done with tox::
 
@@ -42,6 +42,6 @@ Setting up a local environment for development can be done with tox::
     deactivate
 
 For additional developer information, take a look at
-`CONTRIBUTING.rst <https://github.com/tuskar/tuskar/blob/master/CONTRIBUTING.rst>`_
+`CONTRIBUTING.rst <https://github.com/stackforge/tuskar/blob/master/CONTRIBUTING.rst>`_
 and the
-`Tuskar website <https://github.com/tuskar/tuskar/blob/master/docs/index.rst>`_.
+`Tuskar website <https://github.com/stackforge/tuskar/blob/master/docs/index.rst>`_.

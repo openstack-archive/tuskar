@@ -24,7 +24,7 @@ the following checklist:
 2. Update the API docs (if needed)
 3. Update the tests (if needed)
 4. Update
-   `cURL commands <https://github.com/tuskar/tuskar/blob/master/docs/api/curl.md>`_
+   `cURL commands <https://github.com/stackforge/tuskar/blob/master/docs/api/curl.rst>`_
    page (if needed)
 
 Getting Started
@@ -34,7 +34,7 @@ Setting up the Tuskar development environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This assumes you have done all the basic setup as described in
-`INSTALL.rst <https://github.com/tuskar/tuskar/blob/master/INSTALL.rst>`_.
+`INSTALL.rst <https://github.com/stackforge/tuskar/blob/master/INSTALL.rst>`_.
 Run the following::
 
     # creates symlinks for installed code.  Used for dev environment.

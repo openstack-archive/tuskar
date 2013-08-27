@@ -27,15 +27,15 @@ demo! <https://www.youtube.com/watch?v=VEY035-Lyzo>`_
 -  *TODO* feature examples
 -  *TODO* link to high-level portion of FAQ
 -  `Recommended
-   reading <https://github.com/tuskar/tuskar/blob/master/docs/recommended-reading.rst>`_
+   reading <https://github.com/stackforge/tuskar/blob/master/docs/recommended-reading.rst>`_
 
 Related Projects
 ----------------
 
--  `tuskar-ui <https://github.com/tuskar/tuskar-ui>`_ - Built on top
+-  `tuskar-ui <https://github.com/stackforge/tuskar-ui>`_ - Built on top
    of Horizon, tuskar-ui provides dashboard access to Tuskar
    functionality.
--  `python-tuskarclient <https://github.com/tuskar/python-tuskarclient>`_
+-  `python-tuskarclient <https://github.com/stackforge/python-tuskarclient>`_
    - A Python client for the Tuskar API, python-tuskarclient is utilized
    by tuskar-ui.
 
@@ -46,23 +46,23 @@ Install and Contribute
 ----------------------
 
 -  `Install
-   Guide <https://github.com/tuskar/tuskar/blob/master/INSTALL.rst>`_
+   Guide <https://github.com/stackforge/tuskar/blob/master/INSTALL.rst>`_
 -  `Contributing
-   Guide <https://github.com/tuskar/tuskar/blob/master/CONTRIBUTING.rst>`_
+   Guide <https://github.com/stackforge/tuskar/blob/master/CONTRIBUTING.rst>`_
 -  `Debugging with
-   iPython <https://github.com/tuskar/tuskar/blob/master/docs/debugging-with-ipython.rst>`_
+   iPython <https://github.com/stackforge/tuskar/blob/master/docs/debugging-with-ipython.rst>`_
 -  `Demo Data
-   Script <https://github.com/tuskar/tuskar/blob/master/docs/demo-data-script.rst>`_
+   Script <https://github.com/stackforge/tuskar/blob/master/docs/demo-data-script.rst>`_
 
 API
 ---
 
 -  `API
-   Information <https://github.com/tuskar/tuskar/blob/master/docs/api/api.md>`_
+   Information <https://github.com/stackforge/tuskar/blob/master/docs/api/api.md>`_
 -  `cURL
-   Commands <https://github.com/tuskar/tuskar/blob/master/docs/api/curl.rst>`_
+   Commands <https://github.com/stackforge/tuskar/blob/master/docs/api/curl.rst>`_
 -  `Resource Class Demo
-   Script <https://github.com/tuskar/tuskar/blob/master/docs/resource-class-demo-script.rst>`_
+   Script <https://github.com/stackforge/tuskar/blob/master/docs/resource-class-demo-script.rst>`_
    (uses cURL)
 
 HEAT Integration
