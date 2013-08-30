@@ -83,10 +83,15 @@ class TestDbFlavors(db_base.DbTestCase):
         pecan_rc.flavors = [utils.get_test_flavor(name='xyz', value='123'),
                             utils.get_test_flavor(name='abc', value='456')]
         db_rc = self.db.create_resource_class(pecan_rc)
+        # we cannot rely on the order of the db_rc.flavors items
+        if db_rc.flavors[0].name == 'xyz':
+            xyz_flavor = db_rc.flavors[0]
+        else:
+            xyz_flavor = db_rc.flavors[1]
         #now update one of the flavors:
         updated_flav = self.db.update_resource_class_flavor(
             db_rc.id,
-            db_rc.flavors[1].id,
+            xyz_flavor.id,
             utils.get_test_flavor(name='xyz', value='999'))
         #retrieve updated rc and assert:
         updated_rc = self.db.get_resource_class(db_rc.id)
@@ -116,8 +121,13 @@ class TestDbFlavors(db_base.DbTestCase):
         pecan_rc.flavors = [utils.get_test_flavor(name='xyz', value='123'),
                             utils.get_test_flavor(name='abc', value='456')]
         db_rc = self.db.create_resource_class(pecan_rc)
+        # we cannot rely on the order of the db_rc.flavors items
+        if db_rc.flavors[0].name == 'abc':
+            abc_flavor = db_rc.flavors[0]
+        else:
+            abc_flavor = db_rc.flavors[1]
         #retrieve a specific flavor
-        flav = self.db.get_flavor(db_rc.flavors[0].id)
+        flav = self.db.get_flavor(abc_flavor.id)
         self.__check_flavor_capacities([flav], ['abc'], ['456'])
         #cleanup
         self.db.delete_resource_class(db_rc.id)
