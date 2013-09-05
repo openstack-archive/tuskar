@@ -24,10 +24,12 @@ create
        "name": "my_rack",
        "capacities": [{
          "name": "total_cpu",
-         "value": "64"
+         "value": "64",
+         "unit": "count"
        }, {
          "name": "total_memory",
-         "value": "1024"
+         "value": "1024",
+         "unit": "MiB"
        }],
        "nodes": [{
          "id": "123"
@@ -49,10 +51,12 @@ create with ResourceClass
        "name": "my_rack",
        "capacities": [{
          "name": "total_cpu",
-         "value": "64"
+         "value": "64",
+         "unit": "cpu"
        }, {
          "name": "total_memory",
-         "value": "1024"
+         "value": "1024",
+         "unit": "MB"
        }],
        "nodes": [{
          "id": "123"
