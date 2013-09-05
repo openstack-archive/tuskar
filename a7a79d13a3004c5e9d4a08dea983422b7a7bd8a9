@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: Tomas Sedovic <tomas@sedovic.cz>
+Code-Review+2: Tomas Sedovic <tomas@sedovic.cz>
+Code-Review+2: Marios Andreou <marios@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 05 Sep 2013 11:08:37 +0000
+Reviewed-on: https://review.openstack.org/44689
+Project: stackforge/tuskar
+Branch: refs/heads/master
