@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+1: Roman Podolyaka <rpodolyaka@mirantis.com>
+Approved+1: Jiri Tomasek <jtomasek@redhat.com>
+Code-Review+2: Marios Andreou <marios@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Mon, 09 Sep 2013 10:26:07 +0000
+Reviewed-on: https://review.openstack.org/45223
+Project: stackforge/tuskar
+Branch: refs/heads/master
