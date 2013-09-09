@@ -2,22 +2,23 @@
 Contributing to Tuskar
 ======================
 
-Pretty soon, Tuskar will move to Stackforge, using Gerrit for reviews
-and Launchpad for bugs and blueprints. We're just getting started at
-this point so, in the interim, we accept pull requests via Github.
+Tuskar follows the OpenStack processes when it comes to code, communication,
+etc. The `repositories are hosted on Stackforge
+<https://github.com/stackforge/tuskar>`_, `bugs and blueprints are on Launchpad
+<https://launchpad.net/tuskar>`_ and we use the openstack-dev mailing list
+(subject `[tuskar]`) and the `#tuskar` IRC channel for communication.
+
 
 Coding Standards
 ----------------
 
-We attempt to comply with the openstack coding standards, defined in
+We attempt to comply with the OpenStack coding standards, defined in
 https://github.com/openstack-dev/hacking/blob/master/HACKING.rst
 
-Before pushing your code, make sure it complies with the standards by
-running::
+Be sure to familiarise yourself with `OpenStack's Gerrit Workflow
+<https://wiki.openstack.org/wiki/Gerrit_Workflow>`_.
 
-  $ tox -e pep8
-
-Also, before submitting your code, please make sure you have completed
+Before submitting your code, please make sure you have completed
 the following checklist:
 
 1. Update tools/sample\_data.py (if needed)
@@ -27,59 +28,6 @@ the following checklist:
    `cURL commands <https://github.com/stackforge/tuskar/blob/master/docs/api/curl.rst>`_
    page (if needed)
 
-Getting Started
----------------
-
-Setting up the Tuskar development environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This assumes you have done all the basic setup as described in
-`INSTALL.rst <https://github.com/stackforge/tuskar/blob/master/INSTALL.rst>`_.
-Run the following::
-
-    # creates symlinks for installed code.  Used for dev environment.
-    $ python setup.py develop
-    $ cp etc/tuskar/tuskar.conf.sample etc/tuskar/tuskar.conf
-
-The config file changes are::
-
-    $ openstack-config --set etc/tuskar/tuskar.conf database connection sqlite:///tuskar.sqlite
-    $ openstack-config --set etc/tuskar/tuskar.conf DEFAULT debug true
-    $ openstack-config --set etc/tuskar/tuskar.conf heat stack_name overcloud
-    $ openstack-config --set etc/tuskar/tuskar.conf heat service_type orchestration
-    $ openstack-config --set etc/tuskar/tuskar.conf heat_keystone username heat
-    $ openstack-config --set etc/tuskar/tuskar.conf heat_keystone password heat
-    $ openstack-config --set etc/tuskar/tuskar.conf heat_keystone tenant_name admin
-    $ openstack-config --set etc/tuskar/tuskar.conf heat_keystone auth_url http://10.34.32.181:35357/v2.0
-    $ openstack-config --set etc/tuskar/tuskar.conf heat_keystone insecure True
-
-The command above is part of the openstack-utils package, so you will
-have to install that if you have not already.
-
-Then::
-
-    # if you delete tuskar.sqlite this will force creation of tables again - e.g.
-    # if you added a new resource table definitions etc in an existing migration
-    # file
-    $ tuskar-dbsync --config-file etc/tuskar/tuskar.conf
-
-You can verify this was successful (in addition to seeing no error
-output) with::
-
-    $ sqlite3 tuskar.sqlite .schema
-
-Then, launch the app and try curl to see if it works::
-
-    $ tuskar-api --config-file etc/tuskar/tuskar.conf
-    $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:6385/ | python -mjson.tool
-
-Assuming this is your first time running with a new database, you should
-simply get '[]' back from curl above. Currently the api supports only
-json return type, so we request that in the example call.
-
-Next, you can run a script to populate the DB with some sample data::
-
-    $ python tools/sample_data.py
 
 Finding your way around
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -181,9 +129,17 @@ that in this section.
   tables, as well as dropping them, or rolling back to what was done
   before the upgrade.
 
-Writing tests
-~~~~~~~~~~~~~
+Writing and Running tests
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We use testtools for our unit tests, and mox for mock objects.
+
+You can run tests using Tox: ::
+
+    $ tox
+
+This will run tests under Python 2.6, 2.7 and verify `PEP 8
+<http://www.python.org/dev/peps/pep-0008/>`_ compliance. The identical test
+suite is run by OpenStack's Jenkins whenever you send a patch.
 
 Additional details forthcoming.

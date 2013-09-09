@@ -463,7 +463,7 @@
 
 # The SQLAlchemy connection string used to connect to the
 # database (string value)
-#connection=sqlite:////tuskar/openstack/common/db/$sqlite_db
+connection=sqlite:///tuskar.sqlite
 
 # timeout before idle sql connections are reaped (integer
 # value)
@@ -497,6 +497,12 @@
 # value)
 #connection_trace=false
 
+
+[heat]
+
+stack_name = overcloud
+service_type = orchestration
+
 [heat_keystone]
 
 # Heat API keystone configuration.
@@ -504,5 +510,5 @@
 #username = heat
 #password = heat
 #tenant_name = admin
-#auth_url = http://10.34.32.181:35357/v2.0
+#auth_url = http://localhost:35357/v2.0
 #insecure = True
