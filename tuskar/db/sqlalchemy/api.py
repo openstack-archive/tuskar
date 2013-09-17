@@ -172,6 +172,14 @@ class Connection(api.Connection):
             if new_resource_class.service_type:
                 rc.service_type = new_resource_class.service_type
 
+            if (hasattr(new_resource_class, "flavor_id") and
+                    new_resource_class.flavor_id):
+                rc.flavor_id = new_resource_class.flavor_id
+
+            if (hasattr(new_resource_class, "host_aggregate_id") and
+                    new_resource_class.host_aggregate_id):
+                rc.host_aggregate_id = new_resource_class.host_aggregate_id
+
             session.add(rc)
             if not isinstance(new_resource_class.racks, wtypes.UnsetType):
                 # Clear associations on Racks that were associated to this
@@ -337,9 +345,13 @@ class Connection(api.Connection):
             if new_rack.chassis:
                 rack.chassis_id = new_rack.chassis.id
 
-            if new_rack.state and new_rack.state in ['active',
-                    'unprovisioned', 'provisioning', 'error']:
-                    rack.state = new_rack.state
+            if new_rack.state and new_rack.state in [
+                'active',
+                'unprovisioned',
+                'provisioning',
+                'error'
+            ]:
+                rack.state = new_rack.state
 
             if not isinstance(new_rack.resource_class, wtypes.UnsetType):
                 rc = self.get_resource_class(new_rack.resource_class.get_id())
@@ -361,7 +373,7 @@ class Connection(api.Connection):
 
                 for c in new_rack.capacities:
                     capacity = models.Capacity(name=c.name, value=c.value,
-                            unit=c.unit)
+                                               unit=c.unit)
                     session.add(capacity)
                     rack.capacities.append(capacity)
                     session.add(rack)
@@ -411,7 +423,7 @@ class Connection(api.Connection):
             if new_rack.capacities:
                 for c in new_rack.capacities:
                     capacity = models.Capacity(name=c.name, value=c.value,
-                            unit=c.unit)
+                                               unit=c.unit)
                     session.add(capacity)
                     rack.capacities.append(capacity)
                     session.add(rack)
