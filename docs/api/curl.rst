@@ -9,6 +9,7 @@ Resources
 -  `Flavor <#flavor>`_
 -  `ResourceClass <#resource_class>`_
 -  `DataCenter <#data_center>`_
+-  `Node <#node>`_
 
 Rack
 ----
@@ -325,9 +326,9 @@ delete
 
 ::
 
-    curl -X DELETE http://0.0.0.0:8585/v1/resource_classes/1`` `back to
+    curl -X DELETE http://0.0.0.0:8585/v1/resource_classes/1
 
-top <#index>`_
+`back to top <#index>`_
 
 DataCenter
 ----------
@@ -341,5 +342,80 @@ Tuskar.
 ::
 
     curl -XPOST -H 'Content-Type:application/json' -H 'Accept: application/json' http://0.0.0.0:8585/v1/data_centers/
+
+`back to top <#index>`_
+
+Node
+----
+
+Get Collection
+~~~~~~~~~~~~~~
+
+::
+
+    curl http://0.0.0.0:8585/v1/nodes/
+
+response
+^^^^^^^^
+
+::
+
+    [
+     {
+      "node_id": "0e3ab3d3-bd85-40bd-b6a1-fae484040825",
+      "id": "1",
+      "links": [
+                {
+                 "href": "http://127.0.0.1:8585/v1/nodes/1",
+                 "rel": "self"
+                }
+               ],
+      "rack": {
+               "id": 1,
+               "links":
+                       [
+                        {
+                         "href": "http://127.0.0.1:8585/v1/racks/1",
+                         "rel": "self"
+                        }
+                       ]
+              }
+     }
+    ]
+
+Retrieve a single Node
+~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    curl http://0.0.0.0:8585/v1/nodes/1
+
+response
+^^^^^^^^
+
+::
+
+    {
+     "node_id": "0e3ab3d3-bd85-40bd-b6a1-fae484040825",
+     "id": "1",
+     "links":
+             [
+              {
+               "href": "http://127.0.0.1:8585/v1/nodes/1",
+               "rel": "self"
+              }
+             ],
+     "rack":
+            {
+             "id": 1,
+             "links":
+                     [
+                      {
+                       "href": "http://127.0.0.1:8585/v1/racks/1",
+                       "rel": "self"
+                      }
+                     ]
+            }
+    }
 
 `back to top <#index>`_
