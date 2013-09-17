@@ -1,6 +1,6 @@
 <%namespace name="conf" file="provision.conf.mako"/>\
 <%namespace name="sh" file="provision.sh.mako"/>\
-<%def name="render(x=0)">\
+<%def name="render(x=0, flav=1)">\
   notcompute:
     Metadata:
       AWS::CloudFormation::Init:
