@@ -1,0 +1,5 @@
+call_nova: "False"
+keystone_url: "http://192.168.10.12:5000/v2.0/"
+nova_username: "admin"
+nova_tenantname: "admin"
+nova_password: "osHorizonKeystone"

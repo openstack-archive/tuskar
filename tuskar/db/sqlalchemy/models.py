@@ -180,3 +180,5 @@ class ResourceClass(Base):
                            lazy='joined',
                            cascade="all, delete",
                            passive_updates=False)
+    host_aggregate_id = Column(String(length=128), unique=True)
+    flavor_id = Column(String(length=128), unique=True)
