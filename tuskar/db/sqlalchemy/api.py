@@ -172,6 +172,12 @@ class Connection(api.Connection):
             if new_resource_class.service_type:
                 rc.service_type = new_resource_class.service_type
 
+            if new_resource_class.flavor_id:
+                rc.flavor_id = new_resource_class.flavor_id
+
+            if new_resource_class.host_aggregate_id:
+                rc.host_aggregate_id = new_resource_class.host_aggregate_id
+
             session.add(rc)
             if not isinstance(new_resource_class.racks, wtypes.UnsetType):
                 # Clear associations on Racks that were associated to this

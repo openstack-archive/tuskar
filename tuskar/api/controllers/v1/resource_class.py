@@ -15,6 +15,7 @@ from tuskar.api.controllers.v1.flavor import FlavorsController
 #from tuskar.api.controllers.v1.types import Flavor
 #from tuskar.api.controllers.v1.types import Relation
 from tuskar.api.controllers.v1.types import ResourceClass
+from tuskar.compute import nova
 
 LOG = log.getLogger(__name__)
 
@@ -30,12 +31,13 @@ class ResourceClassesController(rest.RestController):
         """Create a new Resource Class."""
         try:
             result = pecan.request.dbapi.create_resource_class(resource_class)
-            #create in nova any flavors included in this resource_class
-            #creation for flav in result.flavors:
-            #nova_flavor_uuid = self.flavors.nova.create_flavor(flav,
-            #                                                   result.name)
-            #pecan.request.dbapi.update_flavor_nova_uuid(flav.id,
-            #                                            nova_flavor_uuid)
+            #create host aggregate, tag it, create flavor, tag it
+            aggregate_id, flavor_id = nova.NovaClient().register_resource_class_aggregate_flavor(result)
+            #store aggregate_id and flavor_id with resource class in db:
+            result.host_aggregate_id = aggregate_id
+            result.flavor_id = flavor_id
+            result = pecan.request.dbapi.update_resource_class(result.id,
+                                                               result)
         except Exception as e:
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
@@ -93,4 +95,8 @@ class ResourceClassesController(rest.RestController):
         #for flav in pecan.request.dbapi.get_flavors(resource_class_id):
         #    nova_flavor_uuid = pecan.request.dbapi.delete_flavor(flav.id)
         #    self.flavors.nova.delete_flavor(nova_flavor_uuid)
+        #get the resource_class so we can unregister host aggregate/flavor
+        resource_class = pecan.request.dbapi.get_resource_class(resource_class_id)
         pecan.request.dbapi.delete_resource_class(resource_class_id)
+        #now delete the aggregate/flavors:
+        nova.NovaClient().unregister_resource_class_aggregate_flavor(resource_class)
