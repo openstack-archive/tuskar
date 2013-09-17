@@ -507,3 +507,19 @@ class Connection(api.Connection):
             session.rollback()
             return False
         return True
+
+    def get_nodes(self, columns):
+        session = get_session()
+        result = session.query(models.Node).options(
+            joinedload('rack')).all()
+        session.close()
+        return result
+
+    def get_node(self, node_id):
+        session = get_session()
+        try:
+            result = session.query(models.Node).options(
+                joinedload('rack')).filter_by(id=node_id).one()
+        except NoResultFound:
+            raise exception.NodeNotFound(node=node_id)
+        return result

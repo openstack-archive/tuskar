@@ -123,6 +123,7 @@ class Node(Base):
     id = Column(Integer, primary_key=True)
     rack_id = Column(Integer, ForeignKey('racks.id'))
     node_id = Column(String(length=64), unique=True)
+    rack = relationship("Rack")
 
 
 class Rack(Base):
