@@ -60,9 +60,12 @@ class Rack(Base):
                                                unit=c.unit)
                                                for c in rack.capacities]
 
-        kwargs['nodes'] = [Node(id=n.node_id,
+        kwargs['nodes'] = [Node(id=str(n.id),
+                                node_id=n.node_id,
                                 links=[
-                                    Link.build_ironic_link('node', n.node_id)
+                                    Link.build('self',
+                                               pecan.request.host_url,
+                                               'nodes', n.id)
                                 ])
                            for n in rack.nodes]
 
