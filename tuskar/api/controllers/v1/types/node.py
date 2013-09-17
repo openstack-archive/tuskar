@@ -12,15 +12,29 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-#import wsme
+import pecan
 from wsme import types as wtypes
 
 from tuskar.api.controllers.v1.types.base import Base
 from tuskar.api.controllers.v1.types.link import Link
+from tuskar.api.controllers.v1.types.relation import Relation
 
 
 class Node(Base):
     """A Node representation."""
 
     id = wtypes.text
+    node_id = wtypes.text
+    rack = Relation
     links = [Link]
+
+    @classmethod
+    def convert(self, node):
+        kwargs = node.as_dict()
+        links = [Link.build('self', pecan.request.host_url, 'nodes',
+                            node.id)]
+        rack_link = [Link.build('self', pecan.request.host_url,
+                                'racks', node.rack_id)]
+        kwargs['rack'] = Relation(id=node.rack_id, links=rack_link)
+        kwargs['id'] = str(node.id)
+        return Node(links=links, **kwargs)
