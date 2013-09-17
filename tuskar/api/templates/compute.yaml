@@ -1,4 +1,4 @@
-<%def name="render(x)">\
+<%def name="render(x, flav)">\
   NovaCompute${x}:
     Metadata:
       OpenStack::ImageBuilder::Elements:
@@ -78,8 +78,7 @@
     Properties:
       ImageId:
         Ref: NovaImage
-      InstanceType:
-        Ref: InstanceType
+      InstanceType: ${flav}
       KeyName:
         Ref: KeyName
       AvailabilityZone: nova::${x}
