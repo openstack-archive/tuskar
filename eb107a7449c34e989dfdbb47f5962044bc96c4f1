@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: Matt Wagner <matt.wagner@redhat.com>
+Code-Review+1: Imre Farkas <ifarkas@redhat.com>
+Code-Review+2: Marios Andreou <marios@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 18 Sep 2013 15:59:43 +0000
+Reviewed-on: https://review.openstack.org/47152
+Project: stackforge/tuskar
+Branch: refs/heads/master
