@@ -34,7 +34,7 @@ class JSonRenderer(object):
         if isinstance(namespace['result'], api.Response):
             pecan.response.status_code = result.status_code
             val = json.dumps({'faultstring': result.obj.faultstring,
-                               'faultcode': result.obj.faultcode})
+                              'faultcode': result.obj.faultcode})
             return val
 
         if 'faultcode' in namespace:

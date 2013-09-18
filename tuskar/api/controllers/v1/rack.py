@@ -91,7 +91,8 @@ class RacksController(rest.RestController):
             rack = db_api.get_rack(rack_id)
         except exception.TuskarException, e:
             response = api.Response(
-                Error(faultcode=e.code, faultstring=str(e)),
+                None,
+                error=Error(faultcode=e.code, faultstring=str(e)),
                 status_code=e.code)
             return response
 

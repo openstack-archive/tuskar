@@ -40,7 +40,7 @@ class TestFlavors(api.FunctionalTest):
         flav_id = response.json['id']
         # delete the flavor
         response = self.delete_json('/resource_classes/' + str(self.rc.id) +
-                                    '/flavors/' + str(flav_id), status=200)
+                                    '/flavors/' + str(flav_id), status=204)
 
     def test_it_can_update_a_flavor(self):
         # first create the flavor
@@ -83,7 +83,7 @@ class TestFlavors(api.FunctionalTest):
                 self.assertEqual(c['value'], '2222')
         # delete
         response = self.delete_json('/resource_classes/' + str(self.rc.id) +
-                                    '/flavors/' + str(flav_id), status=200)
+                                    '/flavors/' + str(flav_id), status=204)
 
     def test_it_can_replace_resource_class_flavors(self):
         # first create flavor:
