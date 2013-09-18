@@ -26,6 +26,10 @@ Setting up a local environment for development can be done with tox::
     # create virtualenv
     $ tox -e py27
 
+Note: if ``pip install`` fails due to an outdated setuptools, you can try to update it first::
+
+    $ sudo pip install --upgrade setuptools
+
 
 Configuration
 -------------
