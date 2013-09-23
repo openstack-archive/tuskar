@@ -105,7 +105,7 @@ def upgrade(migrate_engine):
         Column('name', String(length=128)),
         Column('resource_class_id', Integer,
                ForeignKey('resource_classes.id')),
-        Column('nova_flavor_uuid', String),
+        Column('nova_flavor_uuid', String(64)),
         Column('max_vms', Integer),
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
@@ -113,15 +113,15 @@ def upgrade(migrate_engine):
         mysql_charset=CHARSET,
     )
 
-    tables = [capacities, racks, nodes, rack_capacities,
-              flavor_capacities, resource_classes, flavors]
+    tables = [resource_classes, capacities, racks, nodes, flavors,
+              rack_capacities, flavor_capacities]
 
     for table in tables:
         try:
             table.create()
         except Exception:
             LOG.info(repr(table))
-            LOG.Exception(_('Exception while creating table.'))
+            LOG.exception(_('Exception while creating table.'))
             raise
 
     indexes = [
