@@ -25,7 +25,7 @@
 #tuskar_api_bind_ip=0.0.0.0
 
 # The port for the Tuskar API server (integer value)
-#tuskar_api_port=6385
+tuskar_api_port=8787
 
 
 #
