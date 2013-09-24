@@ -28,7 +28,7 @@ API_SERVICE_OPTS = [
             help='IP for the Tuskar API server to bind to',
             ),
         cfg.IntOpt('tuskar_api_port',
-            default=6385,
+            default=8585,
             help='The port for the Tuskar API server',
             ),
         ]

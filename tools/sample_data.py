@@ -143,7 +143,7 @@ def generate_uuid():
 def generate_data():
     logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
-    conn = httplib.HTTPConnection('localhost', 6385)
+    conn = httplib.HTTPConnection('localhost', 8585)
 
     base_url = '/v1'
 
