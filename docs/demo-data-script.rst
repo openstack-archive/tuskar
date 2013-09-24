@@ -56,7 +56,7 @@ Node only.
       ],
       "slots": 3
     }
-    ' http://0.0.0.0:6385/v1/racks
+    ' http://0.0.0.0:8585/v1/racks
 
     curl -vX POST -H 'Content-Type: application/json' -H 'Accept: application/json' -v -d  '
     {
@@ -82,7 +82,7 @@ Node only.
       ],
       "slots": 3
     }
-    ' http://0.0.0.0:6385/v1/racks
+    ' http://0.0.0.0:8585/v1/racks
 
     curl -vX POST -H 'Content-Type: application/json' -H 'Accept: application/json' -v -d  '
     {
@@ -101,7 +101,7 @@ Node only.
       }],
       "slots": 3
     }
-    ' http://0.0.0.0:6385/v1/racks
+    ' http://0.0.0.0:8585/v1/racks
 
 Create Resource Classes
 -----------------------
@@ -118,11 +118,11 @@ and a total of six Nodes.  The non-compute Resoure Class contains one Rack and o
               "racks": [
                   { 
                     "id":1,
-                    "links":[{"href":"http://0.0.0.0:6385/v1/racks/1","rel":"self"}]
+                    "links":[{"href":"http://0.0.0.0:8585/v1/racks/1","rel":"self"}]
                   },
                   { 
                     "id":2,
-                    "links":[{"href":"http://0.0.0.0:6385/v1/racks/2","rel":"self"}]
+                    "links":[{"href":"http://0.0.0.0:8585/v1/racks/2","rel":"self"}]
                   }
                ],
                "flavors": [
@@ -141,7 +141,7 @@ and a total of six Nodes.  The non-compute Resoure Class contains one Rack and o
                     }
                ]
           }
-    ' http://0.0.0.0:6385/v1/resource_classes
+    ' http://0.0.0.0:8585/v1/resource_classes
 
     curl -iX POST -H 'Content-Type: application/json' -H 'Accept: application/json' -d '
         {
@@ -150,11 +150,11 @@ and a total of six Nodes.  The non-compute Resoure Class contains one Rack and o
               "racks": [
                   { 
                     "id":3,
-                    "links":[{"href":"http://0.0.0.0:6385/v1/racks/3","rel":"self"}]
+                    "links":[{"href":"http://0.0.0.0:8585/v1/racks/3","rel":"self"}]
                   }
                ]
           }
-    ' http://0.0.0.0:6385/v1/resource_classes
+    ' http://0.0.0.0:8585/v1/resource_classes
 
 Generate HEAT Template
 ----------------------
@@ -163,4 +163,4 @@ This command generates the HEAT template based on the Tuskar description.
 
 ::
 
-    curl http://0.0.0.0:6385/v1/data_centers
+    curl http://0.0.0.0:8585/v1/data_centers

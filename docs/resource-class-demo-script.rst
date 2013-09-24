@@ -7,14 +7,14 @@ Get a Resource Class
 
 ::
 
-    curl -H 'Accept: application/json' http://0.0.0.0:6385/v1/resource_classes/1
+    curl -H 'Accept: application/json' http://0.0.0.0:8585/v1/resource_classes/1
 
     {
       "service_type": "compute",
       "racks": [],
       "id": 1,
       "links": [{
-        "href": "http://0.0.0.0:6385/v1/resource_classes/1",
+        "href": "http://0.0.0.0:8585/v1/resource_classes/1",
         "rel": "self"
        }],
        "name": "test-chassis"
@@ -25,7 +25,7 @@ Get the Resource Class Collection
 
 ::
 
-    curl -H 'Accept: application/json' http://0.0.0.0:6385/v1/resource_classes/
+    curl -H 'Accept: application/json' http://0.0.0.0:8585/v1/resource_classes/
 
 Create a Resource Class with a Rack
 -----------------------------------
@@ -41,14 +41,14 @@ Create a Resource Class with a Rack
              "id": 1,
              "links": [
                {
-                  "href":"http://0.0.0.0:6385/v1/racks/1",
+                  "href":"http://0.0.0.0:8585/v1/racks/1",
                   "rel":"self"
                }
              ]
            }
          ]
         }
-    ' http://0.0.0.0:6385/v1/resource_classes``
+    ' http://0.0.0.0:8585/v1/resource_classes``
 
 Update the Racks on a Resource Class (Remove Racks)
 ---------------------------------------------------
@@ -61,7 +61,7 @@ Update the Racks on a Resource Class (Remove Racks)
          "name": "test-chassis",
          "racks":[]
        }
-    ' http://0.0.0.0:6385/v1/resource_classes/13``
+    ' http://0.0.0.0:8585/v1/resource_classes/13``
 
 Update the Racks on a Resource Class (Add a Rack)
 -------------------------------------------------
@@ -77,18 +77,18 @@ Update the Racks on a Resource Class (Add a Rack)
              "id": 2,
              "links": [
                {
-                  "href":"http://0.0.0.0:6385/v1/racks/2",
+                  "href":"http://0.0.0.0:8585/v1/racks/2",
                   "rel":"self"
                }
              ]
            }
         ]
       }
-    ' http://0.0.0.0:6385/v1/resource_classes/13``
+    ' http://0.0.0.0:8585/v1/resource_classes/13``
 
 Delete a Resource Class
 -----------------------
 
 ::
 
-    curl -iX DELETE -H 'Accept: application/json'  http://0.0.0.0:6385/v1/resource_classes/13
+    curl -iX DELETE -H 'Accept: application/json'  http://0.0.0.0:8585/v1/resource_classes/13

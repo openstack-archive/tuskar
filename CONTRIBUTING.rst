@@ -81,7 +81,7 @@ that in this section.
   the client, so in the above case, you could get the list of foos
   with::
 
-      curl http://0.0.0.0:6385/v1/foos
+      curl http://0.0.0.0:8585/v1/foos
 
   For doing something simple, like a poc controller that doesn't
   return any objects, you can return plain text as so::

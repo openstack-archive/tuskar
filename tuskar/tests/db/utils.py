@@ -62,7 +62,7 @@ def get_test_rack(**kwargs):
     if kwargs.get('resource_class', False):
         rack.resource_class = Relation(
             id=kwargs.get('rc_id', 1),
-            links=[Link(href='http://0.0.0.0:6385/resource_classes/' +
+            links=[Link(href='http://0.0.0.0:8585/resource_classes/' +
                         str(kwargs.get('rc_id', 1)), rel='self')])
     return rack
 
@@ -89,7 +89,7 @@ def get_test_rack_node(**kwargs):
 def get_test_resource_class_rack(**kwargs):
     rack_id = kwargs.get('id', 1)
     rc_rack = Relation(id=rack_id,
-                       links=[Link(href='http://0.0.0.0:6385/v1/racks/' +
+                       links=[Link(href='http://0.0.0.0:8585/v1/racks/' +
                                    str(rack_id), rel='self')])
     return rc_rack
 

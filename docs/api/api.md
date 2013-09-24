@@ -118,7 +118,7 @@ The *service_type* attribute describe whether this ResourceClass is *storage* or
                 {
                   "id":1,
                   "links":[
-                            { "href":"http://0.0.0.0:6385/v1/rack/1",
+                            { "href":"http://0.0.0.0:8585/v1/rack/1",
                               "rel":"self"
                             }
                           ]

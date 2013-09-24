@@ -74,7 +74,7 @@ output) with::
 Then, launch the app and try curl to see if it works::
 
     $ tuskar-api --config-file etc/tuskar/tuskar.conf
-    $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:6385/v1/resource_classes/ | python -mjson.tool
+    $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:8585/v1/resource_classes/ | python -mjson.tool
 
 Assuming this is your first time running with a new database, you should
 simply get '[]' back from curl above. Currently the api supports only
