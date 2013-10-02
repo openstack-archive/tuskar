@@ -1,4 +1,5 @@
 #from oslo.config import cfg
+import jsonpatch
 
 import pecan
 #from pecan.core import render
@@ -63,6 +64,26 @@ class RacksController(rest.RestController):
             LOG.exception(e)
             raise wsme.exc.ClientSideError(_("Invalid data"))
         return Rack.convert_with_links(result, links)
+
+    @wsme_pecan.wsexpose(Rack, unicode, body=[unicode])
+    def patch(self, rack_id, patch):
+        """Update Rack using PATCH method."""
+
+        try:
+            rack = pecan.request.dbapi.get_rack(rack_id)
+            links = [Link.build('self',
+                                pecan.request.host_url,
+                                'racks',
+                                rack.id)]
+            updated_rack = jsonpatch.apply_patch(rack.as_dict(),
+                                                 jsonpatch.JsonPatch(patch))
+
+            rack.update(updated_rack)
+            rack.save()
+
+            return Rack.convert_with_links(rack, links)
+        except jsonpatch.JsonPatchException as e:
+            raise wsme.exc.ClientSideError(_("Patching Error: %s") % e)
 
     @wsme_pecan.wsexpose([Rack])
     def get_all(self):

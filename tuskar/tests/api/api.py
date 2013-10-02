@@ -96,6 +96,10 @@ class FunctionalTest(base.TestCase):
         print('GOT:%s' % response)
         return response
 
+    def patch_json(self, *args, **kwargs):
+        kwargs['method'] = 'patch'
+        return self.post_json(*args, **kwargs)
+
     def delete(self, path, expect_errors=False, headers=None,
                extra_environ=None, status=None):
         full_path = self.PATH_PREFIX + path

@@ -16,6 +16,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
+import re
+import wsme
+
 from oslo.config import cfg
 from pecan import hooks
 
@@ -35,3 +39,35 @@ class DBHook(hooks.PecanHook):
 
     def before(self, state):
         state.request.dbapi = dbapi.get_instance()
+
+
+class ValidatePatchHook(hooks.PecanHook):
+    """Ensures the PATCH request body is correctly formed."""
+
+    path_regexpr = re.compile("^/[a-zA-Z0-9-_]+(/[a-zA-Z0-9-_]+)*$")
+    supported_operations = ["replace"]
+
+    def before(self, state):
+        if state.request.method.upper() == 'PATCH':
+            self.validate_patch(state.request.body)
+
+    def validate_patch(self, patch):
+        patch = json.loads(patch)
+        errors = []
+
+        # Instead of checking this manually maybe we can use JSON Schema
+        for p in patch:
+            if not isinstance(p, dict):
+                errors.append("Invalid patch line format: %s" % str(p))
+            else:
+                if not set(["path", "op"]).issubset(set(p.keys())):
+                    errors.append("Invalid patch line: %s" % str(p))
+
+                if p["op"] not in self.supported_operations:
+                    errors.append("Operation not supported: %s" % p["op"])
+
+                if not self.path_regexpr.match(p["path"]):
+                    errors.append("Invalid path: %s" % p["path"])
+
+        if errors:
+            raise wsme.exc.ClientSideError(",".join(errors))
