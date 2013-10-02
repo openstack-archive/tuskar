@@ -4,8 +4,9 @@ from tuskar.api.controllers.v1.types import Node
 from tuskar.api.controllers.v1.types import Rack
 from tuskar.api.controllers.v1.types import ResourceClass
 from tuskar.db.sqlalchemy import api as dbapi
+from tuskar.openstack.common import uuidutils
 from tuskar.tests.api import api
-
+from tuskar.tests.db import utils as dbutils
 
 class TestRacks(api.FunctionalTest):
 
@@ -203,3 +204,35 @@ class TestRacks(api.FunctionalTest):
         self.assertEqual(second_update_response.status_int, 200)
         self.assertEqual(second_update_response.json['resource_class']['id'],
                          rack_update_json['resource_class']['id'])
+
+class TestRackPatch(api.FunctionalTest):
+
+    test_rack = None
+    db = dbapi.get_backend()
+
+    def setUp(self):
+        super(TestRackPatch, self).setUp()
+        self.test_rack = self.db.create_rack(dbutils.get_test_rack())
+
+    def test_rack_not_found(self):
+        response = self.patch_json('/racks/%s' % uuidutils.generate_uuid(),
+                                   [{'path': '/a', 'v': 'b', 'op': 'replace'}],
+                                   expect_errors=True)
+
+        self.assertEqual(response.status_int, 404)
+        self.assertEqual(response.content_type, 'application/json')
+
+    def test_replace(self):
+        location = 'new location'
+        subnet = "10.10.1.0/24"
+
+        patch = [{'path': '/location', 'value': location, 'op': 'replace'},
+                 {'path': '/subnet', 'value': subnet, 'op': 'replace'}]
+
+        response = self.patch_json('/racks/%s' % self.test_rack.id, patch)
+
+        self.test_rack = self.db.get_rack(self.test_rack.id)
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.test_rack.location, location)
+        self.assertEqual(self.test_rack.subnet, subnet)

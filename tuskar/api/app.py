@@ -41,8 +41,14 @@ def get_pecan_config():
 
 
 def setup_app(pecan_config=None, extra_hooks=None):
+    import sys
+    sys.path.append("/home/martyn/bin/eclipse/python/eclipse/plugins/org.python.pydev_2.8.2.2013090511/pysrc/")
+    import pydevd;
+    pydevd.settrace(suspend=False)
+
     app_hooks = [hooks.ConfigHook(),
-                 hooks.DBHook()]
+                 hooks.DBHook(),
+                 hooks.ValidatePatchHook()]
     if extra_hooks:
         app_hooks.extend(extra_hooks)
 

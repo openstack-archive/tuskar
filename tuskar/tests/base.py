@@ -24,7 +24,7 @@ inline callbacks.
 """
 
 import eventlet
-eventlet.monkey_patch(os=False)
+eventlet.patcher.monkey_patch(all=False, socket=True, time=True, thread=False)
 
 import os
 import shutil

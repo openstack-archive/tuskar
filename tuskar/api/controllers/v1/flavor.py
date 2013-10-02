@@ -71,6 +71,7 @@ class FlavorsController(rest.RestController):
             raise wsme.exc.ClientSideError(_("Invalid data"))
         return Flavor.add_capacities(resource_class_id, flavor)
 
+
     @wsme_pecan.wsexpose(None, wtypes.text, wtypes.text, status_code=204)
     def delete(self, resource_class_id, flavor_id):
         """Delete a Flavor."""
