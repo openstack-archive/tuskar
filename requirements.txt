@@ -20,3 +20,4 @@ WSME>=0.5b5
 python-novaclient
 PyYAML>=3.1.0
 python-heatclient
+jsonpatch>=1.1

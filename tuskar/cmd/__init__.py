@@ -20,7 +20,7 @@ os.environ['EVENTLET_NO_GREENDNS'] = 'yes'
 
 import eventlet
 
-eventlet.monkey_patch(os=False)
+eventlet.patcher.monkey_patch(all=False, socket=True, time=True, thread=False)
 
 from tuskar.openstack.common import gettextutils
 gettextutils.install('tuskar')
