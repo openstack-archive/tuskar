@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Approved+1: Martyn Taylor <mtaylor@redhat.com>
+Code-Review+2: Martyn Taylor <mtaylor@redhat.com>
+Code-Review+1: Petr Blaho <pblaho@redhat.com>
+Code-Review+1: Marios Andreou <marios@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 02 Oct 2013 15:52:29 +0000
+Reviewed-on: https://review.openstack.org/47435
+Project: stackforge/tuskar
+Branch: refs/heads/master
