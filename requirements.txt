@@ -20,5 +20,5 @@ pecan>=0.2.0
 wsme>=0.5b1
 boto==2.5.1
 python-novaclient
-simpleyaml
+PyYAML>=3.1.0
 python-heatclient

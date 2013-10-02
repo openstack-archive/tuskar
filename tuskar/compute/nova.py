@@ -15,7 +15,7 @@
 #    under the License.
 
 #
-import simpleyaml
+import yaml
 
 from novaclient.v1_1 import client
 from oslo.config import cfg
@@ -41,7 +41,7 @@ class NovaClient(object):
         #grab client params from nova_overcloud_config.yml:
         try:
             config_file = open(CONF.nova_overcloud_config)
-            client_params = simpleyaml.safe_load(config_file)
+            client_params = yaml.safe_load(config_file)
             config_file.close()
         except Exception:
             raise
