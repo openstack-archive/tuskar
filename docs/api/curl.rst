@@ -418,4 +418,14 @@ response
             }
     }
 
+Overcloud service endpoints
+----------
+
+get collection
+~~~~~~~~~~~~~
+
+::
+
+    curl -X GET -H 'Content-Type:application/json' -H 'Accept: application/json' http://0.0.0.0:8585/v1/endpoints/
+
 `back to top <#index>`_
