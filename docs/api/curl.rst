@@ -418,4 +418,14 @@ response
             }
     }
 
+Overcloud service endpoints
+----------
+
+get Keystone URL
+~~~~~~~~~~~~~
+
+::
+
+    curl -X GET -H 'Content-Type:application/json' -H 'Accept: application/json' http://0.0.0.0:8585/v1/endpoints/keystone
+
 `back to top <#index>`_
