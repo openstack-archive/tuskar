@@ -13,11 +13,12 @@
 #    under the License.
 from tuskar.api.controllers.v1.controller import Controller
 from tuskar.api.controllers.v1.data_center import DataCenterController
+from tuskar.api.controllers.v1.endpoints import EndpointsController
 from tuskar.api.controllers.v1.flavor import FlavorsController
 from tuskar.api.controllers.v1.node import NodesController
 from tuskar.api.controllers.v1.rack import RacksController
 from tuskar.api.controllers.v1.resource_class import ResourceClassesController
 
-__all__ = (Controller, DataCenterController, FlavorsController,
-           RacksController, ResourceClassesController,
+__all__ = (Controller, DataCenterController, EndpointsController,
+           FlavorsController, RacksController, ResourceClassesController,
            NodesController)
