@@ -31,6 +31,14 @@ API_SERVICE_OPTS = [
             default=8585,
             help='The port for the Tuskar API server',
             ),
+        cfg.StrOpt('tht_git_repo',
+            default='https://github.com/openstack/tripleo-heat-templates.git',
+            help='git repo for tripleo heat templates',
+            ),
+        cfg.StrOpt('tht_local_dir',
+            default='./tuskar/api/templates/',
+            help='Local path holding ooo-heat-templates',
+            ),
         ]
 
 CONF = cfg.CONF
