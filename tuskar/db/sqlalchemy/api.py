@@ -134,9 +134,11 @@ class Connection(api.Connection):
         session = get_session()
         session.begin()
         try:
-            rc = models.ResourceClass(name=new_resource_class.name,
-                                      service_type=
-                                      new_resource_class.service_type)
+            rc = models.ResourceClass(
+                name=new_resource_class.name,
+                service_type=new_resource_class.service_type,
+                image_id=getattr(new_resource_class, 'image_id', None),
+            )
             session.add(rc)
             if new_resource_class.racks:
                 for r in new_resource_class.racks:
