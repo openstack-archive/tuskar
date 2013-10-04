@@ -21,6 +21,7 @@
 """The Tuskar Service API."""
 
 import logging
+import os
 import sys
 
 from oslo.config import cfg
@@ -48,6 +49,17 @@ def main():
     LOG.info("Serving on http://%s:%s" % (host, port))
     LOG.info("Configuration:")
     CONF.log_opt_values(LOG, logging.INFO)
+    # make sure we have tripleo-heat-templates:
+    heat_template_path = CONF.tht_local_dir
+    try:
+        templates = os.listdir(heat_template_path)
+    except OSError:
+        LOG.info("Can't find local tripleo-heat-template files at %s"
+                  % (heat_template_path))
+        LOG.info("Cannot proceed - missing tripleo heat templates " +
+                  "See INSTALL documentation for more info")
+        raise
+    LOG.info("Using tripleo-heat-templates at %s" % (heat_template_path))
 
     try:
         wsgi.serve_forever()
