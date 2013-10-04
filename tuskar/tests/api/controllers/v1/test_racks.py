@@ -70,6 +70,7 @@ class TestRacks(api.FunctionalTest):
                 ResourceClass(
                     name='test resource class',
                     service_type='compute',
+                    image_id='694327d9-6cf0-4bed-bb5d-7456f34cf1ff',
                 ))
 
     def test_it_returns_single_rack(self):
