@@ -16,6 +16,7 @@ class TestFlavors(api.FunctionalTest):
         self.rc = self.db.create_resource_class(ResourceClass(
             name='flavor_test_resource_class',
             service_type='compute',
+            image_id='3b242fc2-4972-434c-9fc6-2885981e2236',
         ))
 
     def tearDown(self):
