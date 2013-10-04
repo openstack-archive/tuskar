@@ -505,6 +505,10 @@ service_type = orchestration
 
 [heat_keystone]
 
+
+tht_local_dir = "./tuskar/api/templates/"
+
+
 # Heat API keystone configuration.
 
 #username = heat
