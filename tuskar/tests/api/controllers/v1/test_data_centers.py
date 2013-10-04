@@ -18,6 +18,7 @@ class TestDataCenters(api.FunctionalTest):
         self.rc = self.db.create_resource_class(ResourceClass(
             name='t1',
             service_type='compute',
+            image_id='a2822b68-6d8e-44be-8861-1065d6df99a6',
         ))
         self.racks = []
 

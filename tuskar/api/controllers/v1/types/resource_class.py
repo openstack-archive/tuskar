@@ -27,6 +27,7 @@ class ResourceClass(Base):
     id = int
     name = wtypes.text
     service_type = wtypes.text
+    image_id = wtypes.text
     racks = [Relation]
     flavors = [Flavor]
     links = [Link]

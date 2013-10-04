@@ -41,6 +41,15 @@ class DataCenterController(rest.RestController):
         heat = heat_client()
         nova_utils = NovaClient()
 
+        for resource in rcs:
+            service_type = resource.service_type
+            image_id = resource.image_id
+
+            if image_id and service_type == 'compute':
+                params['NovaImage'] = image_id
+            if image_id and service_type in ('not_compute', 'controller'):
+                params['notcomputeImage'] = image_id
+
         template_body = render('overcloud.yaml', dict(resource_classes=rcs,
             nova_util=nova_utils))
         if heat.validate_template(template_body):

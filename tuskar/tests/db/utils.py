@@ -25,8 +25,11 @@ from tuskar.openstack.common.db.sqlalchemy import session as db_session
 
 
 def get_test_resource_class(**kwargs):
-    rc = ResourceClass(name=kwargs.get('name', 'test_resource_class'),
-                       service_type=kwargs.get('type', 'compute'))
+    rc = ResourceClass(
+        name=kwargs.get('name', 'test_resource_class'),
+        service_type=kwargs.get('type', 'compute'),
+        image_id=kwargs.get('image_id', 'f1852b4a-1ae8-4e36-8d45-2d72e2f12ba4')
+    )
     return rc
 
 

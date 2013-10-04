@@ -93,6 +93,7 @@ def upgrade(migrate_engine):
         Column('id', Integer, primary_key=True, nullable=False),
         Column('name', String(length=128)),
         Column('service_type', String(length=128)),
+        Column('image_id', String(length=36), nullable=False),
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
         mysql_engine=ENGINE,
