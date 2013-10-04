@@ -16,11 +16,9 @@ class TestFlavors(api.FunctionalTest):
         self.rc = self.db.create_resource_class(ResourceClass(
             name='flavor_test_resource_class',
             service_type='compute',
+            image_id='3b242fc2-4972-434c-9fc6-2885981e2236',
         ))
-
-    def tearDown(self):
-        self.db.delete_resource_class(self.rc.id)
-        super(TestFlavors, self).tearDown()
+        self.addCleanup(self.db.delete_resource_class, self.rc.id)
 
     def test_it_can_create_and_delete_a_flavor(self):
         # create a flavor and inspect response

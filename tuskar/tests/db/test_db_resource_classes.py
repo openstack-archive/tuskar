@@ -138,7 +138,8 @@ class TestDbResourceClasses(db_base.DbTestCase):
                           self.db.update_resource_class,
                           db_rc_2.id, pecan_rc_2)
 
-    def test_it_can_update_resource_class_name_and_type(self):
+    def test_it_can_update_resource_class_name_type_and_image_id(self):
+        new_image_id = '7b53ea12-cb94-4540-8d3c-e5132263d180'
         #get a pecan resource_class:
         pecan_rc = utils.get_test_resource_class(name='a_plain_resource_class',
                                                  service_type='compute')
@@ -147,11 +148,13 @@ class TestDbResourceClasses(db_base.DbTestCase):
         #update:
         pecan_rc.name = 'updated_plain_resource_class'
         pecan_rc.service_type = 'storage'
+        pecan_rc.image_id = new_image_id
         updated_db_rc = self.db.update_resource_class(db_rc.id, pecan_rc)
         #check
         self.__check_resource_class(updated_db_rc,
                                     'updated_plain_resource_class',
-                                    'storage')
+                                    'storage',
+                                    image_id=new_image_id)
         self.db.delete_resource_class(updated_db_rc.id)
 
     def test_it_can_update_resource_class_racks_and_flavors(self):
@@ -199,6 +202,10 @@ class TestDbResourceClasses(db_base.DbTestCase):
     def __check_resource_class(self, rc, name, service_type, **kwargs):
         self.assertTrue(rc.name == name)
         self.assertTrue(rc.service_type == service_type)
+        if 'image_id' in kwargs:
+            image_id = kwargs['image_id']
+            self.assertEqual(rc.image_id, image_id)
+
         #flavors
         if rc.flavors != []:
             names = kwargs.get('flavor_names')

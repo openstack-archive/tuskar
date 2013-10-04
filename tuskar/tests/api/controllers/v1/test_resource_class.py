@@ -14,13 +14,12 @@ class TestResourceClasses(api.FunctionalTest):
         self.rc = self.db.create_resource_class(ResourceClass(
             name='test resource class',
             service_type='compute',
+            image_id='58f950f7-215b-455a-81c4-1fce9f395109'
         ))
-        self.racks = []
+        self.addCleanup(self.db.delete_resource_class, self.rc.id)
 
-    def tearDown(self):
-        self.db.delete_resource_class(self.rc.id)
-        self.teardown_racks()
-        super(TestResourceClasses, self).tearDown()
+        self.racks = []
+        self.addCleanup(self.teardown_racks)
 
     def setup_racks(self):
         for rack_num in range(1, 4):
@@ -63,7 +62,23 @@ class TestResourceClasses(api.FunctionalTest):
         self.assertEqual(response.json['name'], 'test resource class')
 
     def test_create_resource_class(self):
-        json = {'name': 'new', 'service_type': 'compute'}
+        json = {
+            'name': 'new',
+            'service_type': 'compute',
+            'image_id': 'f815a5d4-2b46-4e3b-afd0-a740d3cff49c',
+        }
+        response = self.post_json('/resource_classes/', params=json)
+        self.assertEqual(response.content_type, 'application/json')
+        self.assertEqual(response.json['name'], json['name'])
+        row = self.db.get_resource_class(response.json['id'])
+        self.assertEqual(row.name, json['name'])
+        self.assertEqual(row.image_id, json['image_id'])
+
+    def test_create_resource_class_default_image_id(self):
+        json = {
+            'name': 'new',
+            'service_type': 'compute',
+        }
         response = self.post_json('/resource_classes/', params=json)
         self.assertEqual(response.content_type, 'application/json')
         self.assertEqual(response.json['name'], json['name'])
