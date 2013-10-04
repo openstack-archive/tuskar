@@ -171,6 +171,7 @@ class ResourceClass(Base):
     id = Column(Integer, primary_key=True)
     name = Column(Text, unique=True)
     service_type = Column(Text, unique=True)
+    image_id = Column(String(length=36), nullable=True)
     racks = relationship("Rack",
                          backref="resource_class",
                          lazy='joined',
