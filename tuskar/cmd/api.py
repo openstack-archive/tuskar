@@ -23,6 +23,7 @@
 import logging
 import sys
 
+import os
 from oslo.config import cfg
 from wsgiref import simple_server
 
@@ -31,7 +32,6 @@ from tuskar.common import service as tuskar_service
 from tuskar.openstack.common import log
 
 CONF = cfg.CONF
-
 
 def main():
     # Pase config file and command line options, then start logging
@@ -48,6 +48,17 @@ def main():
     LOG.info("Serving on http://%s:%s" % (host, port))
     LOG.info("Configuration:")
     CONF.log_opt_values(LOG, logging.INFO)
+
+    # make sure we have tripleo-heat-templates:
+    heat_template_path = CONF.tht_local_dir + "tripleo-heat-templates"
+    try:
+        templates = os.listdir(heat_template_path)
+    except OSError:
+        LOG.info("Can't find local tripleo-heat-template directory " +
+                 "at " + CONF.tht_local_dir )
+        LOG.error("Cannot proceed - run tuskar-fetch-tripleo-heat-templates")
+        raise
+    LOG.info("Working with tripleo-heat-templates at" + heat_template_path)
 
     try:
         wsgi.serve_forever()
