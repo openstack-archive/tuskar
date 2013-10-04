@@ -31,6 +31,10 @@ API_SERVICE_OPTS = [
             default=8585,
             help='The port for the Tuskar API server',
             ),
+        cfg.StrOpt('tht_local_dir',
+            default='/etc/tuskar/tripleo-heat-templates/',
+            help='Local path holding ooo-heat-templates',
+            )
         ]
 
 CONF = cfg.CONF
