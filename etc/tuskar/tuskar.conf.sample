@@ -505,6 +505,11 @@ service_type = orchestration
 
 [heat_keystone]
 
+
+tht_git_repo = https://github.com/openstack/tripleo-heat-templates.git
+tht_local_dir = "./tuskar/api/templates/"
+
+
 # Heat API keystone configuration.
 
 #username = heat

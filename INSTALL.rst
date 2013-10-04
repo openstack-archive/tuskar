@@ -56,6 +56,25 @@ Note: replace these values with credentials for our undercloud OpenStack. If
 you're using `Devstack <http://devstack.org/>`_, the username and password are
 printed out when `stack.sh` finishes its job.
 
+You will need a local checkout of the tripleo-heat-templates. There are two
+configuration entries defined for this purpose: tht_local_dir and
+tht_git_repo. You can set tht_local_dir to point to your local copy of the
+tripleo-heat-templates.
+
+
+    tht_local_dir = "./tuskar/api/templates/"
+
+    tht_github_repo = https://github.com/openstack/tripleo-heat-templates.git
+
+
+At tuskar startup, if the directory specified by tht_local_dir in your
+tuskar.conf doesn't exist startup will fail. You can either fetch the
+tripleo-heat-templates yourself or run:
+
+
+    tuskar-fetch-tripleo-heat-templates
+
+
 We need to initialise the database schema::
 
     # activate the virtualenv
