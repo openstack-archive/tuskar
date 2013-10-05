@@ -17,7 +17,6 @@ oslo.config>=1.1.0
 Flask==0.9
 pecan>=0.2.0
 WSME>=0.5b5
-boto==2.5.1
 python-novaclient
 PyYAML>=3.1.0
 python-heatclient
