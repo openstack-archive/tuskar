@@ -4,7 +4,7 @@ Installation Guide
 
 Tuskar source code should be pulled directly from git::
 
-    git clone https://github.com/stackforge/tuskar.git
+    git clone https://github.com/openstack/tuskar.git
 
 
 Dependencies
@@ -86,7 +86,7 @@ Next, you can run a script to populate the DB with some sample data::
 
 This will create 2 Resource Classes and three Racks. You need to have the Tuskar
 API server running. You can see more examples of using the API at our `cURL
-Commands page <https://github.com/stackforge/tuskar/blob/master/docs/api/curl.rst>`_.
+Commands page <https://github.com/openstack/tuskar/blob/master/docs/api/curl.rst>`_.
 
 
 Running Tuskar API
@@ -105,6 +105,6 @@ Contributing
 ------------
 
 For additional developer information, take a look at
-`CONTRIBUTING.rst <https://github.com/stackforge/tuskar/blob/master/CONTRIBUTING.rst>`_
+`CONTRIBUTING.rst <https://github.com/openstack/tuskar/blob/master/CONTRIBUTING.rst>`_
 and the
-`Tuskar website <https://github.com/stackforge/tuskar/blob/master/docs/index.rst>`_.
+`Tuskar website <https://github.com/openstack/tuskar/blob/master/docs/index.rst>`_.

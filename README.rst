@@ -21,20 +21,20 @@ usage metrics, aiding in capacity planning and hardware procurement
 decisions.
 
 For additional information, take a look at the `Tuskar
-documentation <https://github.com/stackforge/tuskar/blob/master/docs/index.rst>`_.
+documentation <https://github.com/openstack/tuskar/blob/master/docs/index.rst>`_.
 
 Installation Information
 ------------------------
 
 Please see
-`INSTALL.rst <https://github.com/stackforge/tuskar/blob/master/INSTALL.rst>`_
+`INSTALL.rst <https://github.com/openstack/tuskar/blob/master/INSTALL.rst>`_
 for an installation guide.
 
 Contributing
 ------------
 
 Interested in contributing?  Take a look at
-`CONTRIBUTING.rst <https://github.com/stackforge/tuskar/blob/master/CONTRIBUTING.rst>`_
+`CONTRIBUTING.rst <https://github.com/openstack/tuskar/blob/master/CONTRIBUTING.rst>`_
 for details on how to do so.
 
 Contact Us
