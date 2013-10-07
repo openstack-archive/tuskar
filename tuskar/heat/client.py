@@ -43,7 +43,7 @@ heat_opts = [
 
 heat_keystone_opts = [
     cfg.StrOpt('username',
-               default=env.get('OS_USERNAME') or 'heat',
+               default=env.get('OS_USERNAME') or 'admin',
                help='Heat API username'
                ),
     cfg.StrOpt('password',
