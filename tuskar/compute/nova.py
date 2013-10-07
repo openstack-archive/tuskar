@@ -26,7 +26,7 @@ from tuskar.openstack.common import log
 
 nova_opts = [
     cfg.StrOpt('nova_overcloud_config',
-               default='etc/tuskar/nova_overcloud_config.yml',
+               default='/etc/tuskar/nova_overcloud_config.yml',
                help='nova overcloud keystone uri and credentials'),
 ]
 
