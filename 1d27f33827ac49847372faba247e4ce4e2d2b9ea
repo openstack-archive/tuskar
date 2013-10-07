@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: lifeless <robertc@robertcollins.net>
+Approved+1: Imre Farkas <ifarkas@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Mon, 07 Oct 2013 08:35:08 +0000
+Reviewed-on: https://review.openstack.org/50006
+Project: openstack/tuskar
+Branch: refs/heads/master
