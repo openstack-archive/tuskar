@@ -30,6 +30,7 @@ from oslo.config import cfg
 
 from tuskar.common import safe_utils
 from tuskar.openstack.common import excutils
+from tuskar.openstack.common.gettextutils import _  # noqa
 from tuskar.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -264,3 +265,11 @@ class ExclusiveLockRequired(NotAuthorized):
 
 class IPMIFailure(TuskarException):
     message = _("IPMI command failed: %(cmd)s.")
+
+
+class DuplicateEntry(TuskarException):
+    message = _("Duplicate entry found.")
+
+
+class ResourceClassExists(DuplicateEntry):
+    message = _("Resource class with name %(name)s already exists.")

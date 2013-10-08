@@ -128,6 +128,8 @@ def upgrade(migrate_engine):
     ]
 
     uniques = [
+        UniqueConstraint('name', table=resource_classes,
+                         name='uniq_resource_classes0name'),
         UniqueConstraint('name', table=racks,
                          name='racks_name_ux'),
 
