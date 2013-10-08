@@ -28,6 +28,7 @@ from oslo.config import cfg
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy import Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.types import TypeDecorator, VARCHAR
 from sqlalchemy.orm import relationship
 from tuskar.openstack.common.db.sqlalchemy import models
@@ -168,6 +169,9 @@ class ResourceClass(Base):
     """Represents a Resource Class."""
 
     __tablename__ = 'resource_classes'
+    __table_args__ = (
+        UniqueConstraint("name", name="uniq_resource_classes0name"),
+    )
     id = Column(Integer, primary_key=True)
     name = Column(Text, unique=True)
     service_type = Column(Text, unique=True)

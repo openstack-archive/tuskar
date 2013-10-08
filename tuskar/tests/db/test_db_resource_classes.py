@@ -41,6 +41,17 @@ class TestDbResourceClasses(db_base.DbTestCase):
         #delete it:
         self.db.delete_resource_class(db_rc.id)
 
+    def test_create_resource_class_duplicate_name(self):
+        rc = {'name': 'name_1', 'service_type': 'compute'}
+
+        pecan_rc = utils.get_test_resource_class(**rc)
+
+        db_rc = self.db.create_resource_class(pecan_rc)
+        self.assertRaises(exception.ResourceClassExists,
+                          self.db.create_resource_class, pecan_rc)
+        #cleanup
+        self.db.delete_resource_class(db_rc.id)
+
     def test_it_can_create_and_delete_resource_class_with_flavors(self):
         #get a pecan resource_class:
         pecan_rc = utils.get_test_resource_class(
@@ -112,6 +123,23 @@ class TestDbResourceClasses(db_base.DbTestCase):
     def test_it_explodes_when_retrieve_non_existant_resource_class(self):
         self.assertRaises(exception.ResourceClassNotFound,
                           self.db.get_resource_class, 'fake_id')
+
+    def test_update_resource_class_duplicate_name(self):
+        pecan_rc_1 = utils.get_test_resource_class(name='resource_class_1',
+                                                   service_type='compute')
+        pecan_rc_2 = utils.get_test_resource_class(name='resource_class_2',
+                                                   service_type='controller')
+        db_rc_1 = self.db.create_resource_class(pecan_rc_1)
+        db_rc_2 = self.db.create_resource_class(pecan_rc_2)
+        #update:
+        pecan_rc_2.name = 'resource_class_1'
+        self.assertRaises(exception.ResourceClassExists,
+                          self.db.update_resource_class,
+                          db_rc_2.id, pecan_rc_2)
+
+        #cleanup
+        self.db.delete_resource_class(db_rc_1.id)
+        self.db.delete_resource_class(db_rc_2.id)
 
     def test_it_can_update_resource_class_name_and_type(self):
         #get a pecan resource_class:
