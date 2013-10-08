@@ -138,11 +138,10 @@ def upgrade(migrate_engine):
                          name='node_node_id_ux'),
     ]
 
-    if migrate_engine.name == 'mysql' or migrate_engine.name == 'postgresql':
-        for index in indexes:
-            index.create(migrate_engine)
-        for index in uniques:
-            index.create(migrate_engine)
+    for index in indexes:
+        index.create(migrate_engine)
+    for index in uniques:
+        index.create(migrate_engine)
 
 
 def downgrade(migrate_engine):

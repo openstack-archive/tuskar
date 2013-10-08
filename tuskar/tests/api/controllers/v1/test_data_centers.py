@@ -1,3 +1,5 @@
+import uuid
+
 from tuskar.api.controllers.v1.types import Node
 from tuskar.api.controllers.v1.types import Rack
 from tuskar.api.controllers.v1.types import Relation
@@ -32,7 +34,7 @@ class TestDataCenters(api.FunctionalTest):
                 name='rack-no-{0}'.format(rack_num),
                 subnet='192.168.2.{0}/24'.format(rack_num),
                 resource_class=Relation(id=self.rc.id),
-                nodes=[Node(id='1'), Node(id='2')]
+                nodes=[Node(id=str(uuid.uuid4())), Node(id=str(uuid.uuid4()))]
             ))
             )
 

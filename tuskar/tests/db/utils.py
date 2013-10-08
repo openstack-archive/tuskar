@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import uuid
+
 import sqlalchemy
 from tuskar.api.controllers.v1.types.capacity import Capacity
 from tuskar.api.controllers.v1.types.flavor import Flavor
@@ -58,7 +60,7 @@ def get_test_rack(**kwargs):
                              unit='MiB')],
                 nodes=[])
     if kwargs.get('nodes', False):
-        rack.nodes = [Node(id='123'), Node(id='345')]
+        rack.nodes = [Node(id=str(uuid.uuid4())), Node(id=str(uuid.uuid4()))]
     if kwargs.get('resource_class', False):
         rack.resource_class = Relation(
             id=kwargs.get('rc_id', 1),
