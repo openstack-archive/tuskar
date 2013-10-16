@@ -19,13 +19,56 @@ import wsme
 from wsmeext import pecan as wsme_pecan
 
 from tuskar.api.controllers.v1 import models
-
+from tuskar.heat.client import HeatClient as heat_client
+import tuskar.heat.template_tools as template_tools
 
 LOG = logging.getLogger(__name__)
 
+TEMP_RCS = {'resource_categories': {'controller': 1, 'compute': 1}}
 
 class OvercloudsController(rest.RestController):
     """REST controller for the Overcloud class."""
+
+    TEMP_RCS = {'resource_categories': {'controller': 1, 'compute': 1}}
+
+    _custom_actions = {'template_get': ['GET'], 'template_deploy':['POST']}
+
+    @pecan.expose()
+    def template_get(self):
+        rcs = self.TEMP_RCS
+        #keep it super simple at first       'object': 1, 'block': 2}}
+        #categories = pecan.request.dbapi.get_resource_categories()
+        categories = []
+        overcloud = template_tools.merge_templates(rcs)
+        return overcloud
+
+    @pecan.expose()
+    def template_deploy(self):
+        rcs = self.TEMP_RCS
+        #keep it super simple at first       'object': 1, 'block': 2}}
+        #categories = pecan.request.dbapi.get_resource_categories()
+        categories = []
+        overcloud = template_tools.merge_templates(rcs)
+        print (overcloud)
+        heat = heat_client()
+        #keeping this for now until heat client methods are reworked:
+        params = {}
+        if heat.validate_template(overcloud):
+            if heat.exists_stack():
+                res = heat.update_stack(overcloud, params)
+            else:
+                res = heat.create_stack(overcloud, params)
+
+            if res:
+                pecan.response.status_code = 202
+                return {}
+            else:
+                raise wsme.exc.ClientSideError(_(
+                    "Cannot update the Heat overcloud template"
+                ))
+        else:
+            raise wsme.exc.ClientSideError(_("The overcloud Heat template"
+                                             "could not be validated"))
 
     @wsme.validate(models.Overcloud)
     @wsme_pecan.wsexpose(models.Overcloud,
@@ -130,13 +173,13 @@ class OvercloudsController(rest.RestController):
 
     @wsme_pecan.wsexpose([models.Overcloud])
     def get_all(self):
-        """Returns all overclouds.
+        #"""Returns all overclouds.
 
-        An empty list is returned if no overclouds are present.
+        #An empty list is returned if no overclouds are present.
 
-        :return: list of overclouds; empty list if none are found
-        :rtype:  list of tuskar.api.controllers.v1.models.Overcloud
-        """
+        #:return: list of overclouds; empty list if none are found
+        #:rtype:  list of tuskar.api.controllers.v1.models.Overcloud
+        #"""
         LOG.debug('Retrieving all overclouds')
         overclouds = pecan.request.dbapi.get_overclouds()
         transfer_overclouds = [models.Overcloud.from_db_model(o)
