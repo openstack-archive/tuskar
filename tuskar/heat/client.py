@@ -90,6 +90,7 @@ class HeatClient(object):
                 username=CONF.heat_keystone['username'],
                 password=CONF.heat_keystone['password'])
         except Exception as e:
+            raise
             LOG.exception(e)
             self.connection = None
 
@@ -121,6 +122,15 @@ class HeatClient(object):
             self.connection.stacks.update(stack_id=CONF.heat['stack_name'],
                                           template=template_body,
                                           parameters=params)
+            return True
+        except Exception as e:
+            LOG.exception(e)
+            return False
+
+    def delete_stack(self):
+        """Delete the Heat overcloud stack."""
+        try:
+            self.connection.stacks.delete(stack_id=CONF.heat['stack_name'])
             return True
         except Exception as e:
             LOG.exception(e)
