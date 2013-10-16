@@ -1,6 +1,6 @@
 #from oslo.config import cfg
 import pecan
-from pecan.core import render
+#from pecan.core import render
 from pecan import rest
 import wsme
 #from wsme import api
@@ -9,6 +9,7 @@ import wsme
 
 from tuskar.compute.nova import NovaClient
 from tuskar.heat.client import HeatClient as heat_client
+import tuskar.heat.template_tools as template_tools
 
 #from tuskar.common import exception
 #from tuskar.openstack.common import log
@@ -28,9 +29,12 @@ class DataCenterController(rest.RestController):
     @pecan.expose()
     def template(self):
         rcs = pecan.request.dbapi.get_heat_data()
-        nova_utils = NovaClient()
-        return render('overcloud.yaml', dict(resource_classes=rcs,
-                                             nova_util=nova_utils))
+        #nova_utils = NovaClient()
+        tuskar_template = template_tools.generate_template(rcs)
+        overcloud = template_tools.merge_templates(tuskar_template)
+        #return render('overcloud.yaml', dict(resource_classes=rcs,
+        #                                     nova_util=nova_utils))
+        return overcloud
 
     @pecan.expose('json')
     def post(self):
@@ -51,8 +55,10 @@ class DataCenterController(rest.RestController):
                 elif service_type in ('not_compute', 'controller'):
                     params['notcomputeImage'] = image_id
 
-        template_body = render('overcloud.yaml', dict(resource_classes=rcs,
-            nova_util=nova_utils))
+        tuskar_template = template_tools.generate_template(rcs)
+        template_body = template_tools.merge_templates(tuskar_template)
+        #template_body = render('overcloud.yaml', dict(resource_classes=rcs,
+        #    nova_util=nova_utils))
         if heat.validate_template(template_body):
 
             if heat.exists_stack():
