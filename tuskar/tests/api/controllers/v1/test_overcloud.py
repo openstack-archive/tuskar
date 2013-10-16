@@ -12,11 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os
-
 import mock
+import os
+import wsme
+
 from pecan.testing import load_test_app
 
+from tuskar.api.controllers.v1 import overcloud
 from tuskar.db.sqlalchemy import models as db_models
 from tuskar.tests import base
 
@@ -69,13 +71,77 @@ class OvercloudTests(base.TestCase):
 
         mock_db_get.assert_called_once_with(12345)
 
+    @mock.patch('tuskar.heat.template_tools.merge_templates')
+    @mock.patch(
+        'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
+        'validate_template.return_value': True,
+        'exists_stack.return_value': False,
+        'create_stack.return_value': True,
+    }))
+    def test_create_stack(self, mock_heat_client, mock_heat_merge_templates):
+        # Setup
+        mock_heat_merge_templates.return_value = None
+
+        # Test
+        response = overcloud.create_stack({})
+
+        # Verify
+        self.assertEqual(response, {})
+
+    @mock.patch('tuskar.heat.template_tools.merge_templates')
+    @mock.patch(
+        'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
+        'validate_template.return_value': True,
+        'exists_stack.return_value': False,
+        'create_stack.return_value': False,
+    }))
+    def test_create_stack_heat_exception(self, mock_heat_client,
+            mock_heat_merge_templates):
+        # Setup
+        mock_heat_merge_templates.return_value = None
+
+        # Test and Verify
+        self.assertRaises(wsme.exc.ClientSideError, overcloud.create_stack, {})
+
+    @mock.patch('tuskar.heat.template_tools.merge_templates')
+    @mock.patch(
+        'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
+        'validate_template.return_value': True,
+        'exists_stack.return_value': True,
+        'create_stack.return_value': True,
+    }))
+    def test_create_stack_existing_exception(self, mock_heat_client,
+            mock_heat_merge_templates):
+        # Setup
+        mock_heat_merge_templates.return_value = None
+
+        # Test and Verify
+        self.assertRaises(wsme.exc.ClientSideError, overcloud.create_stack, {})
+
+    @mock.patch('tuskar.heat.template_tools.merge_templates')
+    @mock.patch(
+        'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
+        'validate_template.return_value': False,
+        'exists_stack.return_value': False,
+        'create_stack.return_value': True,
+    }))
+    def test_create_stack_not_valid_exception(self, mock_heat_client,
+            mock_heat_merge_templates):
+        # Setup
+        mock_heat_merge_templates.return_value = None
+
+        # Test and Verify
+        self.assertRaises(wsme.exc.ClientSideError, overcloud.create_stack, {})
+
+    @mock.patch('tuskar.api.controllers.v1.overcloud.create_stack')
     @mock.patch('tuskar.db.sqlalchemy.api.Connection.create_overcloud')
-    def test_post(self, mock_db_create):
+    def test_post(self, mock_db_create, mock_create_stack):
         # Setup
         create_me = {'name': 'new'}
 
         fake_created = db_models.Overcloud(name='created')
         mock_db_create.return_value = fake_created
+        mock_create_stack.return_value = None
 
         # Test
         response = self.app.post_json(URL_OVERCLOUDS, params=create_me)
@@ -91,8 +157,71 @@ class OvercloudTests(base.TestCase):
                                    db_models.Overcloud))
         self.assertEqual(db_create_model.name, create_me['name'])
 
+    @mock.patch('tuskar.heat.template_tools.merge_templates')
+    @mock.patch(
+        'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
+        'validate_template.return_value': True,
+        'exists_stack.return_value': True,
+        'update_stack.return_value': True,
+    }))
+    def test_update_stack(self, mock_heat_client, mock_heat_merge_templates):
+        # Setup
+        mock_heat_merge_templates.return_value = None
+
+        # Test
+        response = overcloud.update_stack({})
+
+        # Verify
+        self.assertEqual(response, {})
+
+    @mock.patch('tuskar.heat.template_tools.merge_templates')
+    @mock.patch(
+        'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
+        'validate_template.return_value': True,
+        'exists_stack.return_value': True,
+        'update_stack.return_value': False,
+    }))
+    def test_update_stack_heat_exception(self, mock_heat_client,
+            mock_heat_merge_templates):
+        # Setup
+        mock_heat_merge_templates.return_value = None
+
+        # Test and Verify
+        self.assertRaises(wsme.exc.ClientSideError, overcloud.update_stack, {})
+
+    @mock.patch('tuskar.heat.template_tools.merge_templates')
+    @mock.patch(
+        'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
+        'validate_template.return_value': True,
+        'exists_stack.return_value': False,
+        'update_stack.return_value': True,
+    }))
+    def test_update_stack_not_existing_exception(self, mock_heat_client,
+            mock_heat_merge_templates):
+        # Setup
+        mock_heat_merge_templates.return_value = None
+
+        # Test and Verify
+        self.assertRaises(wsme.exc.ClientSideError, overcloud.update_stack, {})
+
+    @mock.patch('tuskar.heat.template_tools.merge_templates')
+    @mock.patch(
+        'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
+        'validate_template.return_value': False,
+        'exists_stack.return_value': True,
+        'update_stack.return_value': True,
+    }))
+    def test_update_stack_not_valid_exception(self, mock_heat_client,
+            mock_heat_merge_templates):
+        # Setup
+        mock_heat_merge_templates.return_value = None
+
+        # Test and Verify
+        self.assertRaises(wsme.exc.ClientSideError, overcloud.update_stack, {})
+
+    @mock.patch('tuskar.api.controllers.v1.overcloud.update_stack')
     @mock.patch('tuskar.db.sqlalchemy.api.Connection.update_overcloud')
-    def test_put(self, mock_db_update):
+    def test_put(self, mock_db_update, mock_update_stack):
         # Setup
         changes = {'name': 'updated'}
 
@@ -100,6 +229,7 @@ class OvercloudTests(base.TestCase):
                                            attributes=[],
                                            counts=[])
         mock_db_update.return_value = fake_updated
+        mock_update_stack.return_value = None
 
         # Test
         url = URL_OVERCLOUDS + '/' + '12345'
