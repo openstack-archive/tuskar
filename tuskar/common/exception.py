@@ -166,3 +166,15 @@ class DuplicateAttribute(DuplicateEntry):
 
 class ConfigNotFound(TuskarException):
     message = _("Could not find config at %(path)s")
+
+
+class InvalidHeatTemplate(TuskarException):
+    message = _("Validation of the Heat Template failed.")
+
+
+class StackNotFound(NotFound):
+    message = _("The Stack for this Overcloud can't be found.")
+
+
+class StackAlreadyCreated(DuplicateEntry):
+    message = _("The Stack for this Overcloud already exists.")

@@ -82,15 +82,16 @@ class HeatClient(object):
         try:
             keystone = ksclient.Client(**CONF.heat_keystone)
             endpoint = keystone.service_catalog.url_for(
-                    service_type=CONF.heat['service_type'],
-                    endpoint_type=CONF.heat['endpoint_type'])
+                service_type=CONF.heat['service_type'],
+                endpoint_type=CONF.heat['endpoint_type']
+            )
             self.connection = heatclient(
                 endpoint=endpoint,
                 token=keystone.auth_token,
                 username=CONF.heat_keystone['username'],
                 password=CONF.heat_keystone['password'])
-        except Exception as e:
-            LOG.exception(e)
+        except Exception:
+            LOG.exception("An error occurred initialising the HeatClient")
             self.connection = None
 
     def validate_template(self, template_body):
@@ -98,8 +99,8 @@ class HeatClient(object):
         try:
             self.connection.stacks.validate(template=template_body)
             return True
-        except Exception as e:
-            LOG.exception(e)
+        except Exception:
+            LOG.exception("Validation of the Heat template failed.")
             return False
 
     def get_stack(self, name=None):
@@ -112,8 +113,8 @@ class HeatClient(object):
     def get_template(self):
         """Get JSON representation of the Heat overcloud template."""
         return self.connection.stacks.template(
-                stack_id=CONF.heat['stack_name']
-                )
+            stack_id=CONF.heat['stack_name']
+        )
 
     def update_stack(self, template_body, params):
         """Update the Heat overcloud stack."""
@@ -122,8 +123,17 @@ class HeatClient(object):
                                           template=template_body,
                                           parameters=params)
             return True
-        except Exception as e:
-            LOG.exception(e)
+        except Exception:
+            LOG.exception("An error occurred updating the stack.")
+            return False
+
+    def delete_stack(self):
+        """Delete the Heat overcloud stack."""
+        try:
+            self.connection.stacks.delete(stack_id=CONF.heat['stack_name'])
+            return True
+        except Exception:
+            LOG.exception("An error occurred deleting the stack.")
             return False
 
     def create_stack(self, template_body, params):
@@ -133,8 +143,8 @@ class HeatClient(object):
                                           template=template_body,
                                           parameters=params)
             return True
-        except Exception as e:
-            LOG.exception(e)
+        except Exception:
+            LOG.exception("An error occurred creating the stack.")
             return False
 
     def exists_stack(self, name=None):
