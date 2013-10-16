@@ -9,6 +9,7 @@ import wsme
 
 from tuskar.compute.nova import NovaClient
 from tuskar.heat.client import HeatClient as heat_client
+import tuskar.heat.template_tools as template_tools
 
 #from tuskar.common import exception
 #from tuskar.openstack.common import log
@@ -28,9 +29,12 @@ class DataCenterController(rest.RestController):
     @pecan.expose()
     def template(self):
         rcs = pecan.request.dbapi.get_heat_data()
-        nova_utils = NovaClient()
-        return render('overcloud.yaml', dict(resource_classes=rcs,
-                                             nova_util=nova_utils))
+        #nova_utils = NovaClient()
+        import pdb;pdb.set_trace()
+        tuskar_template = template_tools.generate_template(rcs)
+        overcloud = template_tools.merge_templates(tuskar_template)
+        #return render('overcloud.yaml', dict(resource_classes=rcs,
+        #                                     nova_util=nova_utils))
 
     @pecan.expose('json')
     def post(self):
