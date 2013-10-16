@@ -69,13 +69,22 @@ class OvercloudTests(base.TestCase):
 
         mock_db_get.assert_called_once_with(12345)
 
+    @mock.patch('tuskar.heat.template_tools.merge_templates')
+    @mock.patch(
+        'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
+        'validate_template.return_value': True,
+        'exists_stack.return_value': False,
+        'create_stack.return_value': True,
+    }))
     @mock.patch('tuskar.db.sqlalchemy.api.Connection.create_overcloud')
-    def test_post(self, mock_db_create):
+    def test_post(self, mock_db_create, mock_heat_client,
+                  mock_heat_merge_templates):
         # Setup
         create_me = {'name': 'new'}
 
         fake_created = db_models.Overcloud(name='created')
         mock_db_create.return_value = fake_created
+        mock_heat_merge_templates.return_value = None
 
         # Test
         response = self.app.post_json(URL_OVERCLOUDS, params=create_me)
@@ -91,8 +100,16 @@ class OvercloudTests(base.TestCase):
                                    db_models.Overcloud))
         self.assertEqual(db_create_model.name, create_me['name'])
 
+    @mock.patch('tuskar.heat.template_tools.merge_templates')
+    @mock.patch(
+        'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
+        'validate_template.return_value': True,
+        'exists_stack.return_value': True,
+        'create_stack.return_value': True,
+    }))
     @mock.patch('tuskar.db.sqlalchemy.api.Connection.update_overcloud')
-    def test_put(self, mock_db_update):
+    def test_put(self, mock_db_update, mock_heat_client,
+                 mock_heat_merge_templates):
         # Setup
         changes = {'name': 'updated'}
 
