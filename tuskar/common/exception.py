@@ -174,6 +174,10 @@ class Invalid(TuskarException):
     code = 400
 
 
+class InvalidResourceCategory(TuskarException):
+    message = _("Unacceptable resource category type: %(rc)s")
+
+
 class InvalidCPUInfo(Invalid):
     message = _("Unacceptable CPU info") + ": %(reason)s"
 
