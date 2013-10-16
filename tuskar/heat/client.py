@@ -42,17 +42,17 @@ heat_opts = [
 ]
 
 heat_keystone_opts = [
+    # TODO(rpodolyaka): https://bugs.launchpad.net/tuskar/+bug/1236703
     cfg.StrOpt('username',
-               default=env.get('OS_USERNAME') or 'heat',
-               help='Heat API username'
+               default=env.get('OS_USERNAME') or 'admin',
+               help='The name of a user the overcloud is deployed on behalf of'
                ),
     cfg.StrOpt('password',
-               default=env.get('OS_PASSWORD') or 'heat',
-               help='Heat API user password'
+               help='The pass of a user the overcloud is deployed on behalf of'
                ),
     cfg.StrOpt('tenant_name',
                default=env.get('OS_TENANT_NAME') or 'admin',
-               help='Heat API keystone tenant name'
+               help='The tenant name the overcloud is deployed on behalf of'
                ),
     cfg.StrOpt('auth_url',
                default=env.get('OS_AUTH_URL') or 'http://localhost:35357/v2.0',
