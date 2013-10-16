@@ -14,18 +14,67 @@
 
 import logging
 import pecan
-from pecan import rest
 import wsme
+
+from pecan import rest
 from wsmeext import pecan as wsme_pecan
 
 from tuskar.api.controllers.v1 import models
-
+from tuskar.heat.client import HeatClient
+import tuskar.heat.template_tools as template_tools
 
 LOG = logging.getLogger(__name__)
 
 
+# FIXME(lsmola) mocked params for POC, remove later by real ones
+POC_PARAMS = {'controller': 1, 'compute': 1}
+POC_PARAMS_UPDATE = {'controller': 1, 'compute': 2}
+
+
+def process_stack(params, create=False):
+    """Helper function for processing the stack. Given the parameters,
+
+    :param params: Dictionary of params for heat template
+                   and initialization of stack
+    :type  params: dict
+    """
+
+    overcloud = template_tools.merge_templates(params)
+    heat_client = HeatClient()
+
+    if not heat_client.validate_template(overcloud):
+        raise wsme.exc.ClientSideError(_(
+            "The overcloud Heat template could not be validated"
+        ))
+
+    if heat_client.exists_stack() and create:
+        raise wsme.exc.ClientSideError(_(
+            "Cannot create the Heat overcloud stack, it is already created"
+        ))
+    elif not heat_client.exists_stack() and not create:
+        raise wsme.exc.ClientSideError(_(
+            "Cannot update the Heat overcloud stack, it is not created"
+        ))
+
+    res = heat_client.create_stack(overcloud, params)
+
+    if not res:
+        verb = 'create' if create else 'update'
+        raise wsme.exc.ClientSideError(_(
+            "Cannot %s the Heat overcloud template") % verb
+        )
+
+
 class OvercloudsController(rest.RestController):
     """REST controller for the Overcloud class."""
+
+    _custom_actions = {'template_get': ['GET']}
+
+    # FIXME(lsmola) this is for debugging purposes only, remove before I3
+    @pecan.expose()
+    def template_get(self):
+        overcloud = template_tools.merge_templates(POC_PARAMS)
+        return overcloud
 
     @wsme.validate(models.Overcloud)
     @wsme_pecan.wsexpose(models.Overcloud,
@@ -47,6 +96,9 @@ class OvercloudsController(rest.RestController):
 
         LOG.debug('Creating overcloud: %s' % transfer_overcloud)
 
+        # FIXME(lsmola) there has to be constraint that only one
+        # overcloud can be created for now
+
         # Persist to the database
         db_overcloud = transfer_overcloud.to_db_model()
         result = pecan.request.dbapi.create_overcloud(db_overcloud)
@@ -54,6 +106,14 @@ class OvercloudsController(rest.RestController):
         # Package for transfer back to the user
         saved_overcloud =\
             models.Overcloud.from_db_model(result)
+
+        # FIXME(lsmola) This is just POC of creating a stack
+        # this has to be done properly with proper Work-flow abstraction of:
+        # step one- build template and start stack-create
+        # step 2- put the right stack_id to the overcloud
+        # step 3- initialize the stack
+        # step 4- set the correct overcloud status
+        process_stack(POC_PARAMS, create=True)
 
         return saved_overcloud
 
@@ -90,6 +150,12 @@ class OvercloudsController(rest.RestController):
 
         updated = models.Overcloud.from_db_model(result)
 
+        # FIXME(lsmola) This is just POC of updating a stack
+        # this probably should also have workflow
+        # step one- build template and stack-update
+        # step 2- set the correct overcloud status
+        process_stack(POC_PARAMS_UPDATE)
+
         return updated
 
     @wsme_pecan.wsexpose(None, int, status_code=204)
@@ -103,8 +169,23 @@ class OvercloudsController(rest.RestController):
                  is no overcloud with the given ID
         """
 
+        # FIXME(lsmola) this should always try to delete both overcloud
+        # and stack. So it requires some excpetion catch over below.
         LOG.debug('Deleting overcloud with ID: %s' % overcloud_id)
         pecan.request.dbapi.delete_overcloud_by_id(overcloud_id)
+
+        heat_client = HeatClient()
+        if not heat_client.exists_stack():
+            raise wsme.exc.ClientSideError(_(
+                "Cannot delete the Heat overcloud stack as it is not created."
+            ))
+
+        result = heat_client.delete_stack()
+
+        if not result:
+            raise wsme.exc.ClientSideError(_(
+                "Failed to delete the Heat overcloud."
+            ))
 
     @wsme_pecan.wsexpose(models.Overcloud, int)
     def get_one(self, overcloud_id):
