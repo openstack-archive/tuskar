@@ -12,6 +12,7 @@ import pecan
 
 from tuskar.api.controllers.v1.data_center import DataCenterController
 from tuskar.api.controllers.v1.node import NodesController
+from tuskar.api.controllers.v1.overcloud import OvercloudsController
 from tuskar.api.controllers.v1.rack import RacksController
 from tuskar.api.controllers.v1.resource_class import ResourceClassesController
 
@@ -22,6 +23,7 @@ class Controller(object):
     racks = RacksController()
     resource_classes = ResourceClassesController()
     data_centers = DataCenterController()
+    overclouds = OvercloudsController()
     nodes = NodesController()
 
     @pecan.expose('json')
