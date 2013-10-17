@@ -30,6 +30,9 @@ class JSonRenderer(object):
         pass
 
     def render(self, template_path, namespace):
+        if 'faultcode' in namespace:
+            return wsme.rest.json.encode_error(None, namespace)
+
         result = namespace['result']
         if isinstance(namespace['result'], api.Response):
             pecan.response.status_code = result.status_code
@@ -37,8 +40,6 @@ class JSonRenderer(object):
                               'faultcode': result.obj.faultcode})
             return val
 
-        if 'faultcode' in namespace:
-            return wsme.rest.json.encode_error(None, namespace)
         return wsme.rest.json.encode_result(
             namespace['result'],
             namespace['datatype']
