@@ -18,9 +18,10 @@ from tuskar.api.controllers.v1.types.error import Error
 from tuskar.api.controllers.v1.types.flavor import Flavor
 from tuskar.api.controllers.v1.types.link import Link
 from tuskar.api.controllers.v1.types.node import Node
+from tuskar.api.controllers.v1.types.overcloud import Overcloud
 from tuskar.api.controllers.v1.types.rack import Rack
 from tuskar.api.controllers.v1.types.relation import Relation
 from tuskar.api.controllers.v1.types.resource_class import ResourceClass
 
-__all__ = (Base, Capacity, Chassis, Error, Flavor, Link, Node, Rack,
+__all__ = (Base, Capacity, Chassis, Error, Flavor, Link, Node, Overcloud, Rack,
            Relation, ResourceClass)
