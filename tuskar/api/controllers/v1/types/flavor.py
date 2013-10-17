@@ -23,7 +23,7 @@ from tuskar.api.controllers.v1.types.link import Link
 class Flavor(Base):
     """A representation of Flavor in HTTP body."""
     #FIXME - I want id to be UUID - String
-    id = wsme.wsattr(int, mandatory=True)
+    id = wsme.wsattr(int, mandatory=False)
     name = wsme.wsattr(wtypes.text, mandatory=False)
     max_vms = wsme.wsattr(int, mandatory=False)
     capacities = [Capacity]
