@@ -103,7 +103,10 @@ class HeatClient(object):
     def get_stack(self):
         """Get overcloud Heat template."""
         if self.connection:
-            return self.connection.stacks.get(CONF.heat['stack_name'])
+            try:
+                return self.connection.stacks.get(CONF.heat['stack_name'])
+            except Exception:
+                raise
 
     def get_template(self):
         """Get JSON representation of the Heat overcloud template."""
@@ -135,7 +138,7 @@ class HeatClient(object):
 
     def exists_stack(self):
         try:
-            self.get_stack()
+            self.connection.stacks.get(CONF.heat['stack_name'])
             return True
         # TODO(mtaylor) we should check for the correct exception here
         except Exception as e:
