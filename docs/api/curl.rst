@@ -10,6 +10,7 @@ Resources
 -  `ResourceClass <#resource_class>`_
 -  `DataCenter <#data_center>`_
 -  `Node <#node>`_
+-  `Overcloud <#overcloud>`_
 
 Rack
 ----
@@ -416,6 +417,31 @@ response
                       }
                      ]
             }
+    }
+
+Overcloud
+----------
+
+get Keystone URL for an overcloud
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    curl -X GET -H 'Content-Type:application/json' -H 'Accept: application/json' http://0.0.0.0:8585/v1/overclouds/cloudname
+
+response
+^^^^^^^^
+
+::
+
+    {
+        "stack_name": "cloudname",
+        "links": [
+            {
+                "rel": "keystone",
+                "href": "http://192.0.2.5:5000/v2.0/"
+            }
+        ]
     }
 
 `back to top <#index>`_
