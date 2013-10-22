@@ -26,6 +26,7 @@ from sqlalchemy.orm import subqueryload, joinedload
 from tuskar.common import exception
 from tuskar.db import api
 from tuskar.db.sqlalchemy import models
+from tuskar.openstack.common.db import exception as db_exc
 from tuskar.openstack.common.db.sqlalchemy import session as db_session
 from tuskar.openstack.common import log
 from wsme import types as wtypes
@@ -132,8 +133,7 @@ class Connection(api.Connection):
 
     def create_resource_class(self, new_resource_class):
         session = get_session()
-        session.begin()
-        try:
+        with session.begin():
             rc = models.ResourceClass(name=new_resource_class.name,
                                       service_type=
                                       new_resource_class.service_type)
@@ -150,22 +150,20 @@ class Connection(api.Connection):
                     flavor = self.create_flavor(flav)
                     session.add(flavor)
                     flavor.resource_class = rc
+            try:
+                session.flush()
+            except db_exc.DBDuplicateEntry:
+                raise exception.ResourceClassExists(
+                    name=new_resource_class.name)
 
-        except Exception:
-            session.rollback()
-            raise
-
-        session.commit()
-        session.refresh(rc)
-        session.close()
-        return rc
+            session.refresh(rc)
+            return rc
 
     def update_resource_class(self, resource_class_id, new_resource_class):
         rc = self.get_resource_class(resource_class_id)
 
         session = get_session()
-        session.begin()
-        try:
+        with session.begin():
             if new_resource_class.name:
                 rc.name = new_resource_class.name
 
@@ -213,14 +211,14 @@ class Connection(api.Connection):
                     session.add(flavor)
                     flavor.resource_class = rc
 
-        except Exception:
-            session.rollback()
-            raise
+            try:
+                session.flush()
+            except db_exc.DBDuplicateEntry:
+                raise exception.ResourceClassExists(
+                    name=new_resource_class.name)
 
-        session.commit()
-        session.refresh(rc)
-        session.close()
-        return rc
+            session.refresh(rc)
+            return rc
 
     #creates a new flavor and adds it to the specified resource_clas
     #returns the new Flavor
