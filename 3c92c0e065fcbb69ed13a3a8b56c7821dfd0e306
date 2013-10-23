@@ -1,0 +1,11 @@
+Verified+2: Jenkins
+Approved+1: Tomas Sedovic <tomas@sedovic.cz>
+Code-Review+2: Tomas Sedovic <tomas@sedovic.cz>
+Code-Review+1: Roman Podolyaka <rpodolyaka@mirantis.com>
+Code-Review+2: Imre Farkas <ifarkas@redhat.com>
+Code-Review+1: Radomir Dopieralski <openstack@sheep.art.pl>
+Submitted-by: Jenkins
+Submitted-at: Wed, 23 Oct 2013 11:32:36 +0000
+Reviewed-on: https://review.openstack.org/49729
+Project: openstack/tuskar
+Branch: refs/heads/master
