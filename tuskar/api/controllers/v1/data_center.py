@@ -37,6 +37,15 @@ class DataCenterController(rest.RestController):
         # TODO(): Currently all Heat parameters are hardcoded in
         #       template.
         params = {}
+        params['AdminToken']=CONF.overcloud['OVERCLOUD_ADMIN_TOKEN']
+        params['AdminPassword']=CONF.overcloud['OVERCLOUD_ADMIN_PASSWORD']
+        params['CinderPassword']=CONF.overcloud['OVERCLOUD_CINDER_PASSWORD']
+        params['GlancePassword']=CONF.overcloud['OVERCLOUD_GLANCE_PASSWORD']
+        params['HeatPassword']=CONF.overcloud['OVERCLOUD_HEAT_PASSWORD']
+        params['NeutronPassword']=CONF.overcloud['OVERCLOUD_NEUTRON_PASSWORD']
+        params['NovaPassword']=CONF.overcloud['OVERCLOUD_NOVA_PASSWORD']
+        params['NovaComputeLibvirtType']=CONF.overcloud['OVERCLOUD_LIBVIRT_TYPE']
+
         rcs = pecan.request.dbapi.get_heat_data()
         heat = heat_client()
         nova_utils = NovaClient()
