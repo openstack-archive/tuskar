@@ -1,5 +1,5 @@
 <%def name="render(x)">\
-  NovaCompute${x}:
+  Nova${x}:
     Metadata:
       OpenStack::ImageBuilder::Elements:
       - nova-compute
