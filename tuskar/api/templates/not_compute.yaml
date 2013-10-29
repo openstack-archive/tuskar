@@ -21,28 +21,20 @@
         Ref: notcomputeImage
       key_name:
         Ref: KeyName
+      availability_zone: nova::${x}
+      user_data:
+        Fn::Base64:
+          |
+          #!/bin/bash -v
+          /opt/aws/bin/cfn-init
+          # We need to set the undercloud Heat IP in the boto config.  Atm this
+          # is hardcoded.  We should set a hostname in the tuskar conf.
+          sed -e "s/0.0.0.0/192.0.2.2/g" /var/lib/heat-cfntools/cfn-boto-cfg > /tmp/cfn-boto-cfg
+          mv -f /tmp/cfn-boto-cfg /var/lib/heat-cfntools/cfn-boto-cfg
+          exec /root/tuskar/provision.sh &> /root/tuskar/provision.log &
     Type: OS::Nova::Server
   notcomputeConfig:
     Metadata:
-      AWS::CloudFormation::Init:
-        config:
-          files:
-            /root/tuskar/provision.conf:
-              content:
-                Fn::Base64:
-                  |
-<% conf.render() %>\
-              mode: "000644"
-              owner: root
-              group: root
-            /root/tuskar/provision.sh:
-              content:
-                Fn::Base64:
-                  |
-<% sh.render() %>\
-              mode: "000700"
-              owner: root
-              group: root
       OpenStack::Heat::Stack: {}
       Openstack::ImageBuilder::Elements:
       - boot-stack
@@ -198,16 +190,5 @@
     Properties:
       ImageId: '0'
       InstanceType: '0'
-      AvailabilityZone: nova::${x}
-      UserData:
-        Fn::Base64:
-          |
-          #!/bin/bash -v
-          /opt/aws/bin/cfn-init
-          # We need to set the undercloud Heat IP in the boto config.  Atm this
-          # is hardcoded.  We should set a hostname in the tuskar conf.
-          sed -e "s/0.0.0.0/192.0.2.2/g" /var/lib/heat-cfntools/cfn-boto-cfg > /tmp/cfn-boto-cfg
-          mv -f /tmp/cfn-boto-cfg /var/lib/heat-cfntools/cfn-boto-cfg
-          exec /root/tuskar/provision.sh &> /root/tuskar/provision.log &
     Type: AWS::AutoScaling::LaunchConfiguration
 </%def>\

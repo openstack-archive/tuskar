@@ -1,8 +1,9 @@
 <%namespace name="not_compute" file="not_compute.yaml"/>\
 <%namespace name="compute" file="compute.yaml"/>\
+<%namespace name="access_policy" file="access_policy.yaml"/>\
 <% # Mapping between resource class service type and a HEAT template
    # TODO (mtaylor) Move this into Config file or add to model via API call.
-   templates = {"compute": compute, "not_compute": not_compute, "controller": not_compute} %>\
+   templates = {"compute": compute, "not_compute": not_compute, "controller": not_compute, "access_policy": access_policy} %>\
 Description: Nova API,Keystone,Heat Engine and API,Glance,Neutron,Dedicated MySQL
   server,Dedicated RabbitMQ Server,Group of Nova Computes
 HeatTemplateFormatVersion: '2012-12-12'
@@ -79,8 +80,12 @@ Resources:
   ComputeAccessPolicy:
     Properties:
       AllowedResources:
-      - NovaCompute0
-      - NovaCompute0Config
+<% for rc in resource_classes:
+       if rc.service_type == "compute":
+           for r in rc.racks:
+               for n in r.nodes:
+                   templates["access_policy"].render(n.node_id)
+%>
     Type: OS::Heat::AccessPolicy
   ComputeKey:
     Properties:
@@ -103,43 +108,13 @@ Resources:
                templates[rc.service_type].render(n.node_id)
 %>
 Outputs:
-  GlanceURL:
-    Description: URL for the Overcloud Glance service
-    Value:
-      Fn::Join:
-      - ''
-      - - http://
-        - Fn::GetAtt: [notcompute, PublicIp]
-        - :9292/v1/
-  HeatURL:
-    Description: URL for the Overcloud Heat service
-    Value:
-      Fn::Join:
-      - ''
-      - - http://
-        - Fn::GetAtt: [notcompute, PublicIp]
-        - :8004/v1/
   KeystoneURL:
     Description: URL for the Overcloud Keystone service
     Value:
-      Fn::Join:
-      - ''
-      - - http://
-        - Fn::GetAtt: [notcompute, PublicIp]
-        - :5000/v2.0/
-  NovaURL:
-    Description: URL for the Overcloud Nova service
-    Value:
-      Fn::Join:
-      - ''
-      - - http://
-        - Fn::GetAtt: [notcompute, PublicIp]
-        - :8774/v2/
-  NeutronURL:
-    Description: URL for the Overcloud Neutron service
-    Value:
-      Fn::Join:
-      - ''
-      - - http://
-        - Fn::GetAtt: [notcompute, PublicIp]
-        - :9696
+      Fn::Select:
+        - 0
+        - Fn::Select:
+          - ctlplane
+          - Fn::GetAtt:
+            - notcompute
+            - networks

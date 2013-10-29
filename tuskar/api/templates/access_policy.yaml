@@ -1,0 +1,4 @@
+<%def name="render(x)">\
+        - Nova${x}
+        - Nova${x}Config
+</%def>\

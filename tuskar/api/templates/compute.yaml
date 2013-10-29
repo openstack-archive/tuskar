@@ -7,7 +7,7 @@
         cfn:
           access_key_id:
             Ref: ComputeKey
-          path: NovaCompute0Config.Metadata
+          path: Nova${x}Config.Metadata
           secret_access_key:
             Fn::GetAtt:
             - ComputeKey
@@ -21,8 +21,9 @@
         Ref: NovaImage
       key_name:
         Ref: KeyName
+#      AvailabilityZone: nova::${x}
     Type: OS::Nova::Server
-  NovaCompute0Config:
+  Nova${x}Config:
     Metadata:
       admin-password:
         Ref: AdminPassword
@@ -65,7 +66,7 @@
             - Fn::Select:
               - ctlplane
               - Fn::GetAtt:
-                - NovaCompute0
+                - Nova${x}
                 - networks
           network_vlan_ranges: ''
           tenant_network_type: gre
@@ -114,7 +115,7 @@
         cfn:
           access_key_id:
             Ref: ComputeKey
-          path: NovaCompute0Config.Metadata
+          path: Nova${x}Config.Metadata
           secret_access_key:
             Fn::GetAtt:
             - ComputeKey
@@ -137,7 +138,6 @@
     Properties:
       ImageId: '0'
       InstanceType: '0'
-      AvailabilityZone: nova::${x}
     Type: AWS::AutoScaling::LaunchConfiguration
   User:
     Properties:
