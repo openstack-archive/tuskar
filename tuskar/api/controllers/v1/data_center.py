@@ -12,7 +12,22 @@ from tuskar.heat.client import HeatClient as heat_client
 
 #from tuskar.common import exception
 #from tuskar.openstack.common import log
+from oslo.config import cfg
 
+overcloud_opts = [
+    cfg.StrOpt('OVERCLOUD_ADMIN_TOKEN'),
+    cfg.StrOpt('OVERCLOUD_ADMIN_PASSWORD'),
+    cfg.StrOpt('OVERCLOUD_CINDER_PASSWORD'),
+    cfg.StrOpt('OVERCLOUD_GLANCE_PASSWORD'),
+    cfg.StrOpt('OVERCLOUD_HEAT_PASSWORD'),
+    cfg.StrOpt('OVERCLOUD_NEUTRON_PASSWORD'),
+    cfg.StrOpt('OVERCLOUD_NOVA_PASSWORD'),
+    cfg.StrOpt('OVERCLOUD_DEMO_PASSWORD'),
+    cfg.StrOpt('OVERCLOUD_LIBVIRT_TYPE')
+]
+
+CONF = cfg.CONF
+CONF.register_opts(overcloud_opts, group='overcloud')
 
 class DataCenterController(rest.RestController):
     """Controller for provisioning the Tuskar data centre description as an
