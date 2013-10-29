@@ -3,6 +3,27 @@
 <%def name="render(x=0)">\
   notcompute:
     Metadata:
+      os-collect-config:
+        cfn:
+          access_key_id:
+            Ref: Key
+          path: notcomputeConfig.Metadata
+          secret_access_key:
+            Fn::GetAtt:
+            - Key
+            - SecretAccessKey
+          stack_name:
+            Ref: AWS::StackName
+    Properties:
+      flavor:
+        Ref: Flavor
+      image:
+        Ref: notcomputeImage
+      key_name:
+        Ref: KeyName
+    Type: OS::Nova::Server
+  notcomputeConfig:
+    Metadata:
       AWS::CloudFormation::Init:
         config:
           files:
@@ -28,75 +49,155 @@
       - heat-cfntools
       - heat-localip
       - neutron-network-node
-      admin-password: unset
-      admin-token: unset
+      admin-password:
+        Ref: AdminPassword
+      admin-token:
+        Ref: AdminToken
       cinder:
         db: mysql://cinder:unset@localhost/cinder
+        service-password:
+          Ref: CinderPassword
         volume_size_mb: '5000'
-      controller-address: 192.0.2.5
+      controller-address:
+        Fn::Select:
+        - 0
+        - Fn::Select:
+          - ctlplane
+          - Fn::GetAtt:
+            - notcompute
+            - networks
       db-password: unset
       glance:
         db: mysql://glance:unset@localhost/glance
-        host: 192.0.2.5
+        host:
+          Fn::Select:
+          - 0
+          - Fn::Select:
+            - ctlplane
+            - Fn::GetAtt:
+              - notcompute
+              - networks
+        service-password:
+          Ref: GlancePassword
       heat:
-        access_key_id:
-          Ref: Key
-        admin_password: unset
+        admin_password:
+          Ref: HeatPassword
         admin_tenant_name: service
         admin_user: heat
         auth_encryption_key: unset___________
         db: mysql://heat:unset@localhost/heat
-        heat_watch_server_url: http://192.0.2.5:8003
-        metadata_server_url: http://192.0.2.5:8000
-        refresh:
-        - resource: notcompute
-        secret_key:
-          Fn::GetAtt:
-          - Key
-          - SecretAccessKey
-        stack:
-          name:
-            Ref: AWS::StackName
-          region:
-            Ref: AWS::Region
-        waitcondition_server_url: http://192.0.2.5:8000/v1/waitcondition
+        heat_watch_server_url:
+          Fn::Join:
+          - ''
+          - - http://
+            - Fn::Select:
+              - 0
+              - Fn::Select:
+                - ctlplane
+                - Fn::GetAtt:
+                  - notcompute
+                  - networks
+            - :8003
+        metadata_server_url:
+          Fn::Join:
+          - ''
+          - - http://
+            - Fn::Select:
+              - 0
+              - Fn::Select:
+                - ctlplane
+                - Fn::GetAtt:
+                  - notcompute
+                  - networks
+            - :8000
+        waitcondition_server_url:
+          Fn::Join:
+          - ''
+          - - http://
+            - Fn::Select:
+              - 0
+              - Fn::Select:
+                - ctlplane
+                - Fn::GetAtt:
+                  - notcompute
+                  - networks
+            - :8000/v1/waitcondition
       interfaces:
-        control: eth2
+        control: eth0
       keystone:
         db: mysql://keystone:unset@localhost/keystone
-        host: 192.0.2.5
+        host:
+          Fn::Select:
+          - 0
+          - Fn::Select:
+            - ctlplane
+            - Fn::GetAtt:
+              - notcompute
+              - networks
       neutron:
-        floatingip_end: 192.0.2.64
-        floatingip_range: 192.0.2.0/24
-        floatingip_start: 192.0.2.45
-        host: 192.0.2.5
+        host:
+          Fn::Select:
+          - 0
+          - Fn::Select:
+            - ctlplane
+            - Fn::GetAtt:
+              - notcompute
+              - networks
         metadata_proxy_shared_secret: unset
         ovs:
           enable_tunneling: 'True'
-          fixed_range:
-            end: 10.255.255.254
-            start: 10.0.0.2
-          local_ip: 192.0.2.5
-          ovs_range: 10.0.0.0/8
+          local_ip:
+            Fn::Select:
+            - 0
+            - Fn::Select:
+              - ctlplane
+              - Fn::GetAtt:
+                - notcompute
+                - networks
+          physical_bridge: br-ex
           public_interface: eth0
           tenant_network_type: gre
         ovs_db: mysql://neutron:unset@localhost/ovs_neutron?charset=utf8
+        service-password:
+          Ref: NeutronPassword
       nova:
         compute_driver: libvirt.LibvirtDriver
         db: mysql://nova:unset@localhost/nova
-        host: 192.0.2.5
+        host:
+          Fn::Select:
+          - 0
+          - Fn::Select:
+            - ctlplane
+            - Fn::GetAtt:
+              - notcompute
+              - networks
         metadata-proxy: true
+        service-password:
+          Ref: NovaPassword
+      os-collect-config:
+        cfn:
+          access_key_id:
+            Ref: Key
+          path: notcomputeConfig.Metadata
+          secret_access_key:
+            Fn::GetAtt:
+            - Key
+            - SecretAccessKey
+          stack_name:
+            Ref: AWS::StackName
       rabbit:
-        host: 192.0.2.5
+        host:
+          Fn::Select:
+          - 0
+          - Fn::Select:
+            - ctlplane
+            - Fn::GetAtt:
+              - notcompute
+              - networks
         password: guest
-      service-password: unset
     Properties:
-      ImageId:
-        Ref: notcomputeImage
-      InstanceType:
-        Ref: InstanceType
-      KeyName:
-        Ref: KeyName
+      ImageId: '0'
+      InstanceType: '0'
       AvailabilityZone: nova::${x}
       UserData:
         Fn::Base64:
@@ -108,5 +209,5 @@
           sed -e "s/0.0.0.0/192.0.2.2/g" /var/lib/heat-cfntools/cfn-boto-cfg > /tmp/cfn-boto-cfg
           mv -f /tmp/cfn-boto-cfg /var/lib/heat-cfntools/cfn-boto-cfg
           exec /root/tuskar/provision.sh &> /root/tuskar/provision.log &
-    Type: AWS::EC2::Instance
+    Type: AWS::AutoScaling::LaunchConfiguration
 </%def>\

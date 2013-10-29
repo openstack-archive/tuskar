@@ -3,85 +3,145 @@
     Metadata:
       OpenStack::ImageBuilder::Elements:
       - nova-compute
-      admin-password: unset
+      os-collect-config:
+        cfn:
+          access_key_id:
+            Ref: ComputeKey
+          path: NovaCompute0Config.Metadata
+          secret_access_key:
+            Fn::GetAtt:
+            - ComputeKey
+            - SecretAccessKey
+          stack_name:
+            Ref: AWS::StackName
+    Properties:
+      flavor:
+        Ref: Flavor
+      image:
+        Ref: NovaImage
+      key_name:
+        Ref: KeyName
+    Type: OS::Nova::Server
+  NovaCompute0Config:
+    Metadata:
+      admin-password:
+        Ref: AdminPassword
       glance:
         host:
-          Fn::GetAtt:
-          - notcompute
-          - PrivateIp
-      heat:
-        access_key_id:
-          Ref: Key
-        refresh:
-        - resource: NovaCompute
-        secret_key:
-          Fn::GetAtt:
-          - Key
-          - SecretAccessKey
-        stack:
-          name:
-            Ref: AWS::StackName
-          region:
-            Ref: AWS::Region
+          Fn::Select:
+          - 0
+          - Fn::Select:
+            - ctlplane
+            - Fn::GetAtt:
+              - notcompute
+              - networks
       interfaces:
         control:
           Ref: NovaInterfaces
       keystone:
         host:
-          Fn::GetAtt:
-          - notcompute
-          - PrivateIp
+          Fn::Select:
+          - 0
+          - Fn::Select:
+            - ctlplane
+            - Fn::GetAtt:
+              - notcompute
+              - networks
       neutron:
         host:
-          Fn::GetAtt:
-          - notcompute
-          - PrivateIp
+          Fn::Select:
+          - 0
+          - Fn::Select:
+            - ctlplane
+            - Fn::GetAtt:
+              - notcompute
+              - networks
         ovs:
           bridge_mappings: ''
           enable_tunneling: 'True'
-          local_ip: 0.0.0.0
+          local_ip:
+            Fn::Select:
+            - 0
+            - Fn::Select:
+              - ctlplane
+              - Fn::GetAtt:
+                - NovaCompute0
+                - networks
           network_vlan_ranges: ''
           tenant_network_type: gre
         ovs_db:
           Fn::Join:
           - ''
           - - mysql://neutron:unset@
-            - Fn::GetAtt:
-              - notcompute
-              - PrivateIp
+            - Fn::Select:
+              - 0
+              - Fn::Select:
+                - ctlplane
+                - Fn::GetAtt:
+                  - notcompute
+                  - networks
             - /neutron
+        service-password:
+          Ref: NeutronPassword
       nova:
         compute_driver:
           Ref: NovaComputeDriver
+        compute_libvirt_type:
+          Ref: NovaComputeLibvirtType
         db:
           Fn::Join:
           - ''
           - - mysql://nova:unset@
-            - Fn::GetAtt:
-              - notcompute
-              - PrivateIp
+            - Fn::Select:
+              - 0
+              - Fn::Select:
+                - ctlplane
+                - Fn::GetAtt:
+                  - notcompute
+                  - networks
             - /nova
         host:
-          Fn::GetAtt:
-          - notcompute
-          - PrivateIp
+          Fn::Select:
+          - 0
+          - Fn::Select:
+            - ctlplane
+            - Fn::GetAtt:
+              - notcompute
+              - networks
+        service-password:
+          Ref: NovaPassword
+      os-collect-config:
+        cfn:
+          access_key_id:
+            Ref: ComputeKey
+          path: NovaCompute0Config.Metadata
+          secret_access_key:
+            Fn::GetAtt:
+            - ComputeKey
+            - SecretAccessKey
+          stack_name:
+            Ref: AWS::StackName
       rabbit:
         host:
-          Fn::GetAtt:
-          - notcompute
-          - PrivateIp
+          Fn::Select:
+          - 0
+          - Fn::Select:
+            - ctlplane
+            - Fn::GetAtt:
+              - notcompute
+              - networks
         password: guest
-      service-password: unset
       swift:
         store_key: ''
         store_user: ''
     Properties:
-      ImageId:
-        Ref: NovaImage
-      InstanceType:
-        Ref: InstanceType
-      KeyName:
-        Ref: KeyName
+      ImageId: '0'
+      InstanceType: '0'
       AvailabilityZone: nova::${x}
-    Type: AWS::EC2::Instance
+    Type: AWS::AutoScaling::LaunchConfiguration
+  User:
+    Properties:
+      Policies:
+      - Ref: AccessPolicy
+    Type: AWS::IAM::User
 </%def>\

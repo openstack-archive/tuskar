@@ -7,16 +7,49 @@ Description: Nova API,Keystone,Heat Engine and API,Glance,Neutron,Dedicated MySQ
   server,Dedicated RabbitMQ Server,Group of Nova Computes
 HeatTemplateFormatVersion: '2012-12-12'
 Parameters:
-  InstanceType:
+  AdminPassword:
+    Default: unset
+    Description: The password for the keystone admin account, used for monitoring,
+      querying neutron etc.
+    NoEcho: true
+    Type: String
+  AdminToken:
+    Default: unset
+    Description: The keystone auth secret.
+    Type: String
+  CinderPassword:
+    Default: unset
+    Description: The password for the cinder service account, used by cinder-api.
+    NoEcho: true
+    Type: String
+  Flavor:
     Default: baremetal
     Description: Flavor to request when deploying.
+    Type: String
+  GlancePassword:
+    Default: unset
+    Description: The password for the glance service account, used by the glance services.
+    NoEcho: true
+    Type: String
+  HeatPassword:
+    Default: unset
+    Description: The password for the Heat service account, used by the Heat services.
+    NoEcho: true
     Type: String
   KeyName:
     Default: default
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
     Type: String
+  NeutronPassword:
+    Default: unset
+    Description: The password for the neutron service account, used by neutron agents.
+    NoEcho: true
+    Type: String
   NovaComputeDriver:
     Default: libvirt.LibvirtDriver
+    Type: String
+  NovaComputeLibvirtType:
+    Default: ''
     Type: String
   NovaImage:
     Default: overcloud-compute
@@ -24,29 +57,46 @@ Parameters:
   NovaInterfaces:
     Default: eth0
     Type: String
+  NovaPassword:
+    Default: unset
+    Description: The password for the nova service account, used by nova-api.
+    NoEcho: true
+    Type: String
   PowerUserName:
     Default: stack
     Description: What username to ssh to the virtual power host with.
     Type: String
   notcomputeImage:
-    Type: String
     Default: overcloud-control
+    Type: String
 Resources:
   AccessPolicy:
     Properties:
       AllowedResources:
       - notcompute
+      - notcomputeConfig
     Type: OS::Heat::AccessPolicy
+  ComputeAccessPolicy:
+    Properties:
+      AllowedResources:
+      - NovaCompute0
+      - NovaCompute0Config
+    Type: OS::Heat::AccessPolicy
+  ComputeKey:
+    Properties:
+      UserName:
+        Ref: ComputeUser
+    Type: AWS::IAM::AccessKey
+  ComputeUser:
+    Properties:
+      Policies:
+      - Ref: ComputeAccessPolicy
+    Type: AWS::IAM::User
   Key:
     Properties:
       UserName:
         Ref: User
     Type: AWS::IAM::AccessKey
-  User:
-    Properties:
-      Policies:
-      - Ref: AccessPolicy
-    Type: AWS::IAM::User
 <% for rc in resource_classes:
        for r in rc.racks:
            for n in r.nodes:
