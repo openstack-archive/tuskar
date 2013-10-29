@@ -45,15 +45,17 @@
         Fn::Base64:
           |
           #!/bin/bash -v
-          cat >> /usr/local/bin/json2kv <<EOF
+          cat > /usr/local/bin/json2kv <<EOF
           #!/usr/bin/env python
+          
           import os
           import re
           import simplejson
           import sys
+          
           def printenv(data, ns=[]):
               for key,value in data.items():
-
+          
                   # Ignore the entire AWS::CloudFormation::Init section, it can contain
                   # custom scripts to be run by cloud-init, and it's problematic to escape those
                   # properly in the template for json2kv.
@@ -61,13 +63,14 @@
                   # need to check if AWS__CloudFormation__Init is in the namespace.
                   if key == "AWS::CloudFormation::Init" or "AWS__CloudFormation__Init" in ns:
                       continue
-
+          
                   key = re.sub('[\\.\\-:]', '_', key)
                   if isinstance(value, str):
                       print "%s=%s"%("_".join(ns+[key]), value)
                   elif isinstance(value, dict):
                       print "%s=1"%("_".join(ns+[key]))
                       printenv(value, ns+[key])
+          
           if __name__ == '__main__':
               # Find the first file that exists and use it
               for jsonfile in sys.argv[1:]:
@@ -81,6 +84,7 @@
                   data = simplejson.loads(fp.read())
                   printenv(data)
           EOF
+          
           chmod 755 /usr/local/bin/json2kv
           /opt/aws/bin/cfn-init
           # We need to set the undercloud Heat IP in the boto config.  Atm this
