@@ -16,6 +16,7 @@
                   }
                   wait_for 60 10 test -f /opt/stack/boot-stack/init-openstack.ok
                   # We must enable host aggregate matching when scheduling
+                  echo "[DEFAULT]" >> /etc/nova/nova.conf
                   echo "scheduler_default_filters=AggregateInstanceExtraSpecsFilter,AvailabilityZoneFilter,RamFilter,ComputeFilter" >> /etc/nova/nova.conf
                   service openstack-nova-scheduler restart
                   # wait until nova and keystone are ready and confgured
@@ -54,7 +55,7 @@
                         ${'nova flavor-show $f &> /dev/null'}
                         if [ $? == 1 ]; then
                           ${'nova flavor-create ${FLAVORS[$f]}'}
-                          #${'nova flavor-key $f set class=`expr $f : "\(.*\)\."`-hosts'}
+                          ${'nova flavor-key $f set class=`expr $f : "\(.*\)\."`-hosts'}
                         fi
                       done
                       # Register Hosts
