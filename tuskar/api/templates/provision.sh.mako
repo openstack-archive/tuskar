@@ -15,10 +15,11 @@
                       return 1
                   }
                   wait_for 60 10 test -f /opt/stack/boot-stack.ok
-                  wait_for 60 10 nova list
                   # We must enable host aggregate matching when scheduling
                   echo "scheduler_default_filters=AggregateInstanceExtraSpecsFilter,AvailabilityZoneFilter,RamFilter,ComputeFilter" >> /etc/nova/nova.conf
-                  service nova-scheduler restart
+                  service openstack-nova-scheduler restart
+                  # wait until nova and keystone are ready and confgured
+                  while ! nova list; do source /root/stackrc; echo "Waiting for correct creds"; sleep 30; done
                   # Remove default flavors
                   for i in {1..5}
                   do
