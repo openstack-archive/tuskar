@@ -54,7 +54,7 @@
                         ${'nova flavor-show $f &> /dev/null'}
                         if [ $? == 1 ]; then
                           ${'nova flavor-create ${FLAVORS[$f]}'}
-                          ${'nova flavor-key $f set class=`expr $f : "\(.*\)\."`-hosts'}
+                          #${'nova flavor-key $f set class=`expr $f : "\(.*\)\."`-hosts'}
                         fi
                       done
                       # Register Hosts
