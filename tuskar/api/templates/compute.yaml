@@ -21,7 +21,7 @@
         Ref: NovaImage
       key_name:
         Ref: KeyName
-#      AvailabilityZone: nova::${x}
+      availability_zone: nova::${x}
     Type: OS::Nova::Server
   Nova${x}Config:
     Metadata:
