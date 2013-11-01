@@ -14,11 +14,13 @@
                       done
                       return 1
                   }
-                  wait_for 60 10 test -f /opt/stack/boot-stack.ok
-                  wait_for 60 10 nova list
+                  wait_for 60 10 test -f /opt/stack/boot-stack/init-openstack.ok
                   # We must enable host aggregate matching when scheduling
+                  echo "[DEFAULT]" >> /etc/nova/nova.conf
                   echo "scheduler_default_filters=AggregateInstanceExtraSpecsFilter,AvailabilityZoneFilter,RamFilter,ComputeFilter" >> /etc/nova/nova.conf
-                  service nova-scheduler restart
+                  service openstack-nova-scheduler restart
+                  # wait until nova and keystone are ready and confgured
+                  while ! nova list; do source /root/stackrc; echo "Waiting for correct creds"; sleep 30; done
                   # Remove default flavors
                   for i in {1..5}
                   do
@@ -43,6 +45,8 @@
                        then
                          ${"EXISTING_AGGREGATES[$a]=$(nova aggregate-create $a | tail -n +4 | head -n 1 | tr -s ' ' | cut -d '|' -f2)"}
                          ${"nova aggregate-set-metadata ${EXISTING_AGGREGATES[$a]} class=$a-hosts"}
+                       else
+                         EXISTING_AGGREGATES[$a]=$a
                        fi
                       done
                       # Register Flavors
@@ -60,7 +64,7 @@
                         LIST=`nova host-list`
                         for i in ${'${!BM_HOSTS[@]}'}
                         do
-                          HOST_ID=`expr "$LIST" : ".*\(overcloud-novacompute$i-\(\w\)\{6\}\)"`
+                          HOST_ID=`expr "$LIST" : ".*\(overcloud-nova$i-\(\w\)\{12\}\)"`
                           if [ $HOST_ID ]
                           then
                             # Check to see if this host is already added to this aggregate
