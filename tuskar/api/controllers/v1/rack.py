@@ -89,7 +89,7 @@ class RacksController(rest.RestController):
         db_api = pecan.request.dbapi
         try:
             rack = db_api.get_rack(rack_id)
-        except exception.TuskarException, e:
+        except exception.TuskarException as e:
             response = api.Response(
                 None,
                 error=Error(faultcode=e.code, faultstring=str(e)),
@@ -115,7 +115,7 @@ class RacksController(rest.RestController):
             #
             # TODO(mfojtik): Update the HEAT template at this point
             #
-        except exception.TuskarException, e:
+        except exception.TuskarException as e:
             response = api.Response(
                 Error(faultcode=e.code, faultstring=str(e)),
                 status_code=e.code)
