@@ -153,7 +153,6 @@ class TestRacks(api.FunctionalTest):
         self.assertEqual(str(response.json['location']), json['location'])
         self.assertEqual(response.json['subnet'], json['subnet'])
         self.assertEqual(len(response.json['nodes']), 2)
-        print dict(response.json['capacities'][0])
         self.assertEqual(str(response.json['capacities'][0]['unit']), 'MB')
 
         # Make sure we delete the Rack we just created
