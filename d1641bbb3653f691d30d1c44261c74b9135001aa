@@ -1,0 +1,12 @@
+Verified+2: Jenkins
+Code-Review+1: Victor Sergeyev <vsergeyev@mirantis.com>
+Code-Review+2: Ladislav Smola <lsmola@redhat.com>
+Approved+1: Jiri Stransky <jistr@redhat.com>
+Code-Review+2: Jiri Stransky <jistr@redhat.com>
+Approved+1: Marios Andreou <marios@redhat.com>
+Code-Review+2: Marios Andreou <marios@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 01 Nov 2013 09:05:45 +0000
+Reviewed-on: https://review.openstack.org/54853
+Project: openstack/tuskar
+Branch: refs/heads/master
