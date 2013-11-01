@@ -33,7 +33,7 @@ class NodesController(rest.RestController):
 
         try:
             node = db_api.get_node(node_id)
-        except exception.TuskarException, e:
+        except exception.TuskarException as e:
             response = api.Response(None,
                                     error=Error(faultcode=e.code,
                                                 faultstring=str(e)),
