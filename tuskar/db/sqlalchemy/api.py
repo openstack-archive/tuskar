@@ -17,6 +17,8 @@
 
 """SQLAlchemy storage backend."""
 
+import collections
+
 from oslo.config import cfg
 
 # TODO(deva): import MultipleResultsFound and handle it appropriately
@@ -24,6 +26,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import subqueryload, joinedload
 
 from tuskar.common import exception
+from tuskar.common import utils
 from tuskar.db import api
 from tuskar.db.sqlalchemy import models
 from tuskar.openstack.common.db import exception as db_exc
@@ -370,10 +373,14 @@ class Connection(api.Connection):
                     session.add(rack)
 
             if not isinstance(new_rack.nodes, wtypes.UnsetType):
-                [session.delete(n) for n in rack.nodes]
-
-                for n in new_rack.nodes:
-                    node = models.Node(node_id=n.id)
+                NodeTuple = collections.namedtuple('NodeTuple', 'node_id')
+                new_nodes = [NodeTuple(n.id) for n in new_rack.nodes]
+                added, removed = utils.diff_items(rack.nodes, new_nodes,
+                                                  key=lambda n: n.node_id)
+                for n in removed:
+                    session.delete(n)
+                for n in added:
+                    node = models.Node(node_id=n.node_id)
                     session.add(node)
                     rack.nodes.append(node)
                     session.add(rack)
