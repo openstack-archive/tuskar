@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: lifeless <robertc@robertcollins.net>
+Code-Review+2: lifeless <robertc@robertcollins.net>
+Code-Review+2: Radomir Dopieralski <openstack@sheep.art.pl>
+Submitted-by: Jenkins
+Submitted-at: Tue, 05 Nov 2013 02:30:30 +0000
+Reviewed-on: https://review.openstack.org/55128
+Project: openstack/tuskar
+Branch: refs/heads/master
