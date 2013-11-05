@@ -110,6 +110,11 @@ class TestDbRacks(db_base.DbTestCase):
         db_rack = self.db.update_rack(db_rack.id, pecan_rack)
         self.__check_racks([db_rack], ['rack_1'])
         self.assertTrue(len(db_rack.nodes) == 10)
+        for i in range(11, 16):
+            pecan_rack.nodes.append(utils.get_test_rack_node(id=str(i)))
+        db_rack = self.db.update_rack(db_rack.id, pecan_rack)
+        self.assertEqual([n.node_id for n in db_rack.nodes],
+                         [str(i) for i in range(1, 16)])
         #cleanup
         self.db.delete_rack(db_rack.id)
 
