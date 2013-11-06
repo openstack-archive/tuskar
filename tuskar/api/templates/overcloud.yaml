@@ -53,22 +53,6 @@ Resources:
                templates[rc.service_type].render(n.node_id)
 %>
 Outputs:
-  GlanceURL:
-    Description: URL for the Overcloud Glance service
-    Value:
-      Fn::Join:
-      - ''
-      - - http://
-        - Fn::GetAtt: [notcompute, PublicIp]
-        - :9292/v1/
-  HeatURL:
-    Description: URL for the Overcloud Heat service
-    Value:
-      Fn::Join:
-      - ''
-      - - http://
-        - Fn::GetAtt: [notcompute, PublicIp]
-        - :8004/v1/
   KeystoneURL:
     Description: URL for the Overcloud Keystone service
     Value:
@@ -77,19 +61,3 @@ Outputs:
       - - http://
         - Fn::GetAtt: [notcompute, PublicIp]
         - :5000/v2.0/
-  NovaURL:
-    Description: URL for the Overcloud Nova service
-    Value:
-      Fn::Join:
-      - ''
-      - - http://
-        - Fn::GetAtt: [notcompute, PublicIp]
-        - :8774/v2/
-  NeutronURL:
-    Description: URL for the Overcloud Neutron service
-    Value:
-      Fn::Join:
-      - ''
-      - - http://
-        - Fn::GetAtt: [notcompute, PublicIp]
-        - :9696
