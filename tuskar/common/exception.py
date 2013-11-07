@@ -246,6 +246,10 @@ class ResourceClassNotFound(NotFound):
     message = _("ResourceClass  %(resource_class)s could not be found.")
 
 
+class NodeNotFound(NotFound):
+    message = _("Node %(node)s could not be found.")
+
+
 class NodeLocked(NotFound):
     message = _("Node %(node)s is locked by another process.")
 
