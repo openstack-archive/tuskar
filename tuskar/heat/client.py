@@ -102,10 +102,12 @@ class HeatClient(object):
             LOG.exception(e)
             return False
 
-    def get_stack(self):
+    def get_stack(self, name=None):
         """Get overcloud Heat template."""
+        if name is None:
+            name = CONF.heat['stack_name']
         if self.connection:
-            return self.connection.stacks.get(CONF.heat['stack_name'])
+            return self.connection.stacks.get(name)
 
     def get_template(self):
         """Get JSON representation of the Heat overcloud template."""
@@ -135,9 +137,11 @@ class HeatClient(object):
             LOG.exception(e)
             return False
 
-    def exists_stack(self):
+    def exists_stack(self, name=None):
+        if name is None:
+            name = CONF.heat['stack_name']
         try:
-            self.get_stack()
+            self.get_stack(name)
             return True
         #return false if 404
         except HeatStackNotFound:
