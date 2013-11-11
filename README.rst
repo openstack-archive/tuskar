@@ -1,8 +1,6 @@
 ======
 Tuskar
 ======
-.. image:: https://travis-ci.org/tuskar/tuskar.png?branch=master
-   :target: http://travis-ci.org/tuskar/tuskar
 
 What is Tuskar?
 ---------------
