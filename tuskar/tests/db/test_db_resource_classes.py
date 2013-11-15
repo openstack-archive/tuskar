@@ -89,6 +89,8 @@ class TestDbResourceClasses(db_base.DbTestCase):
                                     rack_ids=[db_rack1.id, db_rack2.id])
         #delete:
         self.db.delete_resource_class(db_rc.id)
+        self.assertTrue(db_rack1.resource_class_id == None)
+        self.assertTrue(db_rack2.resource_class_id == None)
         self.db.delete_rack(db_rack1.id)
         self.db.delete_rack(db_rack2.id)
 

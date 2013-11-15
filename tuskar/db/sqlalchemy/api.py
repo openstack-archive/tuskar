@@ -463,8 +463,9 @@ class Connection(api.Connection):
         session = get_session()
         session.begin()
         try:
-            # FIXME (mtaylor) we should also set the foreign key to None for
-            # all associated Racks
+            session.query(models.Rack).filter_by(
+                resource_class_id=resource_class_id
+            ).update({"resource_class_id": None})
             session.query(models.ResourceClass
                           ).filter_by(id=resource_class_id).delete()
             session.commit()
