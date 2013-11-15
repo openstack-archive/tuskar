@@ -277,3 +277,7 @@ class DuplicateEntry(TuskarException):
 
 class ResourceClassExists(DuplicateEntry):
     message = _("Resource class with name %(name)s already exists.")
+
+
+class ConfigNotFound(TuskarException):
+    message = _("Could not find config at %(path)s")
