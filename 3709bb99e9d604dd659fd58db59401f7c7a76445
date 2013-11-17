@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Approved+1: lifeless <robertc@robertcollins.net>
+Code-Review+2: lifeless <robertc@robertcollins.net>
+Code-Review+1: Roman Podoliaka <rpodolyaka@mirantis.com>
+Code-Review+2: Jiri Stransky <jistr@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Sun, 17 Nov 2013 23:32:00 +0000
+Reviewed-on: https://review.openstack.org/56728
+Project: openstack/tuskar
+Branch: refs/heads/master
