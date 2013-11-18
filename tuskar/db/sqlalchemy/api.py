@@ -466,6 +466,9 @@ class Connection(api.Connection):
             session.query(models.Rack).filter_by(
                 resource_class_id=resource_class_id
             ).update({"resource_class_id": None})
+            session.query(models.Flavor).filter_by(
+                resource_class_id=resource_class_id
+            ).delete()
             session.query(models.ResourceClass
                           ).filter_by(id=resource_class_id).delete()
             session.commit()
