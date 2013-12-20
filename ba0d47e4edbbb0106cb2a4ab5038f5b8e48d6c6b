@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: Clint "SpamapS" Byrum <clint@ubuntu.com>
+Approved+1: Marios Andreou <marios@redhat.com>
+Code-Review+2: Marios Andreou <marios@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 20 Dec 2013 08:30:08 +0000
+Reviewed-on: https://review.openstack.org/62844
+Project: openstack/tuskar
+Branch: refs/heads/master
