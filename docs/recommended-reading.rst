@@ -5,15 +5,14 @@ Recommended Reading
 Relevant OpenStack Projects
 ---------------------------
 
--  `nova <https://github.com/openstack/nova>`_
--  `ceilometer <https://github.com/openstack/ceilometer>`_
--  `oslo-incubator <https://github.com/openstack/oslo-incubator>`_
--  `oslo.config <https://github.com/openstack/oslo.config>`_ This is a
+-  `nova <http://docs.openstack.org/developer/nova>`_
+-  `ceilometer <http://docs.openstack.org/developer/ceilometer>`_
+-  `oslo-incubator <http://docs.openstack.org/developer/oslo-incubator>`_
+-  `oslo.config <http://docs.openstack.org/developer/oslo.config>`_ This is a
    library for parsing configuration files and command line arguments.
    It is maintained by Mark McLoughlin.
--  `hacking <https://github.com/openstack-dev/hacking>`_ This enforces
-   openstack community standards, described
-   `here <https://github.com/openstack-dev/hacking/blob/master/HACKING.rst>`_.
+-  `hacking <http://docs.openstack.org/developer/hacking>`_ This enforces
+   openstack community coding style guidelines
 
 General Python/Frameworks
 -------------------------
