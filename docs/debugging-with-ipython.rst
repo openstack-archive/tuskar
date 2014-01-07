@@ -32,4 +32,4 @@ Tweaks
 ------
 
 `ipythonrc <https://github.com/queezythegreat/settings/tree/master/ipython>`_
--> Colors on console, tab completetion for methods and more ;-)
+-> Colors on console, tab completion for methods and more ;-)

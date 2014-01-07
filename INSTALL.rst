@@ -14,9 +14,9 @@ Setting up a local environment for development can be done with tox::
 
     # install prerequisites
     * Ubuntu/Debian:
-    $ sudo apt-get install python-dev swig libssl-dev python-pip libmysqlclient-dev libxml2-dev libxslt-dev
+    $ sudo apt-get install python-dev swig libssl-dev python-pip libmysqlclient-dev libxml2-dev libxslt-dev gcc
     * Fedora/RHEL:
-    $ sudo yum install python-devel swig openssl-devel python-pip mysql-devel libxml2-devel libxslt-devel
+    $ sudo yum install python-devel swig openssl-devel python-pip mysql-devel libxml2-devel libxslt-devel gcc
     # Note that as of Fedora 19, you need to use the community
       upstream for mysql, called mariadb-devel
 
