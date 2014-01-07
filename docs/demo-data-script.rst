@@ -107,7 +107,7 @@ Create Resource Classes
 -----------------------
 
 This command creates two Resource Classes.  The compute Resource Class contains two Racks
-and a total of six Nodes.  The non-compute Resoure Class contains one Rack and one Node.
+and a total of six Nodes.  The non-compute Resource Class contains one Rack and one Node.
 
 ::
 

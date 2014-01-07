@@ -4,7 +4,7 @@ Installation Guide
 
 Tuskar source code should be pulled directly from git::
 
-    git clone https://github.com/openstack/tuskar.git
+    git clone https://git.openstack.org/openstack/tuskar
 
 
 Dependencies
@@ -14,9 +14,9 @@ Setting up a local environment for development can be done with tox::
 
     # install prerequisites
     * Ubuntu/Debian:
-    $ sudo apt-get install python-dev swig libssl-dev python-pip libmysqlclient-dev libxml2-dev libxslt-dev
+    $ sudo apt-get install python-dev swig libssl-dev python-pip libmysqlclient-dev libxml2-dev libxslt-dev gcc
     * Fedora/RHEL:
-    $ sudo yum install python-devel swig openssl-devel python-pip mysql-devel libxml2-devel libxslt-devel
+    $ sudo yum install python-devel swig openssl-devel python-pip mysql-devel libxml2-devel libxslt-devel gcc
     # Note that as of Fedora 19, you need to use the community
       upstream for mysql, called mariadb-devel
 
@@ -65,7 +65,7 @@ to your local copy of the tripleo-heat-templates.
 At tuskar startup, if the directory specified by tht_local_dir in your
 tuskar.conf doesn't exist startup will fail. You can clone the templates:
 
-    (sudo) git clone https://github.com/openstack/tripleo-heat-templates.git /etc/tuskar/tripleo-heat-templates/
+    (sudo) git clone https://git.openstack.org/openstack/tripleo-heat-templates /etc/tuskar/tripleo-heat-templates/
 
 We need to initialise the database schema::
 
@@ -97,7 +97,7 @@ Next, you can run a script to populate the DB with some sample data::
 
 This will create 2 Resource Classes and three Racks. You need to have the Tuskar
 API server running. You can see more examples of using the API at our `cURL
-Commands page <https://github.com/openstack/tuskar/blob/master/docs/api/curl.rst>`_.
+Commands page <docs/api/curl.rst>`_.
 
 
 Running Tuskar API
@@ -116,6 +116,6 @@ Contributing
 ------------
 
 For additional developer information, take a look at
-`CONTRIBUTING.rst <https://github.com/openstack/tuskar/blob/master/CONTRIBUTING.rst>`_
+`CONTRIBUTING.rst <docs/CONTRIBUTING.rst>`_
 and the
-`Tuskar website <https://github.com/openstack/tuskar/blob/master/docs/index.rst>`_.
+`developer documentation <docs/index.rst>`_.

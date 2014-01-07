@@ -3,8 +3,9 @@ Contributing to Tuskar
 ======================
 
 Tuskar follows the OpenStack processes when it comes to code, communication,
-etc. The `repositories are hosted on Stackforge
-<https://github.com/stackforge/tuskar>`_, `bugs and blueprints are on Launchpad
+etc. The `repositories are hosted on git.openstack.org
+<http://git.openstack.org/cgit/openstack/tuskar>`_,
+`bugs and blueprints are on Launchpad
 <https://launchpad.net/tuskar>`_ and we use the openstack-dev mailing list
 (subject `[tuskar]`) and the `#tuskar` IRC channel for communication.
 
@@ -13,7 +14,7 @@ Coding Standards
 ----------------
 
 We attempt to comply with the OpenStack coding standards, defined in
-https://github.com/openstack-dev/hacking/blob/master/HACKING.rst
+http://docs.openstack.org/developer/hacking/
 
 Be sure to familiarise yourself with `OpenStack's Gerrit Workflow
 <https://wiki.openstack.org/wiki/Gerrit_Workflow>`_.
@@ -25,7 +26,7 @@ the following checklist:
 2. Update the API docs (if needed)
 3. Update the tests (if needed)
 4. Update
-   `cURL commands <https://github.com/stackforge/tuskar/blob/master/docs/api/curl.rst>`_
+   `cURL commands <docs/api/curl.rst>`_
    page (if needed)
 
 
