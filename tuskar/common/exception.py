@@ -237,16 +237,8 @@ class InstanceNotFound(NotFound):
     message = _("Instance %(instance)s could not be found.")
 
 
-class RackNotFound(NotFound):
-    message = _("Rack %(rack)s could not be found.")
-
-
-class FlavorNotFound(NotFound):
-    message = _("Flavor %(flavor)s could not be found.")
-
-
-class ResourceClassNotFound(NotFound):
-    message = _("ResourceClass  %(resource_class)s could not be found.")
+class ResourceCategoryNotFound(NotFound):
+    message = _('Resource category could not be found.')
 
 
 class NodeNotFound(NotFound):
