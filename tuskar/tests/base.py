@@ -216,12 +216,3 @@ class TestCase(testtools.TestCase, unittest2.TestCase):
             return os.path.join(root, project_file)
         else:
             return root
-
-
-class TimeOverride(fixtures.Fixture):
-    """Fixture to start and remove time override."""
-
-    def setUp(self):
-        super(TimeOverride, self).setUp()
-        timeutils.set_time_override()
-        self.addCleanup(timeutils.clear_time_override)
