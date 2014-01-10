@@ -41,8 +41,6 @@ class ConfFixture(fixtures.Fixture):
         self.conf.set_default('rpc_cast_timeout', 5)
         self.conf.set_default('rpc_response_timeout', 5)
         self.conf.set_default('connection', "sqlite://", group='database')
-        self.conf.set_default('nova_overcloud_config',
-                              'etc/tuskar/nova_overcloud_config.yml')
         self.conf.set_default('sqlite_synchronous', False)
         self.conf.set_default('use_ipv6', True)
         self.conf.set_default('verbose', True)
