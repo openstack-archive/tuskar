@@ -43,7 +43,6 @@ from tuskar.db import migration
 from tuskar.common import paths
 from tuskar.openstack.common.db.sqlalchemy import session
 from tuskar.openstack.common import log as logging
-from tuskar.openstack.common import timeutils
 from tuskar.tests import conf_fixture
 from tuskar.tests import policy_fixture
 
@@ -216,12 +215,3 @@ class TestCase(testtools.TestCase, unittest2.TestCase):
             return os.path.join(root, project_file)
         else:
             return root
-
-
-class TimeOverride(fixtures.Fixture):
-    """Fixture to start and remove time override."""
-
-    def setUp(self):
-        super(TimeOverride, self).setUp()
-        timeutils.set_time_override()
-        self.addCleanup(timeutils.clear_time_override)
