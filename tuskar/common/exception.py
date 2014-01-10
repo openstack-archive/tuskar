@@ -1,27 +1,22 @@
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
-# Copyright 2010 United States Government as represented by the
-# Administrator of the National Aeronautics and Space Administration.
-# All Rights Reserved.
+# -*- encoding: utf-8 -*-
 #
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
 #
-#         http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 
 """Tuskar base exception handling.
 
 Includes decorator for re-raising Tuskar-type exceptions.
 
 SHOULD include dedicated exception logging.
-
 """
 
 import functools
@@ -32,6 +27,7 @@ from tuskar.common import safe_utils
 from tuskar.openstack.common import excutils
 from tuskar.openstack.common.gettextutils import _  # noqa
 from tuskar.openstack.common import log as logging
+
 
 LOG = logging.getLogger(__name__)
 
@@ -237,20 +233,16 @@ class InstanceNotFound(NotFound):
     message = _("Instance %(instance)s could not be found.")
 
 
-class RackNotFound(NotFound):
-    message = _("Rack %(rack)s could not be found.")
+class ResourceCategoryNotFound(NotFound):
+    message = _('Resource category could not be found.')
 
 
-class FlavorNotFound(NotFound):
-    message = _("Flavor %(flavor)s could not be found.")
+class OvercloudCategoryCountNotFound(NotFound):
+    message = _('Overcloud category count could not be found.')
 
 
-class ResourceClassNotFound(NotFound):
-    message = _("ResourceClass  %(resource_class)s could not be found.")
-
-
-class NodeNotFound(NotFound):
-    message = _("Node %(node)s could not be found.")
+class OvercloudNotFound(NotFound):
+    message = _('Overcloud could not be found.')
 
 
 class NodeLocked(NotFound):
@@ -278,8 +270,21 @@ class DuplicateEntry(TuskarException):
     message = _("Duplicate entry found.")
 
 
-class ResourceClassExists(DuplicateEntry):
-    message = _("Resource class with name %(name)s already exists.")
+class ResourceCategoryExists(DuplicateEntry):
+    message = _("Resource category with name %(name)s already exists.")
+
+
+class OvercloudCategoryCountExists(DuplicateEntry):
+    message = _("Count for overcloud %(cloud)s and "
+                "resource category %(cat)s already exists.")
+
+
+class OvercloudExists(DuplicateEntry):
+    message = _("Overcloud with name %(name)s already exists.")
+
+
+class DuplicateAttribute(DuplicateEntry):
+    message = _("One or more attributes is duplicated for the overcloud.")
 
 
 class ConfigNotFound(TuskarException):
