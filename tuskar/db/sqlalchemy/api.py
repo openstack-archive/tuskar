@@ -64,58 +64,6 @@ def model_query(model, *args, **kwargs):
 class Connection(api.Connection):
     """SqlAlchemy connection."""
 
-    def __init__(self):
-        pass
-
-    def get_heat_data(self):
-        session = get_session()
-        result = session.query(models.ResourceClass).options(
-            joinedload(models.ResourceClass.racks),
-        ).all()
-        # FIXME: This idio*ic pre-caching must happen here otherwise you get
-        # this error when rendering the template:
-        #
-        # Parent instance <Rack at 0x2abd5d0> is not bound to a Session;
-        # lazy load operation of attribute 'nodes' cannot proceed
-        #
-        for resource_class in result:
-            for rack in resource_class.racks:
-                for node in rack.nodes:
-                    session.query(models.Rack).options(
-                        subqueryload('capacities'),
-                        subqueryload('nodes')
-                    ).get(rack.id)
-
-        session.close()
-        return result
-
-    def get_racks(self, columns):
-        session = get_session()
-        result = session.query(models.Rack).options(
-            subqueryload('capacities'),
-            subqueryload('nodes')
-        ).all()
-        session.close()
-        return result
-
-    def get_rack(self, rack_id):
-        session = get_session()
-        try:
-            result = session.query(models.Rack).options(
-                subqueryload('capacities'),
-                subqueryload('nodes')
-            ).filter_by(id=rack_id).one()
-        except NoResultFound:
-            raise exception.RackNotFound(rack=rack_id)
-
-        return result
-
-    def get_racks_by_resource_class(self, resource_class_id):
-        session = get_session()
-        return session.query(models.Rack
-                             ).filter_by(resource_class_id=resource_class_id
-                                         ).all()
-
     def get_resource_classes(self, columns):
         session = get_session()
         resource_classes = session.query(models.ResourceClass).all()
