@@ -329,7 +329,7 @@ class Connection(api.Connection):
             session.commit()
             return overcloud
 
-        except db_exception.DBDuplicateEntry, e:
+        except db_exception.DBDuplicateEntry as e:
             if 'name' in e.columns:
                 raise exception.OvercloudExists(name=overcloud.name)
             else:
