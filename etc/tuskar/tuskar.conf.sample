@@ -77,14 +77,6 @@
 
 
 #
-# Options defined in tuskar.compute.nova
-#
-
-# nova overcloud keystone uri and credentials (string value)
-#nova_overcloud_config=/etc/tuskar/nova_overcloud_config.yml
-
-
-#
 # Options defined in tuskar.db.sqlalchemy.models
 #
 
@@ -419,6 +411,42 @@
 #matchmaker_heartbeat_ttl=600
 
 
+[rpc_notifier2]
+
+#
+# Options defined in tuskar.openstack.common.notifier.rpc_notifier2
+#
+
+# AMQP topic(s) used for openstack notifications (list value)
+#topics=notifications
+
+
+[matchmaker_redis]
+
+#
+# Options defined in tuskar.openstack.common.rpc.matchmaker_redis
+#
+
+# Host to locate redis (string value)
+#host=127.0.0.1
+
+# Use this port to connect to redis host. (integer value)
+#port=6379
+
+# Password for Redis server. (optional) (string value)
+#password=<None>
+
+
+[matchmaker_ring]
+
+#
+# Options defined in tuskar.openstack.common.rpc.matchmaker_ring
+#
+
+# Matchmaker ring file (JSON) (string value)
+#ringfile=/etc/oslo/matchmaker_ring.json
+
+
 [database]
 
 #
@@ -474,81 +502,4 @@
 #connection_trace=false
 
 
-[heat_keystone]
-
-#
-# Options defined in tuskar.heat.client
-#
-
-# The name of a user the overcloud is deployed on behalf of
-# (string value)
-#username=admin
-
-# The pass of a user the overcloud is deployed on behalf of
-# (string value)
-#password=<None>
-
-# The tenant name the overcloud is deployed on behalf of
-# (string value)
-#tenant_name=admin
-
-# Keystone authentication URL (string value)
-#auth_url=http://localhost:35357/v2.0
-
-# Set to False when Heat API uses HTTPS (boolean value)
-#insecure=true
-
-
-[rpc_notifier2]
-
-#
-# Options defined in tuskar.openstack.common.notifier.rpc_notifier2
-#
-
-# AMQP topic(s) used for openstack notifications (list value)
-#topics=notifications
-
-
-[heat]
-
-#
-# Options defined in tuskar.heat.client
-#
-
-# Name of the overcloud Heat stack (string value)
-#stack_name=overcloud
-
-# Heat API service type registered in keystone (string value)
-#service_type=orchestration
-
-# Heat API service endpoint type in keystone (string value)
-#endpoint_type=publicURL
-
-
-[matchmaker_redis]
-
-#
-# Options defined in tuskar.openstack.common.rpc.matchmaker_redis
-#
-
-# Host to locate redis (string value)
-#host=127.0.0.1
-
-# Use this port to connect to redis host. (integer value)
-#port=6379
-
-# Password for Redis server. (optional) (string value)
-#password=<None>
-
-
-[matchmaker_ring]
-
-#
-# Options defined in tuskar.openstack.common.rpc.matchmaker_ring
-#
-
-# Matchmaker ring file (JSON) (string value)
-#ringfile=/etc/oslo/matchmaker_ring.json
-
-
-# Total option count: 111
+# Total option count: 102
