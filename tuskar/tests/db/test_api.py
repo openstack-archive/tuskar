@@ -39,7 +39,7 @@ class ResourceCategoryTests(db_base.DbTestCase):
 
     def test_save_resource_category(self):
         # Test
-        saved = self.connection.save_resource_category(self.save_me_1)
+        saved = self.connection.create_resource_category(self.save_me_1)
 
         # Verify
         self.assertTrue(saved is not None)
@@ -55,7 +55,7 @@ class ResourceCategoryTests(db_base.DbTestCase):
 
     def test_save_resource_category_duplicate_name(self):
         # Setup
-        self.connection.save_resource_category(self.save_me_1)
+        self.connection.create_resource_category(self.save_me_1)
         duplicate = models.ResourceCategory(
             name=self.save_me_1.name,
             description='irrelevant',
@@ -64,16 +64,19 @@ class ResourceCategoryTests(db_base.DbTestCase):
 
         # Test
         self.assertRaises(exception.ResourceCategoryExists,
-                          self.connection.save_resource_category,
+                          self.connection.create_resource_category,
                           duplicate)
 
     def test_update(self):
         # Setup
-        saved = self.connection.save_overcloud(self.save_me_1)
+        saved = self.connection.create_resource_category(self.save_me_1)
 
         # Test
-        saved.image_id = 'abcdef'
-        self.connection.save_overcloud(saved)
+        delta = models.ResourceCategory(
+            id=saved.id,
+            image_id='abcdef'
+        )
+        self.connection.update_resource_category(delta)
 
         # Verify
         found = self.connection.get_resource_category_by_id(saved.id)
@@ -81,7 +84,7 @@ class ResourceCategoryTests(db_base.DbTestCase):
 
     def test_delete_category(self):
         # Setup
-        saved = self.connection.save_resource_category(self.save_me_1)
+        saved = self.connection.create_resource_category(self.save_me_1)
 
         # Test
         self.connection.delete_resource_category_by_id(saved.id)
@@ -97,8 +100,8 @@ class ResourceCategoryTests(db_base.DbTestCase):
 
     def test_get_resource_categories(self):
         # Setup
-        self.connection.save_resource_category(self.save_me_1)
-        self.connection.save_resource_category(self.save_me_2)
+        self.connection.create_resource_category(self.save_me_1)
+        self.connection.create_resource_category(self.save_me_2)
 
         # Test
         all_categories = self.connection.get_resource_categories()
@@ -126,8 +129,8 @@ class ResourceCategoryTests(db_base.DbTestCase):
 
     def test_get_resource_category_by_id(self):
         # Setup
-        self.connection.save_resource_category(self.save_me_1)
-        saved_2 = self.connection.save_resource_category(self.save_me_2)
+        self.connection.create_resource_category(self.save_me_1)
+        saved_2 = self.connection.create_resource_category(self.save_me_2)
 
         # Test
         found = self.connection.get_resource_category_by_id(saved_2.id)
@@ -140,111 +143,6 @@ class ResourceCategoryTests(db_base.DbTestCase):
     def test_get_resource_category_by_id_no_result(self):
         self.assertRaises(exception.ResourceCategoryNotFound,
                           self.connection.get_resource_category_by_id,
-                          'fake-id')
-
-
-class OvercloudCategoryCountTests(db_base.DbTestCase):
-
-    def setUp(self):
-        super(OvercloudCategoryCountTests, self).setUp()
-
-        self.connection = dbapi.Connection()
-
-        # Foreign Key Relationship Data
-        self.overcloud_1 = models.Overcloud(
-            name='overcloud-1'
-        )
-        self.connection.save_overcloud(self.overcloud_1)
-
-        self.resource_category_1 = models.ResourceCategory(
-            name='resource-category-1'
-        )
-        self.connection.save_resource_category(self.resource_category_1)
-
-        # Sample data for tests
-        self.count_1 = models.OvercloudCategoryCount(
-            overcloud_id=self.overcloud_1.id,
-            resource_category_id=self.resource_category_1.id,
-            num_nodes=2
-        )
-
-    def test_save_overcould_count(self):
-        # Test
-        saved = self.connection.save_overcloud_category_count(self.count_1)
-
-        # Verify
-        self.assertTrue(saved is not None)
-
-        self.assertTrue(saved.id is not None)
-        self.assertEqual(saved.overcloud_id, self.count_1.overcloud_id)
-        self.assertEqual(saved.resource_category_id,
-                         self.count_1.resource_category_id)
-        self.assertEqual(saved.num_nodes, self.count_1.num_nodes)
-
-    def test_delete_overcloud_count(self):
-        # Setup
-        saved = self.connection.save_overcloud_category_count(self.count_1)
-
-        # Test
-        self.connection.delete_overcloud_category_count(saved.id)
-
-        # Verify
-        found = self.connection.get_overcloud_category_counts_by_overcloud(
-            self.overcloud_1.id)
-        self.assertEqual(0, len(found))
-
-    def test_delete_nonexistent_overcloud_count(self):
-        self.assertRaises(exception.OvercloudCategoryCountNotFound,
-                          self.connection.delete_overcloud_category_count,
-                          'fake-overcloud-id')
-
-    def test_get_overcloud_counts(self):
-        # Setup
-        resource_category_2 = models.ResourceCategory(
-            name='resource-category-2'
-        )
-        category_2 = \
-            self.connection.save_resource_category(resource_category_2)
-
-        self.connection.save_overcloud_category_count(self.count_1)
-        count_2 = models.OvercloudCategoryCount(
-            overcloud_id=self.count_1.overcloud_id,
-            resource_category_id=category_2.id,
-            num_nodes=5
-        )
-        self.connection.save_overcloud_category_count(count_2)
-
-        # Test
-        all_counts =\
-            self.connection.get_overcloud_category_counts_by_overcloud(
-                self.overcloud_1.id)
-        self.assertEqual(2, len(all_counts))
-
-    def test_get_overcloud_counts_no_results(self):
-        # Test
-        all_counts =\
-            self.connection.get_overcloud_category_counts_by_overcloud(
-                self.overcloud_1.id)
-
-        # Verify
-        self.assertTrue(isinstance(all_counts, list))
-        self.assertEqual(0, len(all_counts))
-
-    def test_get_overcloud_count_by_id(self):
-        # Setup
-        saved = self.connection.save_overcloud_category_count(self.count_1)
-
-        # Test
-        found = self.connection.get_overcloud_category_count_by_id(saved.id)
-
-        # Verify
-        self.assertTrue(found is not None)
-        self.assertEqual(found.id, saved.id)
-        self.assertEqual(found.overcloud_id, saved.overcloud_id)
-
-    def test_get_overcloud_count_by_id_no_result(self):
-        self.assertRaises(exception.OvercloudCategoryCountNotFound,
-                          self.connection.get_overcloud_category_count_by_id,
                           'fake-id')
 
 
@@ -265,10 +163,16 @@ class OvercloudTests(db_base.DbTestCase):
             value='value-2',
         )
 
+        self.count_1 = models.OvercloudCategoryCount(
+            resource_category_id='cat-1',
+            num_nodes=4,
+        )
+
         self.overcloud_1 = models.Overcloud(
             name='overcloud-1',
             description='desc-1',
-            attributes=[self.attributes_1, self.attributes_2]
+            attributes=[self.attributes_1, self.attributes_2],
+            counts=[self.count_1]
         )
 
         self.overcloud_2 = models.Overcloud(
@@ -277,9 +181,9 @@ class OvercloudTests(db_base.DbTestCase):
             attributes=[]
         )
 
-    def test_save_overcloud(self):
+    def test_create_overcloud(self):
         # Test
-        saved = self.connection.save_overcloud(self.overcloud_1)
+        saved = self.connection.create_overcloud(self.overcloud_1)
 
         # Verify
         self.assertTrue(saved is not None)
@@ -297,9 +201,15 @@ class OvercloudTests(db_base.DbTestCase):
             self.assertEqual(saved.attributes[index].key, attribute.key)
             self.assertEqual(saved.attributes[index].value, attribute.value)
 
-    def test_save_overcloud_duplicate_name(self):
+        for index, count in enumerate(self.overcloud_1.counts):
+            self.assertEqual(saved.counts[index].resource_category_id,
+                             count.resource_category_id)
+            self.assertEqual(saved.counts[index].num_nodes,
+                             count.num_nodes)
+
+    def test_create_overcloud_duplicate_name(self):
         # Setup
-        self.connection.save_overcloud(self.overcloud_1)
+        self.connection.create_overcloud(self.overcloud_1)
         duplicate = models.Overcloud(
             name=self.overcloud_1.name,
             description='irrelevant',
@@ -307,10 +217,10 @@ class OvercloudTests(db_base.DbTestCase):
 
         # Test
         self.assertRaises(exception.OvercloudExists,
-                          self.connection.save_overcloud,
+                          self.connection.create_overcloud,
                           duplicate)
 
-    def test_save_overcloud_duplicate_attribute(self):
+    def test_create_overcloud_duplicate_attribute(self):
         # Setup
         duplicate_attribute = models.OvercloudAttribute(
             key=self.attributes_1.key,
@@ -320,12 +230,113 @@ class OvercloudTests(db_base.DbTestCase):
 
         # Test
         self.assertRaises(exception.DuplicateAttribute,
-                          self.connection.save_overcloud,
+                          self.connection.create_overcloud,
                           self.overcloud_1)
+
+    def test_update_overcloud(self):
+        # Setup
+        saved = self.connection.create_overcloud(self.overcloud_1)
+
+        # Test
+        saved.stack_id = 'new_id'
+        self.connection.update_overcloud(saved)
+
+        # Verify
+        found = self.connection.get_overcloud_by_id(saved.id)
+        self.assertEqual(found.stack_id, saved.stack_id)
+        self.assertEqual(found.name, self.overcloud_1.name)
+
+    def test_update_overcloud_attributes(self):
+        # Setup
+
+        # Add a third attribute for enough data
+        self.overcloud_1.attributes.append(models.OvercloudAttribute(
+            key='key-3',
+            value='value-3',
+        ))
+        saved = self.connection.create_overcloud(self.overcloud_1)
+
+        # Test
+        # - Ignore the first
+        saved.attributes.pop(0)
+
+        # - Change the second
+        saved.attributes[0].value = 'updated-2'
+
+        # - Delete the third
+        saved.attributes[1].value = None
+
+        # - Add a fourth
+        saved.attributes.append(models.OvercloudAttribute(
+            key='key-4',
+            value='value-4',
+        ))
+
+        self.connection.update_overcloud(saved)
+
+        # Verify
+        found = self.connection.get_overcloud_by_id(saved.id)
+
+        self.assertEqual(3, len(found.attributes))
+        self.assertEqual(found.attributes[0].key, 'key-1')
+        self.assertEqual(found.attributes[0].value, 'value-1')
+        self.assertEqual(found.attributes[1].key, 'key-2')
+        self.assertEqual(found.attributes[1].value, 'updated-2')
+        self.assertEqual(found.attributes[2].key, 'key-4')
+        self.assertEqual(found.attributes[2].value, 'value-4')
+
+    def test_update_overcloud_counts(self):
+        # Setup
+
+        # Add extra counts for enough data
+        self.overcloud_1.counts.append(models.OvercloudCategoryCount(
+            resource_category_id='cat-2',
+            num_nodes=2,
+        ))
+        self.overcloud_1.counts.append(models.OvercloudCategoryCount(
+            resource_category_id='cat-3',
+            num_nodes=3,
+        ))
+        saved = self.connection.create_overcloud(self.overcloud_1)
+
+        # Test
+        # - Ignore the first
+        saved.counts.pop(0)
+
+        # - Change the second
+        saved.counts[0].num_nodes = 100
+
+        # - Delete the third
+        saved.counts[1].num_nodes = 0
+
+        # - Add a fourth
+        saved.counts.append(models.OvercloudCategoryCount(
+            resource_category_id='cat-4',
+            num_nodes=4,
+        ))
+
+        self.connection.update_overcloud(self.overcloud_1)
+
+        # Verify
+        found = self.connection.get_overcloud_by_id(saved.id)
+
+        self.assertEqual(3, len(found.counts))
+        self.assertEqual(found.counts[0].resource_category_id, 'cat-1')
+        self.assertEqual(found.counts[0].num_nodes, 4)
+        self.assertEqual(found.counts[1].resource_category_id, 'cat-2')
+        self.assertEqual(found.counts[1].num_nodes, 100)
+        self.assertEqual(found.counts[2].resource_category_id, 'cat-4')
+        self.assertEqual(found.counts[2].num_nodes, 4)
+
+    def test_update_nonexistent(self):
+        fake = models.Overcloud(id='fake')
+        self.assertRaises(exception.OvercloudNotFound,
+                          self.connection.update_overcloud,
+                          fake)
 
     def test_delete_overcloud(self):
         # Setup
-        saved = self.connection.save_overcloud(self.overcloud_1)
+        saved = self.connection.create_overcloud(self.overcloud_1)
 
         # Test
         self.connection.delete_overcloud_by_id(saved.id)
@@ -344,8 +355,8 @@ class OvercloudTests(db_base.DbTestCase):
         # This test also verifies that the attributes are eagerly loaded
 
         # Setup
-        self.connection.save_overcloud(self.overcloud_1)
-        self.connection.save_overcloud(self.overcloud_2)
+        self.connection.create_overcloud(self.overcloud_1)
+        self.connection.create_overcloud(self.overcloud_2)
 
         # Test
         all_overclouds = self.connection.get_overclouds()
@@ -373,8 +384,8 @@ class OvercloudTests(db_base.DbTestCase):
 
     def test_get_overcloud_by_id(self):
         # Setup
-        self.connection.save_overcloud(self.overcloud_1)
-        saved_2 = self.connection.save_overcloud(self.overcloud_2)
+        self.connection.create_overcloud(self.overcloud_1)
+        saved_2 = self.connection.create_overcloud(self.overcloud_2)
 
         # Test
         found = self.connection.get_overcloud_by_id(saved_2.id)
