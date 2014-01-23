@@ -52,6 +52,11 @@ class TuskarBase(models.TimestampMixin, models.ModelBase):
     """Base class for all Tuskar domain models."""
     metadata = None
 
+    def as_dict(self):
+        d = dict([(c.name, self[c.name]) for c in self.__table__.columns])
+        return d
+
+
 Base = declarative_base(cls=TuskarBase)
 
 
@@ -205,5 +210,21 @@ class Overcloud(Base):
     # List of configuration attributes for the overcloud
     attributes = relationship(OvercloudAttribute.__name__)
 
+    # List of counts of resource categories to deploy
+    counts = relationship(OvercloudCategoryCount.__name__)
+
     def __eq__(self, other):
         return self.name == other.name
+
+    def as_dict(self):
+        d = dict([(c.name, self[c.name]) for c in self.__table__.columns])
+
+        # Foreign keys aren't picked up by the base as_dict, so add them in
+        # here
+        attribute_dicts = [a.as_dict() for a in self.attributes]
+        d['attributes'] = attribute_dicts
+
+        count_dicts = [c.as_dict() for c in self.counts]
+        d['counts'] = count_dicts
+
+        return d

@@ -1,66 +1,144 @@
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
+# -*- encoding: utf-8 -*-
 #
-#         http://www.apache.org/licenses/LICENSE-2.0
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
 #
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 
+import logging
 import pecan
-from wsme import api
+from pecan import rest
+import wsme
 from wsmeext import pecan as wsme_pecan
 
-import heatclient.exc
-
-from tuskar.api.controllers.v1.types import Error
-from tuskar.api.controllers.v1.types import Link
-from tuskar.api.controllers.v1.types import Overcloud
-import tuskar.heat.client
-from tuskar.openstack.common.gettextutils import _
+from tuskar.api.controllers.v1 import models
 
 
-class OvercloudsController(pecan.rest.RestController):
-    """Controller for Overcloud."""
+LOG = logging.getLogger(__name__)
 
-    @wsme_pecan.wsexpose(Overcloud, unicode)
-    def get_one(self, stack_name):
-        heat = tuskar.heat.client.HeatClient()
 
-        try:
-            stack = heat.get_stack(stack_name)
-        except heatclient.exc.HTTPNotFound as ex:
-            response = api.Response(
-                None,
-                error=Error(faultcode=ex.code, faultstring=str(ex)),
-                status_code=ex.code)
-            return response
+class OvercloudsController(rest.RestController):
+    """REST controller for the Overcloud class."""
 
-        if not hasattr(stack, 'outputs'):
-            faultstring = _('Failed to find Keystone URL.')
-            response = api.Response(
-                None,
-                error=Error(faultcode=404, faultstring=faultstring),
-                status_code=404)
-            return response
+    @wsme.validate(models.Overcloud)
+    @wsme_pecan.wsexpose(models.Overcloud,
+                         body=models.Overcloud,
+                         status_code=201)
+    def post(self, transfer_overcloud):
+        """Creates a new overcloud.
 
-        outputs = stack.outputs
-        keystone_param = filter(lambda x: x['output_key'] == 'KeystoneURL',
-                                outputs)
-        if len(keystone_param) == 0:
-            faultstring = _('Failed to find Keystone URL.')
-            response = api.Response(
-                None,
-                error=Error(faultcode=404, faultstring=faultstring),
-                status_code=404)
-            return response
+        :param transfer_overcloud: data submitted by the user
+        :type  transfer_overcloud:
+            tuskar.api.controllers.v1.models.Overcloud
 
-        keystone_link = Link(rel='keystone',
-                             href=keystone_param[0]['output_value'])
-        overcloud = Overcloud(stack_name=stack_name,
-                              links=[keystone_link])
+        :return: created overcloud
+        :rtype:  tuskar.api.controllers.v1.models.Overcloud
 
-        return overcloud
+        :raises: tuskar.common.exception.OvercloudExists: if an overcloud
+                 with the given name exists
+        """
+
+        LOG.debug('Creating overcloud: %s' % transfer_overcloud)
+
+        # Persist to the database
+        db_overcloud = transfer_overcloud.to_db_model()
+        result = pecan.request.dbapi.create_overcloud(db_overcloud)
+
+        # Package for transfer back to the user
+        saved_overcloud =\
+            models.Overcloud.from_db_model(result)
+
+        return saved_overcloud
+
+    @wsme.validate(models.Overcloud)
+    @wsme_pecan.wsexpose(models.Overcloud,
+                         int,
+                         body=models.Overcloud)
+    def put(self, overcloud_id, overcloud_delta):
+        """Updates an existing overcloud, including its attributes and counts.
+
+        :param overcloud_id: identifies the overcloud being deleted
+        :type  overcloud_id: int
+
+        :param overcloud_delta: contains only values that are to be affected
+               by the update
+        :type  overcloud_delta:
+            tuskar.api.controllers.v1.models.Overcloud
+
+        :return: created overcloud
+        :rtype:  tuskar.api.controllers.v1.models.Overcloud
+
+        :raises: tuskar.common.exception.OvercloudNotFound if there
+                 is no overcloud with the given ID
+        """
+        LOG.debug('Updating overcloud: %s' % overcloud_id)
+
+        # ID is in the URL so make sure it's in the transfer object
+        # before translation
+        overcloud_delta.id = overcloud_id
+        db_delta = overcloud_delta.to_db_model(omit_unset=True)
+
+        # Will raise a not found if there is no overcloud with the ID
+        result = pecan.request.dbapi.update_overcloud(db_delta)
+
+        updated = models.Overcloud.from_db_model(result)
+
+        return updated
+
+    @wsme_pecan.wsexpose(None, int, status_code=204)
+    def delete(self, overcloud_id):
+        """Deletes the given overcloud.
+
+        :param overcloud_id: identifies the overcloud being deleted
+        :type  overcloud_id: int
+
+        :raises: tuskar.common.exception.OvercloudNotFound if there
+                 is no overcloud with the given ID
+        """
+
+        LOG.debug('Deleting overcloud with ID: %s' % overcloud_id)
+        pecan.request.dbapi.delete_overcloud_by_id(overcloud_id)
+
+    @wsme_pecan.wsexpose(models.Overcloud, int)
+    def get_one(self, overcloud_id):
+        """Returns a specific overcloud.
+
+        An exception is raised if no overcloud is found with the
+        given ID.
+
+        :param overcloud_id: identifies the overcloud being deleted
+        :type  overcloud_id: int
+
+        :return: matching overcloud
+        :rtype:  tuskar.api.controllers.v1.models.Overcloud
+
+        :raises: tuskar.common.exception.OvercloudNotFound if there
+                 is no overcloud with the given ID
+        """
+
+        LOG.debug('Retrieving overcloud with ID: %s' % overcloud_id)
+        overcloud = pecan.request.dbapi.get_overcloud_by_id(overcloud_id)
+        transfer_overcloud = models.Overcloud.from_db_model(overcloud)
+        return transfer_overcloud
+
+    @wsme_pecan.wsexpose([models.Overcloud])
+    def get_all(self):
+        """Returns all overclouds.
+
+        An empty list is returned if no overclouds are present.
+
+        :return: list of overclouds; empty list if none are found
+        :rtype:  list of tuskar.api.controllers.v1.models.Overcloud
+        """
+        LOG.debug('Retrieving all overclouds')
+        overclouds = pecan.request.dbapi.get_overclouds()
+        transfer_overclouds = [models.Overcloud.from_db_model(o)
+                               for o in overclouds]
+        return transfer_overclouds
