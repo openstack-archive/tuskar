@@ -19,12 +19,8 @@ Includes decorator for re-raising Tuskar-type exceptions.
 SHOULD include dedicated exception logging.
 """
 
-import functools
-
 from oslo.config import cfg
 
-from tuskar.common import safe_utils
-from tuskar.openstack.common import excutils
 from tuskar.openstack.common.gettextutils import _  # noqa
 from tuskar.openstack.common import log as logging
 
@@ -66,46 +62,6 @@ class ProcessExecutionError(IOError):
 def _cleanse_dict(original):
     """Strip all admin_password, new_pass, rescue_pass keys from a dict."""
     return dict((k, v) for k, v in original.iteritems() if not "_pass" in k)
-
-
-def wrap_exception(notifier=None, publisher_id=None, event_type=None,
-                   level=None):
-    """This decorator wraps a method to catch any exceptions that may
-    get thrown. It logs the exception as well as optionally sending
-    it to the notification system.
-    """
-    def inner(f):
-        def wrapped(self, context, *args, **kw):
-            # Don't store self or context in the payload, it now seems to
-            # contain confidential information.
-            try:
-                return f(self, context, *args, **kw)
-            except Exception as e:
-                with excutils.save_and_reraise_exception():
-                    if notifier:
-                        payload = dict(exception=e)
-                        call_dict = safe_utils.getcallargs(f, *args, **kw)
-                        cleansed = _cleanse_dict(call_dict)
-                        payload.update({'args': cleansed})
-
-                        # Use a temp vars so we don't shadow
-                        # our outer definitions.
-                        temp_level = level
-                        if not temp_level:
-                            temp_level = notifier.ERROR
-
-                        temp_type = event_type
-                        if not temp_type:
-                            # If f has multiple decorators, they must use
-                            # functools.wraps to ensure the name is
-                            # propagated.
-                            temp_type = f.__name__
-
-                        notifier.notify(context, publisher_id, temp_type,
-                                        temp_level, payload)
-
-        return functools.wraps(f)(wrapped)
-    return inner
 
 
 class TuskarException(Exception):
@@ -169,68 +125,9 @@ class PolicyNotAuthorized(NotAuthorized):
     message = _("Policy doesn't allow %(action)s to be performed.")
 
 
-class Invalid(TuskarException):
-    message = _("Unacceptable parameters.")
-    code = 400
-
-
-class InvalidCPUInfo(Invalid):
-    message = _("Unacceptable CPU info") + ": %(reason)s"
-
-
-class InvalidIpAddressError(Invalid):
-    message = _("%(address)s is not a valid IP v4/6 address.")
-
-
-class InvalidDiskFormat(Invalid):
-    message = _("Disk format %(disk_format)s is not acceptable")
-
-
-class InvalidUUID(Invalid):
-    message = _("Expected a uuid but received %(uuid)s.")
-
-
-class InvalidMAC(Invalid):
-    message = _("Expected a MAC address but received %(mac)s.")
-
-
-# Cannot be templated as the error syntax varies.
-# msg needs to be constructed when raised.
-class InvalidParameterValue(Invalid):
-    message = _("%(err)s")
-
-
 class NotFound(TuskarException):
     message = _("Resource could not be found.")
     code = 404
-
-
-class DiskNotFound(NotFound):
-    message = _("No disk at %(location)s")
-
-
-class ImageNotFound(NotFound):
-    message = _("Image %(image_id)s could not be found.")
-
-
-class HostNotFound(NotFound):
-    message = _("Host %(host)s could not be found.")
-
-
-class ConsoleNotFound(NotFound):
-    message = _("Console %(console_id)s could not be found.")
-
-
-class FileNotFound(NotFound):
-    message = _("File %(file_path)s could not be found.")
-
-
-class NoValidHost(NotFound):
-    message = _("No valid host was found. %(reason)s")
-
-
-class InstanceNotFound(NotFound):
-    message = _("Instance %(instance)s could not be found.")
 
 
 class ResourceCategoryNotFound(NotFound):
@@ -245,29 +142,9 @@ class OvercloudNotFound(NotFound):
     message = _('Overcloud could not be found.')
 
 
-class NodeLocked(NotFound):
-    message = _("Node %(node)s is locked by another process.")
-
-
-class PortNotFound(NotFound):
-    message = _("Port %(port)s could not be found.")
-
-
-class PowerStateFailure(TuskarException):
-    message = _("Failed to set node power state to %(pstate)s.")
-
-
-class ExclusiveLockRequired(NotAuthorized):
-    message = _("An exclusive lock is required, "
-                "but the current context has a shared lock.")
-
-
-class IPMIFailure(TuskarException):
-    message = _("IPMI command failed: %(cmd)s.")
-
-
 class DuplicateEntry(TuskarException):
     message = _("Duplicate entry found.")
+    code = 409
 
 
 class ResourceCategoryExists(DuplicateEntry):

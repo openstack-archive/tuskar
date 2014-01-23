@@ -1,30 +1,29 @@
-#from oslo.config import cfg
+# -*- encoding: utf-8 -*-
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
 import pecan
-#from pecan.core import render
-#from pecan import rest
-#import wsme
-#from wsme import api
-#from wsme import types as wtypes
-#import wsmeext.pecan as wsme_pecan
 
-#from tuskar.common import exception
-#from tuskar.openstack.common import log
-
-from tuskar.api.controllers.v1.data_center import DataCenterController
-from tuskar.api.controllers.v1.node import NodesController
 from tuskar.api.controllers.v1.overcloud import OvercloudsController
-from tuskar.api.controllers.v1.rack import RacksController
-from tuskar.api.controllers.v1.resource_class import ResourceClassesController
+from tuskar.api.controllers.v1.resource_category \
+    import ResourceCategoriesController
 
 
 class Controller(object):
     """Version 1 API controller root."""
 
-    racks = RacksController()
-    resource_classes = ResourceClassesController()
-    data_centers = DataCenterController()
+    resource_categories = ResourceCategoriesController()
     overclouds = OvercloudsController()
-    nodes = NodesController()
 
     @pecan.expose('json')
     def index(self):
