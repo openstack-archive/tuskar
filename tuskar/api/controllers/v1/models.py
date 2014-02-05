@@ -68,10 +68,10 @@ class Base(wtypes.Base):
         return value
 
 
-class ResourceCategory(Base):
-    """Transfer object for resource categories."""
+class OvercloudRole(Base):
+    """Transfer object for overcloud roles."""
 
-    _db_class = db_models.ResourceCategory
+    _db_class = db_models.OvercloudRole
 
     id = int
     name = wtypes.text
@@ -80,13 +80,13 @@ class ResourceCategory(Base):
     flavor_id = wtypes.text
 
 
-class OvercloudCategoryCount(Base):
-    """Transfer object for overcloud category counts."""
+class OvercloudRoleCount(Base):
+    """Transfer object for overcloud role counts."""
 
-    _db_class = db_models.OvercloudCategoryCount
+    _db_class = db_models.OvercloudRoleCount
 
     id = int
-    resource_category_id = int
+    overcloud_role_id = int
     overcloud_id = int
     num_nodes = int
 
@@ -101,7 +101,7 @@ class Overcloud(Base):
     name = wtypes.text
     description = wtypes.text
     attributes = {wtypes.text: wtypes.text}
-    counts = [OvercloudCategoryCount]
+    counts = [OvercloudRoleCount]
 
     @classmethod
     def from_db_model(cls, db_overcloud, skip_fields=None):
@@ -116,7 +116,7 @@ class Overcloud(Base):
         transfer_overcloud.attributes = translated
 
         # Counts
-        transfer_overcloud.counts = [OvercloudCategoryCount.from_db_model(c)
+        transfer_overcloud.counts = [OvercloudRoleCount.from_db_model(c)
                                      for c in db_overcloud.counts]
         return transfer_overcloud
 

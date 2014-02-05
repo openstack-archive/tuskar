@@ -44,8 +44,8 @@ LENGTH_PASSWORD = 64
 TABLE_NODE_PROFILE = 'node_profiles'
 TABLE_OVERCLOUD = 'overclouds'
 TABLE_OVERCLOUD_ATTRIBUTES = 'overcloud_attributes'
-TABLE_RESOURCE_CATEGORY = 'resource_categories'
-TABLE_OVERCLOUD_CATEGORY_COUNT = 'overcloud_category_counts'
+TABLE_OVERCLOUD_ROLE = 'overcloud_roles'
+TABLE_OVERCLOUD_ROLE_COUNT = 'overcloud_role_counts'
 
 
 class TuskarBase(models.TimestampMixin, models.ModelBase):
@@ -60,31 +60,31 @@ class TuskarBase(models.TimestampMixin, models.ModelBase):
 Base = declarative_base(cls=TuskarBase)
 
 
-class ResourceCategory(Base):
-    """Resource category domain model.
+class OvercloudRole(Base):
+    """Overcloud role domain model.
 
     Represents a type of entity that is deployed into the undercloud to create
     the overcloud. For example, a controller or a compute node.
     """
 
-    __tablename__ = TABLE_RESOURCE_CATEGORY
+    __tablename__ = TABLE_OVERCLOUD_ROLE
 
-    # Unique identifier for the category
+    # Unique identifier for the role
     id = Column(Integer, primary_key=True)
 
-    # User-readable display name of the category
+    # User-readable display name of the role
     name = Column(String(length=LENGTH_NAME), nullable=False, unique=True)
 
-    # User-readable text describing what the category does
+    # User-readable text describing what the role does
     description = Column(String(length=LENGTH_DESCRIPTION))
 
     # Name of the image, in Glance, that is used when creating an instance of
-    # this category.
+    # this role.
     # Note: This should be the image UUID, but due to Icehouse time constraints
     #       the user will create the image on their own with a pre-defined
     #       name and the image referenced through that.
     # Note: In the future, we will likely support multiple images for a
-    #       category, so this will likely change to its own table and a FK
+    #       role, so this will likely change to its own table and a FK
     #       relationship. jdob, Jan 10, 2014
     image_name = Column(String(length=64))
 
@@ -98,39 +98,38 @@ class ResourceCategory(Base):
         return self.name == other.name
 
 
-class OvercloudCategoryCount(Base):
-    """Configuration for a resource category's deployment in an overcloud.
+class OvercloudRoleCount(Base):
+    """Configuration for an overcloud role's deployment in an overcloud.
 
-    Maps a resource category definition to number of instances, of a
-    particular node profile, to be deployed into an overcloud.
+    Maps an overcloud role definition to number of instances to be
+    deployed into an overcloud.
+
+    Note: In the future this will likely be enhanced to include the
+    flavor of node being deployed on.
     """
 
-    __tablename__ = TABLE_OVERCLOUD_CATEGORY_COUNT
+    __tablename__ = TABLE_OVERCLOUD_ROLE_COUNT
 
     # Unique identifier for the deployment configuration
     id = Column(Integer, primary_key=True)
 
-    # Resource category being configured
-    resource_category_id = \
+    # Role being configured
+    overcloud_role_id = \
         Column(Integer,
-               ForeignKey('%s.id' % TABLE_RESOURCE_CATEGORY),
+               ForeignKey('%s.id' % TABLE_OVERCLOUD_ROLE),
                nullable=False)
 
-    # Overcloud in which the resource category is being deployed
+    # Overcloud in which the role is being deployed
     overcloud_id = \
         Column(Integer,
                ForeignKey('%s.id' % TABLE_OVERCLOUD),
                nullable=False)
 
-    # Currently commented out until we finish deciding on how these will
-    # be handled for Icehouse.
-    # node_profile_id
-
     # Number of nodes of this configuration that should be deployed
     num_nodes = Column(Integer, nullable=False)
 
     def __eq__(self, other):
-        return self.resource_category_id == other.resource_category_id \
+        return self.overcloud_role_id == other.overcloud_role_id \
                and self.overcloud_id == other.overcloud_id
 
 
@@ -185,8 +184,8 @@ class Overcloud(Base):
     # List of configuration attributes for the overcloud
     attributes = relationship(OvercloudAttribute.__name__)
 
-    # List of counts of resource categories to deploy
-    counts = relationship(OvercloudCategoryCount.__name__)
+    # List of counts of overcloud roles to deploy
+    counts = relationship(OvercloudRoleCount.__name__)
 
     def __eq__(self, other):
         return self.name == other.name

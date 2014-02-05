@@ -17,53 +17,53 @@ import unittest
 from tuskar.db.sqlalchemy import models
 
 
-class ResourceCategoryTests(unittest.TestCase):
+class OvercloudRoleTests(unittest.TestCase):
 
     def test_equal(self):
         # Setup
-        res_cat_1 = models.ResourceCategory(name='foo')
-        res_cat_2 = models.ResourceCategory(name='foo')
+        res_cat_1 = models.OvercloudRole(name='foo')
+        res_cat_2 = models.OvercloudRole(name='foo')
 
         # Test
         self.assertTrue(res_cat_1 == res_cat_2)
 
     def test_not_equal(self):
         # Setup
-        res_cat_1 = models.ResourceCategory(name='foo')
-        res_cat_2 = models.ResourceCategory(name='bar')
+        res_cat_1 = models.OvercloudRole(name='foo')
+        res_cat_2 = models.OvercloudRole(name='bar')
 
         # Test
         self.assertTrue(res_cat_1 != res_cat_2)
 
 
-class OvercloudCategoryCountTests(unittest.TestCase):
+class OvercloudRoleCountTests(unittest.TestCase):
 
     def test_equal(self):
         # Setup
-        count_1 = models.OvercloudCategoryCount(overcloud_id='o1',
-                                                resource_category_id='r1')
-        count_2 = models.OvercloudCategoryCount(overcloud_id='o1',
-                                                resource_category_id='r1')
+        count_1 = models.OvercloudRoleCount(overcloud_id='o1',
+                                            overcloud_role_id='r1')
+        count_2 = models.OvercloudRoleCount(overcloud_id='o1',
+                                            overcloud_role_id='r1')
 
         # Test
         self.assertTrue(count_1 == count_2)
 
-    def test_same_overcloud_different_category(self):
+    def test_same_overcloud_different_role(self):
         # Setup
-        count_1 = models.OvercloudCategoryCount(overcloud_id='o1',
-                                                resource_category_id='r1')
-        count_2 = models.OvercloudCategoryCount(overcloud_id='o1',
-                                                resource_category_id='r2')
+        count_1 = models.OvercloudRoleCount(overcloud_id='o1',
+                                            overcloud_role_id='r1')
+        count_2 = models.OvercloudRoleCount(overcloud_id='o1',
+                                            overcloud_role_id='r2')
 
         # Test
         self.assertTrue(count_1 != count_2)
 
-    def test_differnt_overcloud_same_category(self):
+    def test_differnt_overcloud_same_role(self):
         # Setup
-        count_1 = models.OvercloudCategoryCount(overcloud_id='o1',
-                                                resource_category_id='r1')
-        count_2 = models.OvercloudCategoryCount(overcloud_id='o2',
-                                                resource_category_id='r1')
+        count_1 = models.OvercloudRoleCount(overcloud_id='o1',
+                                            overcloud_role_id='r1')
+        count_2 = models.OvercloudRoleCount(overcloud_id='o2',
+                                            overcloud_role_id='r1')
 
         # Test
         self.assertTrue(count_1 != count_2)

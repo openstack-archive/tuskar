@@ -65,37 +65,37 @@ class Connection(api.Connection):
         pass
 
     @staticmethod
-    def get_resource_categories():
-        """Returns all resource categories known to Tuskar.
+    def get_overcloud_roles():
+        """Returns all overcloud roles known to Tuskar.
 
-        :return: list of categories; empty list if none are found
-        :rtype:  list of tuskar.db.sqlalchemy.models.ResourceCategory
+        :return: list of roles; empty list if none are found
+        :rtype:  list of tuskar.db.sqlalchemy.models.OvercloudRole
         """
 
         session = db_session.get_session()
-        resource_categories = session.query(models.ResourceCategory).all()
+        roles = session.query(models.OvercloudRole).all()
         session.close()
-        return resource_categories
+        return roles
 
     @staticmethod
-    def get_resource_category_by_id(resource_category_id):
-        """Single resource category query.
+    def get_overcloud_role_by_id(role_id):
+        """Single overcloud role query.
 
-        :return: category if one exists with the given ID
-        :rtype:  tuskar.db.sqlalchemy.models.ResourceCategory
+        :return: role if one exists with the given ID
+        :rtype:  tuskar.db.sqlalchemy.models.OvercloudRole
 
-        :raises: tuskar.common.exception.ResourceCategoryNotFound: if no
-                 category with the given ID exists
+        :raises: tuskar.common.exception.OvercloudRoleNotFound: if no
+                 role with the given ID exists
         """
 
         session = db_session.get_session()
         try:
-            query = session.query(models.ResourceCategory).filter_by(
-                id=resource_category_id)
+            query = session.query(models.OvercloudRole).filter_by(
+                id=role_id)
             result = query.one()
 
         except NoResultFound:
-            raise exception.ResourceCategoryNotFound()
+            raise exception.OvercloudRoleNotFound()
 
         finally:
             session.close()
@@ -103,69 +103,69 @@ class Connection(api.Connection):
         return result
 
     @staticmethod
-    def create_resource_category(resource_category):
-        """Creates a new resource category in the database.
+    def create_overcloud_role(overcloud_role):
+        """Creates a new overcloud role in the database.
 
-        :param resource_category: category instance to save
-        :type  resource_category: tuskar.db.sqlalchemy.models.ResourceCategory
+        :param overcloud_role: role instance to save
+        :type  overcloud_role: tuskar.db.sqlalchemy.models.OvercloudRole
 
-        :return: the resource category instance that was saved with its
+        :return: the role instance that was saved with its
                  ID populated
-        :rtype:  tuskar.db.sqlalchemy.models.ResourceCategory
+        :rtype:  tuskar.db.sqlalchemy.models.OvercloudRole
 
-        :raises: tuskar.common.exception.ResourceCategoryExists: if a resource
-                 category with the given name exists
+        :raises: tuskar.common.exception.OvercloudRoleExists: if a role
+                 with the given name exists
         """
         session = db_session.get_session()
         session.begin()
 
         try:
-            session.add(resource_category)
+            session.add(overcloud_role)
             session.commit()
-            return resource_category
+            return overcloud_role
 
         except db_exception.DBDuplicateEntry:
-            raise exception.ResourceCategoryExists(name=resource_category.name)
+            raise exception.OvercloudRoleExists(name=overcloud_role.name)
 
         finally:
             session.close()
 
-    def update_resource_category(self, updated):
-        """Updates the given resource category.
+    def update_overcloud_role(self, updated):
+        """Updates the given overcloud role.
 
-        :param updated: category instance containing changed values
-        :type  updated: tuskar.db.sqlalchemy.models.ResourceCategory
+        :param updated: role instance containing changed values
+        :type  updated: tuskar.db.sqlalchemy.models.OvercloudRole
 
-        :return: the resource category instance that was saved
-        :rtype:  tuskar.db.sqlalchemy.models.ResourceCategory
+        :return: the role instance that was saved
+        :rtype:  tuskar.db.sqlalchemy.models.OvercloudRole
 
-        :raises: tuskar.common.exception.ResourceCategoryNotFound if there
-                 is no category with the given ID
+        :raises: tuskar.common.exception.OvercloudRoleNotFound if there
+                 is no role with the given ID
         """
-        existing = self.get_resource_category_by_id(updated.id)
+        existing = self.get_overcloud_role_by_id(updated.id)
 
         for a in ('name', 'description', 'image_name', 'flavor_id'):
             if getattr(updated, a) is not None:
                 setattr(existing, a, getattr(updated, a))
 
-        return self.create_resource_category(existing)
+        return self.create_overcloud_role(existing)
 
-    def delete_resource_category_by_id(self, category_id):
-        """Deletes a resource category from the database.
+    def delete_overcloud_role_by_id(self, role_id):
+        """Deletes an overcloud role from the database.
 
-        :param category_id: database ID of the category
-        :type  category_id: int
+        :param role_id: database ID of the role
+        :type  role_id: int
 
-        :raises: tuskar.common.exception.ResourceCategoryNotFound if there
-                 is no category with the given ID
+        :raises: tuskar.common.exception.OvercloudRoleNotFound if there
+                 is no role with the given ID
         """
-        resource_category = self.get_resource_category_by_id(category_id)
+        role = self.get_overcloud_role_by_id(role_id)
 
         session = db_session.get_session()
         session.begin()
 
         try:
-            session.delete(resource_category)
+            session.delete(role)
             session.commit()
 
         finally:
@@ -225,8 +225,8 @@ class Connection(api.Connection):
                  ID populated
         :rtype:  tuskar.db.sqlalchemy.models.Overcloud
 
-        :raises: tuskar.common.exception.OvercloudExists: if a resource
-                 category with the given name exists
+        :raises: tuskar.common.exception.OvercloudExists: if an overcloud
+                 role with the given name exists
         """
         session = db_session.get_session()
         session.begin()
@@ -336,30 +336,30 @@ class Connection(api.Connection):
     @staticmethod
     def _update_overcloud_counts(existing, session, updated):
         if updated.counts is not None:
-            existing_count_cat_ids = [c.resource_category_id
-                                      for c in existing.counts]
-            existing_counts_by_cat_id = \
-                dict((c.resource_category_id, c) for c in existing.counts)
+            existing_count_role_ids = [c.overcloud_role_id
+                                       for c in existing.counts]
+            existing_counts_by_role_id = \
+                dict((c.overcloud_role_id, c) for c in existing.counts)
 
-            delete_category_ids = []
+            delete_role_ids = []
             for c in updated.counts:
 
                 # Deleted
                 if c.num_nodes == 0:
-                    delete_category_ids.append(c.resource_category_id)
+                    delete_role_ids.append(c.overcloud_role_id)
                     continue
 
                 # Updated
-                if c.resource_category_id in existing_count_cat_ids:
+                if c.overcloud_role_id in existing_count_role_ids:
                     updating = \
-                        existing_counts_by_cat_id[c.resource_category_id]
+                        existing_counts_by_role_id[c.overcloud_role_id]
                     updating.num_nodes = c.num_nodes
                     session.add(updating)
                     continue
 
                 # New
-                if c.resource_category_id not in existing_count_cat_ids:
-                    existing_counts_by_cat_id[c.resource_category_id] = c
+                if c.overcloud_role_id not in existing_count_role_ids:
+                    existing_counts_by_role_id[c.overcloud_role_id] = c
                     c.overcloud_id = updated.id
                     existing.counts.append(c)
                     session.add(c)
@@ -367,7 +367,7 @@ class Connection(api.Connection):
 
             # Purge deleted counts
             for c in existing.counts:
-                if c.resource_category_id in delete_category_ids:
+                if c.overcloud_role_id in delete_role_ids:
                     existing.counts.remove(c)
                     session.delete(c)
 

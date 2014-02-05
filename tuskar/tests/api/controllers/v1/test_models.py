@@ -55,10 +55,10 @@ class OvercloudModelTests(unittest.TestCase):
         ]
 
         db_counts = [
-            db_models.OvercloudCategoryCount(
+            db_models.OvercloudRoleCount(
                 id=100,
                 overcloud_id=1,
-                resource_category_id=5,
+                overcloud_role_id=5,
                 num_nodes=5,
             )
         ]
@@ -92,10 +92,10 @@ class OvercloudModelTests(unittest.TestCase):
         self.assertEqual(len(api_model.counts), len(db_model.counts))
         for a_count, d_count in zip(api_model.counts, db_model.counts):
             self.assertTrue(isinstance(a_count,
-                                       api_models.OvercloudCategoryCount))
+                                       api_models.OvercloudRoleCount))
             self.assertEqual(a_count.id, d_count.id)
-            self.assertEqual(a_count.resource_category_id,
-                             d_count.resource_category_id)
+            self.assertEqual(a_count.overcloud_role_id,
+                             d_count.overcloud_role_id)
             self.assertEqual(a_count.overcloud_id, d_count.overcloud_id)
             self.assertEqual(a_count.num_nodes, d_count.num_nodes)
 
@@ -104,15 +104,15 @@ class OvercloudModelTests(unittest.TestCase):
         api_attrs = {'key-1': 'value-1'}
 
         api_counts = [
-            api_models.OvercloudCategoryCount(
+            api_models.OvercloudRoleCount(
                 id=10,
-                resource_category_id=2,
+                overcloud_role_id=2,
                 overcloud_id=1,
                 num_nodes=50,
             ),
-            api_models.OvercloudCategoryCount(
+            api_models.OvercloudRoleCount(
                 id=11,
-                resource_category_id=3,
+                overcloud_role_id=3,
                 overcloud_id=1,
                 num_nodes=15,
             ),
@@ -147,9 +147,9 @@ class OvercloudModelTests(unittest.TestCase):
         self.assertEqual(len(db_model.counts), len(api_model.counts))
         for d_count, a_count in zip(db_model.counts, api_model.counts):
             self.assertTrue(isinstance(d_count,
-                                       db_models.OvercloudCategoryCount))
+                                       db_models.OvercloudRoleCount))
             self.assertEqual(d_count.id, a_count.id)
-            self.assertEqual(d_count.resource_category_id,
-                             a_count.resource_category_id)
+            self.assertEqual(d_count.overcloud_role_id,
+                             a_count.overcloud_role_id)
             self.assertEqual(d_count.overcloud_id, a_count.overcloud_id)
             self.assertEqual(d_count.num_nodes, a_count.num_nodes)

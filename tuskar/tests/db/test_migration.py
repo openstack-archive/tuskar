@@ -31,12 +31,14 @@ class CurrentDatabaseSchemaTests(db_base.DbTestCase):
         db_migration.db_sync()
         # Should not raise any exceptions
 
-    def test_verify_resource_category(self):
-        table = self._get_db_table('resource_categories')
+    def test_verify_overcloud_roles(self):
+        table = self._get_db_table('overcloud_roles')
         expected = {
             'id': 'Integer',
             'name': 'String',
             'description': 'String',
+            'image_name': 'String',
+            'flavor_id': 'String',
             'created_at': 'DateTime',
             'updated_at': 'DateTime',
         }

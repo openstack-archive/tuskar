@@ -31,8 +31,8 @@ def upgrade(migrate_engine):
     meta = MetaData()
     meta.bind = migrate_engine
 
-    resource_categories = Table(
-        'resource_categories',
+    overcloud_roles = Table(
+        'overcloud_roles',
         meta,
         Column('id', Integer, primary_key=True, nullable=False),
         Column('name', String(length=models.LENGTH_NAME), unique=True),
@@ -45,13 +45,13 @@ def upgrade(migrate_engine):
         mysql_charset=CHARSET,
     )
 
-    overcloud_category_counts = Table(
-        'overcloud_category_counts',
+    overcloud_role_counts = Table(
+        'overcloud_role_counts',
         meta,
         Column('id', Integer, primary_key=True, nullable=False),
-        Column('resource_category_id',
+        Column('overcloud_role_id',
                Integer,
-               ForeignKey('resource_categories.id'),
+               ForeignKey('overcloud_roles.id'),
                nullable=False),
         Column('overcloud_id',
                Integer,
@@ -93,7 +93,7 @@ def upgrade(migrate_engine):
         mysql_charset=CHARSET,
     )
 
-    tables = [resource_categories, overcloud_category_counts,
+    tables = [overcloud_roles, overcloud_role_counts,
               overcloud, overcloud_attributes]
 
     for table in tables:
@@ -109,14 +109,14 @@ def upgrade(migrate_engine):
     ]
 
     # There eventually needs to be a uniqueness constraint for
-    # overcloud category counts across resource category,
+    # overcloud role counts across overcloud role,
     # overcloud, and profile. I'm skipping it for now until we decide
     # on a plan for the node profiles in Icehouse.
     # jdob, Jan 16, 2014
 
     uniques = [
-        UniqueConstraint('name', table=resource_categories,
-                         name='uniq_resource_categories0name'),
+        UniqueConstraint('name', table=overcloud_roles,
+                         name='uniq_overcloud_roles0name'),
         UniqueConstraint('name', table=overcloud,
                          name='uniq_overcloud0name'),
         UniqueConstraint('overcloud_id', 'key', table=overcloud_attributes,

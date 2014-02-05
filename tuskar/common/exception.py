@@ -130,12 +130,12 @@ class NotFound(TuskarException):
     code = 404
 
 
-class ResourceCategoryNotFound(NotFound):
-    message = _('Resource category could not be found.')
+class OvercloudRoleNotFound(NotFound):
+    message = _('Overcloud role could not be found.')
 
 
-class OvercloudCategoryCountNotFound(NotFound):
-    message = _('Overcloud category count could not be found.')
+class OvercloudRoleCountNotFound(NotFound):
+    message = _('Overcloud role count could not be found.')
 
 
 class OvercloudNotFound(NotFound):
@@ -147,13 +147,13 @@ class DuplicateEntry(TuskarException):
     code = 409
 
 
-class ResourceCategoryExists(DuplicateEntry):
-    message = _("Resource category with name %(name)s already exists.")
+class OvercloudRoleExists(DuplicateEntry):
+    message = _("Overcloud role with name %(name)s already exists.")
 
 
-class OvercloudCategoryCountExists(DuplicateEntry):
+class OvercloudRoleCountExists(DuplicateEntry):
     message = _("Count for overcloud %(cloud)s and "
-                "resource category %(cat)s already exists.")
+                "role %(role)s already exists.")
 
 
 class OvercloudExists(DuplicateEntry):

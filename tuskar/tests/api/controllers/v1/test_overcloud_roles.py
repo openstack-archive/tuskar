@@ -21,26 +21,26 @@ from tuskar.db.sqlalchemy import models as db_models
 from tuskar.tests import base
 
 
-URL_CATEGORIES = '/v1/resource_categories'
+URL_ROLES = '/v1/overcloud_roles'
 
 
-class ResourceCategoryTests(base.TestCase):
+class OvercloudRolesTests(base.TestCase):
 
     def setUp(self):
-        super(ResourceCategoryTests, self).setUp()
+        super(OvercloudRolesTests, self).setUp()
 
         config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                    '..', '..', '..', '..', 'api', 'config.py')
         self.app = load_test_app(config_file)
 
-    @mock.patch('tuskar.db.sqlalchemy.api.Connection.get_resource_categories')
+    @mock.patch('tuskar.db.sqlalchemy.api.Connection.get_overcloud_roles')
     def test_get_all(self, mock_db_get):
         # Setup
-        fake_results = [db_models.ResourceCategory(name='foo')]
+        fake_results = [db_models.OvercloudRole(name='foo')]
         mock_db_get.return_value = fake_results
 
         # Test
-        response = self.app.get(URL_CATEGORIES)
+        response = self.app.get(URL_ROLES)
         result = response.json
 
         # Verify
@@ -52,14 +52,14 @@ class ResourceCategoryTests(base.TestCase):
         mock_db_get.assert_called_once()
 
     @mock.patch('tuskar.db.sqlalchemy.api.'
-                'Connection.get_resource_category_by_id')
+                'Connection.get_overcloud_role_by_id')
     def test_get_one(self, mock_db_get):
         # Setup
-        fake_result = db_models.ResourceCategory(name='foo')
+        fake_result = db_models.OvercloudRole(name='foo')
         mock_db_get.return_value = fake_result
 
         # Test
-        url = URL_CATEGORIES + '/' + '12345'
+        url = URL_ROLES + '/' + '12345'
         response = self.app.get(url)
         result = response.json
 
@@ -69,16 +69,16 @@ class ResourceCategoryTests(base.TestCase):
 
         mock_db_get.assert_called_once_with(12345)
 
-    @mock.patch('tuskar.db.sqlalchemy.api.Connection.create_resource_category')
+    @mock.patch('tuskar.db.sqlalchemy.api.Connection.create_overcloud_role')
     def test_post(self, mock_db_create):
         # Setup
         create_me = {'name': 'new'}
 
-        fake_created = db_models.ResourceCategory(name='created')
+        fake_created = db_models.OvercloudRole(name='created')
         mock_db_create.return_value = fake_created
 
         # Test
-        response = self.app.post_json(URL_CATEGORIES, params=create_me)
+        response = self.app.post_json(URL_ROLES, params=create_me)
         result = response.json
 
         # Verify
@@ -88,19 +88,19 @@ class ResourceCategoryTests(base.TestCase):
         self.assertEqual(1, mock_db_create.call_count)
         db_create_model = mock_db_create.call_args[0][0]
         self.assertTrue(isinstance(db_create_model,
-                                   db_models.ResourceCategory))
+                                   db_models.OvercloudRole))
         self.assertEqual(db_create_model.name, create_me['name'])
 
-    @mock.patch('tuskar.db.sqlalchemy.api.Connection.update_resource_category')
+    @mock.patch('tuskar.db.sqlalchemy.api.Connection.update_overcloud_role')
     def test_put(self, mock_db_update):
         # Setup
         changes = {'name': 'updated'}
 
-        fake_updated = db_models.ResourceCategory(name='after-update')
+        fake_updated = db_models.OvercloudRole(name='after-update')
         mock_db_update.return_value = fake_updated
 
         # Test
-        url = URL_CATEGORIES + '/' + '12345'
+        url = URL_ROLES + '/' + '12345'
         response = self.app.put_json(url, params=changes)
         result = response.json
 
@@ -111,15 +111,15 @@ class ResourceCategoryTests(base.TestCase):
         self.assertEqual(1, mock_db_update.call_count)
         db_update_model = mock_db_update.call_args[0][0]
         self.assertTrue(isinstance(db_update_model,
-                                   db_models.ResourceCategory))
+                                   db_models.OvercloudRole))
         self.assertEqual(db_update_model.id, 12345)
         self.assertEqual(db_update_model.name, changes['name'])
 
     @mock.patch('tuskar.db.sqlalchemy.api.'
-                'Connection.delete_resource_category_by_id')
+                'Connection.delete_overcloud_role_by_id')
     def test_delete(self, mock_db_delete):
         # Test
-        url = URL_CATEGORIES + '/' + '12345'
+        url = URL_ROLES + '/' + '12345'
         response = self.app.delete(url)
 
         # Verify

@@ -18,30 +18,30 @@ from tuskar.db.sqlalchemy import models
 from tuskar.tests.db import base as db_base
 
 
-class ResourceCategoryTests(db_base.DbTestCase):
+class OvercloudRoleTests(db_base.DbTestCase):
 
     def setUp(self):
-        super(ResourceCategoryTests, self).setUp()
+        super(OvercloudRoleTests, self).setUp()
 
         self.connection = dbapi.Connection()
 
-        self.save_me_1 = models.ResourceCategory(
+        self.save_me_1 = models.OvercloudRole(
             name='name-1',
             description='desc-1',
             image_name='image-1',
             flavor_id='tuvwxyz',
         )
 
-        self.save_me_2 = models.ResourceCategory(
+        self.save_me_2 = models.OvercloudRole(
             name='name-2',
             description='desc-2',
             image_name='image-2',
             flavor_id='abc',
         )
 
-    def test_save_resource_category(self):
+    def test_save_overcloud_role(self):
         # Test
-        saved = self.connection.create_resource_category(self.save_me_1)
+        saved = self.connection.create_overcloud_role(self.save_me_1)
 
         # Verify
         self.assertTrue(saved is not None)
@@ -52,102 +52,102 @@ class ResourceCategoryTests(db_base.DbTestCase):
         self.assertEqual(saved.flavor_id, self.save_me_1.flavor_id)
 
         # Simple check to make sure it can be pulled out of the DB
-        found = self.connection.get_resource_categories()
+        found = self.connection.get_overcloud_roles()
         self.assertEqual(1, len(found))
         self.assertEqual(found[0].id, saved.id)
 
-    def test_save_resource_category_duplicate_name(self):
+    def test_save_overcloud_role_duplicate_name(self):
         # Setup
-        self.connection.create_resource_category(self.save_me_1)
-        duplicate = models.ResourceCategory(
+        self.connection.create_overcloud_role(self.save_me_1)
+        duplicate = models.OvercloudRole(
             name=self.save_me_1.name,
             description='irrelevant',
             image_name='irrelevant'
         )
 
         # Test
-        self.assertRaises(exception.ResourceCategoryExists,
-                          self.connection.create_resource_category,
+        self.assertRaises(exception.OvercloudRoleExists,
+                          self.connection.create_overcloud_role,
                           duplicate)
 
     def test_update(self):
         # Setup
-        saved = self.connection.create_resource_category(self.save_me_1)
+        saved = self.connection.create_overcloud_role(self.save_me_1)
 
         # Test
-        delta = models.ResourceCategory(
+        delta = models.OvercloudRole(
             id=saved.id,
             image_name='abcdef',
             flavor_id='new-flavor'
         )
-        self.connection.update_resource_category(delta)
+        self.connection.update_overcloud_role(delta)
 
         # Verify
-        found = self.connection.get_resource_category_by_id(saved.id)
+        found = self.connection.get_overcloud_role_by_id(saved.id)
         self.assertEqual(found.image_name, delta.image_name)
         self.assertEqual(found.flavor_id, delta.flavor_id)
 
-    def test_delete_category(self):
+    def test_delete(self):
         # Setup
-        saved = self.connection.create_resource_category(self.save_me_1)
+        saved = self.connection.create_overcloud_role(self.save_me_1)
 
         # Test
-        self.connection.delete_resource_category_by_id(saved.id)
+        self.connection.delete_overcloud_role_by_id(saved.id)
 
         # Verify
-        found = self.connection.get_resource_categories()
+        found = self.connection.get_overcloud_roles()
         self.assertEqual(0, len(found))
 
-    def test_delete_nonexistent_category(self):
-        self.assertRaises(exception.ResourceCategoryNotFound,
-                          self.connection.delete_resource_category_by_id,
+    def test_delete_nonexistent_role(self):
+        self.assertRaises(exception.OvercloudRoleNotFound,
+                          self.connection.delete_overcloud_role_by_id,
                           'fake-id')
 
-    def test_get_resource_categories(self):
+    def test_get_overcloud_roles(self):
         # Setup
-        self.connection.create_resource_category(self.save_me_1)
-        self.connection.create_resource_category(self.save_me_2)
+        self.connection.create_overcloud_role(self.save_me_1)
+        self.connection.create_overcloud_role(self.save_me_2)
 
         # Test
-        all_categories = self.connection.get_resource_categories()
+        all_roles = self.connection.get_overcloud_roles()
 
         # Verify
-        self.assertEqual(2, len(all_categories))
+        self.assertEqual(2, len(all_roles))
 
-        found_1 = all_categories[0]
+        found_1 = all_roles[0]
         self.assertEqual(found_1.name, self.save_me_1.name)
         self.assertEqual(found_1.description, self.save_me_1.description)
         self.assertEqual(found_1.image_name, self.save_me_1.image_name)
 
-        found_2 = all_categories[1]
+        found_2 = all_roles[1]
         self.assertEqual(found_2.name, self.save_me_2.name)
         self.assertEqual(found_2.description, self.save_me_2.description)
         self.assertEqual(found_2.image_name, self.save_me_2.image_name)
 
-    def test_get_resource_categories_no_results(self):
+    def test_get_overcloud_roles_no_results(self):
         # Test
-        all_categories = self.connection.get_resource_categories()
+        all_roles = self.connection.get_overcloud_roles()
 
         # Verify
-        self.assertTrue(isinstance(all_categories, list))
-        self.assertEqual(0, len(all_categories))
+        self.assertTrue(isinstance(all_roles, list))
+        self.assertEqual(0, len(all_roles))
 
-    def test_get_resource_category_by_id(self):
+    def test_get_overcloud_role_by_id(self):
         # Setup
-        self.connection.create_resource_category(self.save_me_1)
-        saved_2 = self.connection.create_resource_category(self.save_me_2)
+        self.connection.create_overcloud_role(self.save_me_1)
+        saved_2 = self.connection.create_overcloud_role(self.save_me_2)
 
         # Test
-        found = self.connection.get_resource_category_by_id(saved_2.id)
+        found = self.connection.get_overcloud_role_by_id(saved_2.id)
 
         # Verify
         self.assertTrue(found is not None)
         self.assertEqual(found.id, saved_2.id)
         self.assertEqual(found.name, saved_2.name)
 
-    def test_get_resource_category_by_id_no_result(self):
-        self.assertRaises(exception.ResourceCategoryNotFound,
-                          self.connection.get_resource_category_by_id,
+    def test_get_overcloud_role_by_id_no_result(self):
+        self.assertRaises(exception.OvercloudRoleNotFound,
+                          self.connection.get_overcloud_role_by_id,
                           'fake-id')
 
 
@@ -168,8 +168,8 @@ class OvercloudTests(db_base.DbTestCase):
             value='value-2',
         )
 
-        self.count_1 = models.OvercloudCategoryCount(
-            resource_category_id='cat-1',
+        self.count_1 = models.OvercloudRoleCount(
+            overcloud_role_id='cat-1',
             num_nodes=4,
         )
 
@@ -207,8 +207,8 @@ class OvercloudTests(db_base.DbTestCase):
             self.assertEqual(saved.attributes[index].value, attribute.value)
 
         for index, count in enumerate(self.overcloud_1.counts):
-            self.assertEqual(saved.counts[index].resource_category_id,
-                             count.resource_category_id)
+            self.assertEqual(saved.counts[index].overcloud_role_id,
+                             count.overcloud_role_id)
             self.assertEqual(saved.counts[index].num_nodes,
                              count.num_nodes)
 
@@ -294,12 +294,12 @@ class OvercloudTests(db_base.DbTestCase):
         # Setup
 
         # Add extra counts for enough data
-        self.overcloud_1.counts.append(models.OvercloudCategoryCount(
-            resource_category_id='cat-2',
+        self.overcloud_1.counts.append(models.OvercloudRoleCount(
+            overcloud_role_id='cat-2',
             num_nodes=2,
         ))
-        self.overcloud_1.counts.append(models.OvercloudCategoryCount(
-            resource_category_id='cat-3',
+        self.overcloud_1.counts.append(models.OvercloudRoleCount(
+            overcloud_role_id='cat-3',
             num_nodes=3,
         ))
         saved = self.connection.create_overcloud(self.overcloud_1)
@@ -315,8 +315,8 @@ class OvercloudTests(db_base.DbTestCase):
         saved.counts[1].num_nodes = 0
 
         # - Add a fourth
-        saved.counts.append(models.OvercloudCategoryCount(
-            resource_category_id='cat-4',
+        saved.counts.append(models.OvercloudRoleCount(
+            overcloud_role_id='cat-4',
             num_nodes=4,
         ))
 
@@ -326,11 +326,11 @@ class OvercloudTests(db_base.DbTestCase):
         found = self.connection.get_overcloud_by_id(saved.id)
 
         self.assertEqual(3, len(found.counts))
-        self.assertEqual(found.counts[0].resource_category_id, 'cat-1')
+        self.assertEqual(found.counts[0].overcloud_role_id, 'cat-1')
         self.assertEqual(found.counts[0].num_nodes, 4)
-        self.assertEqual(found.counts[1].resource_category_id, 'cat-2')
+        self.assertEqual(found.counts[1].overcloud_role_id, 'cat-2')
         self.assertEqual(found.counts[1].num_nodes, 100)
-        self.assertEqual(found.counts[2].resource_category_id, 'cat-4')
+        self.assertEqual(found.counts[2].overcloud_role_id, 'cat-4')
         self.assertEqual(found.counts[2].num_nodes, 4)
 
     def test_update_nonexistent(self):

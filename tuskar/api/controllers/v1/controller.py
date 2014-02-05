@@ -15,14 +15,14 @@
 import pecan
 
 from tuskar.api.controllers.v1.overcloud import OvercloudsController
-from tuskar.api.controllers.v1.resource_category \
-    import ResourceCategoriesController
+from tuskar.api.controllers.v1.overcloud_roles \
+    import OvercloudRolesController
 
 
 class Controller(object):
     """Version 1 API controller root."""
 
-    resource_categories = ResourceCategoriesController()
+    overcloud_roles = OvercloudRolesController()
     overclouds = OvercloudsController()
 
     @pecan.expose('json')
