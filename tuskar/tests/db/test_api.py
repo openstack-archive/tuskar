@@ -28,13 +28,15 @@ class ResourceCategoryTests(db_base.DbTestCase):
         self.save_me_1 = models.ResourceCategory(
             name='name-1',
             description='desc-1',
-            image_id='abcdef'
+            image_name='image-1',
+            flavor_id='tuvwxyz',
         )
 
         self.save_me_2 = models.ResourceCategory(
             name='name-2',
             description='desc-2',
-            image_id='xyz'
+            image_name='image-2',
+            flavor_id='abc',
         )
 
     def test_save_resource_category(self):
@@ -46,7 +48,8 @@ class ResourceCategoryTests(db_base.DbTestCase):
         self.assertTrue(saved.id is not None)
         self.assertEqual(saved.name, self.save_me_1.name)
         self.assertEqual(saved.description, self.save_me_1.description)
-        self.assertEqual(saved.image_id, self.save_me_1.image_id)
+        self.assertEqual(saved.image_name, self.save_me_1.image_name)
+        self.assertEqual(saved.flavor_id, self.save_me_1.flavor_id)
 
         # Simple check to make sure it can be pulled out of the DB
         found = self.connection.get_resource_categories()
@@ -59,7 +62,7 @@ class ResourceCategoryTests(db_base.DbTestCase):
         duplicate = models.ResourceCategory(
             name=self.save_me_1.name,
             description='irrelevant',
-            image_id='irrelevant'
+            image_name='irrelevant'
         )
 
         # Test
@@ -74,13 +77,15 @@ class ResourceCategoryTests(db_base.DbTestCase):
         # Test
         delta = models.ResourceCategory(
             id=saved.id,
-            image_id='abcdef'
+            image_name='abcdef',
+            flavor_id='new-flavor'
         )
         self.connection.update_resource_category(delta)
 
         # Verify
         found = self.connection.get_resource_category_by_id(saved.id)
-        self.assertEqual(found.image_id, saved.image_id)
+        self.assertEqual(found.image_name, delta.image_name)
+        self.assertEqual(found.flavor_id, delta.flavor_id)
 
     def test_delete_category(self):
         # Setup
@@ -112,12 +117,12 @@ class ResourceCategoryTests(db_base.DbTestCase):
         found_1 = all_categories[0]
         self.assertEqual(found_1.name, self.save_me_1.name)
         self.assertEqual(found_1.description, self.save_me_1.description)
-        self.assertEqual(found_1.image_id, self.save_me_1.image_id)
+        self.assertEqual(found_1.image_name, self.save_me_1.image_name)
 
         found_2 = all_categories[1]
         self.assertEqual(found_2.name, self.save_me_2.name)
         self.assertEqual(found_2.description, self.save_me_2.description)
-        self.assertEqual(found_2.image_id, self.save_me_2.image_id)
+        self.assertEqual(found_2.image_name, self.save_me_2.image_name)
 
     def test_get_resource_categories_no_results(self):
         # Test

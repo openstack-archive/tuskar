@@ -76,7 +76,8 @@ class ResourceCategory(Base):
     id = int
     name = wtypes.text
     description = wtypes.text
-    image_id = wtypes.text
+    image_name = wtypes.text
+    flavor_id = wtypes.text
 
 
 class OvercloudCategoryCount(Base):
