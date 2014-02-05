@@ -28,7 +28,7 @@ auth_opts = [
     cfg.StrOpt('auth_strategy',
         default='noauth',
         help='Method to use for auth: noauth or keystone.'),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(auth_opts)
@@ -57,7 +57,7 @@ def setup_app(pecan_config=None, extra_hooks=None):
 # TODO(deva): add middleware.ParsableErrorMiddleware from Ceilometer
     app = pecan.make_app(
         pecan_config.app.root,
-        custom_renderers=dict(wsmejson=renderers.JSonRenderer),
+        custom_renderers=dict(wsmejson=renderers.JSONRenderer),
         static_root=pecan_config.app.static_root,
         template_path=pecan_config.app.template_path,
         debug=CONF.debug,
