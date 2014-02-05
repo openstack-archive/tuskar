@@ -144,7 +144,7 @@ class Connection(api.Connection):
         """
         existing = self.get_resource_category_by_id(updated.id)
 
-        for a in ('name', 'description', 'image_id'):
+        for a in ('name', 'description', 'image_name'):
             if getattr(updated, a) is not None:
                 setattr(existing, a, getattr(updated, a))
 

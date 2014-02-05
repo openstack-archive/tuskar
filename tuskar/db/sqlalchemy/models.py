@@ -78,49 +78,24 @@ class ResourceCategory(Base):
     # User-readable text describing what the category does
     description = Column(String(length=LENGTH_DESCRIPTION))
 
-    # UUID of the image, in Glance, that is used when creating an instance of
-    # this category. Example: f03266e8-5c99-471c-9eac-375772b45a43
-    # Note: In the future we will likely support multiple images for a
+    # Name of the image, in Glance, that is used when creating an instance of
+    # this category.
+    # Note: This should be the image UUID, but due to Icehouse time constraints
+    #       the user will create the image on their own with a pre-defined
+    #       name and the image referenced through that.
+    # Note: In the future, we will likely support multiple images for a
     #       category, so this will likely change to its own table and a FK
     #       relationship. jdob, Jan 10, 2014
-    image_id = Column(String(length=36))
+    image_name = Column(String(length=64))
+
+    # UUID of the flavor of node this role should be deployed on.
+    # Example: f03266e8-5c99-471c-9eac-375772b45a43
+    # Note: In the future, we will likely support multiple flavors for
+    #       a role, so this will likely change. jdob, Feb 5, 2014
+    flavor_id = Column(String(length=36))
 
     def __eq__(self, other):
         return self.name == other.name
-
-
-class NodeProfile(Base):
-    """Node profile domain model.
-
-    Describes the characteristics of a node on which a particular resource
-    category can be deployed. Each resource category will have one or more
-    profiles associated with it.
-
-    *** For Icehouse, this model is currently not used. The current state
-        reflects the initial discussions from the wireframes but more
-        design is needed.
-    """
-
-    __tablename__ = TABLE_NODE_PROFILE
-
-    # Unique identifier for the profile
-    id = Column(Integer, primary_key=True)
-
-    # Foreign key linking a profile back into its category
-    category_id = Column(Integer,
-                         ForeignKey('%s.id' % TABLE_RESOURCE_CATEGORY))
-
-    # Minimum CPU cores the node should have
-    min_cpu = Column(Integer)
-
-    # Minimum memory, in GB, the node should have
-    min_memory = Column(Integer)
-
-    # Minimum disk size, in TB, the node should have
-    min_local_disk = Column(Integer)
-
-    # Comma-separated list of tags to be assigned to the node
-    tags = Column(String(length=512))
 
 
 class OvercloudCategoryCount(Base):
