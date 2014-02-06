@@ -43,18 +43,23 @@ Developer Information
 Install and Contribute
 ----------------------
 
--  `Install Guide <docs/INSTALL.rst>`_
--  `Contributing Guide <docs/CONTRIBUTING.rst>`_
--  `Debugging with iPython <docs/debugging-with-ipython.rst>`_
--  `Demo Data Script <docs/demo-data-script.rst>`_
+.. toctree::
+  :maxdepth: 1
+
+  INSTALL
+  CONTRIBUTING
+  debugging-with-ipython
+  demo-data-script
+  recommended-reading
 
 API
 ---
 
--  `API Information <docs/api/api.md>`_
--  `cURL Commands <docs/api/curl.rst>`_
--  `Resource Class Demo Script <docs/resource-class-demo-script.rst>`_
-   (uses cURL)
+.. toctree::
+  :maxdepth: 1
+
+  api/curl
+  resource-class-demo-script
 
 HEAT Integration
 ----------------
