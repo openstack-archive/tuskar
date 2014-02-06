@@ -28,6 +28,14 @@ Please see
 `INSTALL.rst <docs/INSTALL.rst>`_
 for an installation guide.
 
+Building the Docs
+-----------------
+
+From the root directory::
+
+ python setup.py build_sphinx
+
+
 Contributing
 ------------
 
