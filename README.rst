@@ -25,14 +25,22 @@ Installation Information
 ------------------------
 
 Please see
-`INSTALL.rst <docs/INSTALL.rst>`_
+`INSTALL.rst <doc/source/INSTALL.rst>`_
 for an installation guide.
+
+Building the Docs
+-----------------
+
+From the root directory::
+
+ python setup.py build_sphinx
+
 
 Contributing
 ------------
 
 Interested in contributing?  Take a look at
-`CONTRIBUTING.rst <docs/CONTRIBUTING.rst>`_
+`CONTRIBUTING.rst <doc/source/CONTRIBUTING.rst>`_
 for details on how to do so.
 
 Contact Us
