@@ -8,7 +8,11 @@ mock>=1.0
 mox>=0.5.3
 MySQL-python
 python-subunit
-sphinx>=1.1.2,<1.2
 testrepository>=0.0.17
 testtools>=0.9.32
 unittest2
+
+# Doc requirements
+sphinx>=1.1.2,<1.2
+sphinxcontrib-pecanwsme>=0.5
+
