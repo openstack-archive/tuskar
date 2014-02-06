@@ -214,8 +214,7 @@ class Connection(api.Connection):
 
         return result
 
-    @staticmethod
-    def create_overcloud(overcloud):
+    def create_overcloud(self, overcloud):
         """Creates a new overcloud instance to the database.
 
         :param overcloud: overcloud instance to save
@@ -234,6 +233,9 @@ class Connection(api.Connection):
         try:
             session.add(overcloud)
             session.commit()
+
+            # Reload from the database to load all of the joined table data
+            overcloud = self.get_overcloud_by_id(overcloud.id)
             return overcloud
 
         except db_exception.DBDuplicateEntry as e:
@@ -265,7 +267,7 @@ class Connection(api.Connection):
 
         :param updated: overcloud instance containing changed values
         :type  updated: tuskar.db.sqlalchemy.models.Overcloud
-
+b
         :return: the overcloud instance that was saved
         :rtype:  tuskar.db.sqlalchemy.models.Overcloud
 
