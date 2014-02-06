@@ -52,7 +52,7 @@ def main():
     # make sure we have tripleo-heat-templates:
     heat_template_path = CONF.tht_local_dir
     try:
-        templates = os.listdir(heat_template_path)
+        os.listdir(heat_template_path)
     except OSError:
         LOG.info("Can't find local tripleo-heat-template files at %s"
                   % (heat_template_path))
