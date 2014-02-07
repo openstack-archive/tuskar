@@ -58,7 +58,7 @@ class OvercloudRoleCountTests(unittest.TestCase):
         # Test
         self.assertTrue(count_1 != count_2)
 
-    def test_differnt_overcloud_same_role(self):
+    def test_different_overcloud_same_role(self):
         # Setup
         count_1 = models.OvercloudRoleCount(overcloud_id='o1',
                                             overcloud_role_id='r1')
