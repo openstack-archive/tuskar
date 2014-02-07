@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Approved+1: Tzu-Mainn Chen <tzumainn@redhat.com>
+Code-Review+2: Tzu-Mainn Chen <tzumainn@redhat.com>
+Code-Review+2: Jiri Stransky <jistr@redhat.com>
+Code-Review+1: Dougal Matthews <dougal@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 07 Feb 2014 18:52:37 +0000
+Reviewed-on: https://review.openstack.org/71569
+Project: openstack/tuskar
+Branch: refs/heads/master
