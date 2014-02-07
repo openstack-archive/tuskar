@@ -39,7 +39,7 @@ class OvercloudRoleTests(db_base.DbTestCase):
             flavor_id='abc',
         )
 
-    def test_save_overcloud_role(self):
+    def test_create_overcloud_role(self):
         # Test
         saved = self.connection.create_overcloud_role(self.save_me_1)
 
@@ -56,7 +56,7 @@ class OvercloudRoleTests(db_base.DbTestCase):
         self.assertEqual(1, len(found))
         self.assertEqual(found[0].id, saved.id)
 
-    def test_save_overcloud_role_duplicate_name(self):
+    def test_create_overcloud_role_duplicate_name(self):
         # Setup
         self.connection.create_overcloud_role(self.save_me_1)
         duplicate = models.OvercloudRole(
@@ -212,6 +212,19 @@ class OvercloudTests(db_base.DbTestCase):
             self.assertEqual(saved.counts[index].num_nodes,
                              count.num_nodes)
 
+    def test_create_minimal_overcloud(self):
+        # Setup
+        overcloud = models.Overcloud(name='minimal')
+
+        # Test
+        saved = self.connection.create_overcloud(overcloud)
+
+        # Verify
+        self.assertEqual(saved.name, overcloud.name)
+        self.assertEqual(saved.description, None)
+        self.assertEqual(saved.attributes, [])
+        self.assertEqual(saved.counts, [])
+
     def test_create_overcloud_duplicate_name(self):
         # Setup
         self.connection.create_overcloud(self.overcloud_1)
@@ -320,7 +333,7 @@ class OvercloudTests(db_base.DbTestCase):
             num_nodes=4,
         ))
 
-        self.connection.update_overcloud(self.overcloud_1)
+        self.connection.update_overcloud(saved)
 
         # Verify
         found = self.connection.get_overcloud_by_id(saved.id)
