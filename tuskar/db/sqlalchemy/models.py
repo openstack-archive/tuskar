@@ -122,7 +122,7 @@ class OvercloudRoleCount(Base):
     # Overcloud in which the role is being deployed
     overcloud_id = \
         Column(Integer,
-               ForeignKey('%s.id' % TABLE_OVERCLOUD),
+               ForeignKey('%s.id' % TABLE_OVERCLOUD, ondelete='CASCADE'),
                nullable=False)
 
     # Number of nodes of this configuration that should be deployed
@@ -148,7 +148,8 @@ class OvercloudAttribute(Base):
 
     # Reference back to the overcloud being configured
     overcloud_id = Column(Integer,
-                          ForeignKey('%s.id' % TABLE_OVERCLOUD),
+                          ForeignKey('%s.id' % TABLE_OVERCLOUD,
+                                     ondelete='CASCADE'),
                           nullable=False)
 
     # Identifier and value of the configuration attribute
@@ -182,10 +183,12 @@ class Overcloud(Base):
     description = Column(String(length=LENGTH_DESCRIPTION))
 
     # List of configuration attributes for the overcloud
-    attributes = relationship(OvercloudAttribute.__name__)
+    attributes = relationship(OvercloudAttribute.__name__,
+                              cascade='all,delete')
 
     # List of counts of overcloud roles to deploy
-    counts = relationship(OvercloudRoleCount.__name__)
+    counts = relationship(OvercloudRoleCount.__name__,
+                          cascade='all,delete')
 
     def __eq__(self, other):
         return self.name == other.name
