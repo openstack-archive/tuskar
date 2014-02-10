@@ -363,6 +363,17 @@ class OvercloudTests(db_base.DbTestCase):
         found = self.connection.get_overclouds()
         self.assertEqual(0, len(found))
 
+        # Ensure the joined tables are clear too
+        session = dbapi.get_session()
+        all_counts = session.query(models.OvercloudAttribute).all()
+        session.close()
+        self.assertEqual(0, len(all_counts))
+
+        session = dbapi.get_session()
+        all_counts = session.query(models.OvercloudRoleCount).all()
+        session.close()
+        self.assertEqual(0, len(all_counts))
+
     def test_delete_nonexistent_overcloud(self):
         self.assertRaises(exception.OvercloudNotFound,
                           self.connection.delete_overcloud_by_id,
