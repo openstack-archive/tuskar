@@ -20,6 +20,7 @@
 from oslo.config import cfg
 
 # TODO(deva): import MultipleResultsFound and handle it appropriately
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import subqueryload
 
@@ -54,6 +55,10 @@ def model_query(model, *args, **kwargs):
     return query
 
 
+def get_session():
+    return db_session.get_session(sqlite_fk=True)
+
+
 class Connection(api.Connection):
     """SqlAlchemy connection."""
 
@@ -64,21 +69,19 @@ class Connection(api.Connection):
         # here.
         pass
 
-    @staticmethod
-    def get_overcloud_roles():
+    def get_overcloud_roles(self):
         """Returns all overcloud roles known to Tuskar.
 
         :return: list of roles; empty list if none are found
         :rtype:  list of tuskar.db.sqlalchemy.models.OvercloudRole
         """
 
-        session = db_session.get_session()
+        session = get_session()
         roles = session.query(models.OvercloudRole).all()
         session.close()
         return roles
 
-    @staticmethod
-    def get_overcloud_role_by_id(role_id):
+    def get_overcloud_role_by_id(self, role_id):
         """Single overcloud role query.
 
         :return: role if one exists with the given ID
@@ -88,7 +91,7 @@ class Connection(api.Connection):
                  role with the given ID exists
         """
 
-        session = db_session.get_session()
+        session = get_session()
         try:
             query = session.query(models.OvercloudRole).filter_by(
                 id=role_id)
@@ -102,8 +105,7 @@ class Connection(api.Connection):
 
         return result
 
-    @staticmethod
-    def create_overcloud_role(overcloud_role):
+    def create_overcloud_role(self, overcloud_role):
         """Creates a new overcloud role in the database.
 
         :param overcloud_role: role instance to save
@@ -116,7 +118,7 @@ class Connection(api.Connection):
         :raises: tuskar.common.exception.OvercloudRoleExists: if a role
                  with the given name exists
         """
-        session = db_session.get_session()
+        session = get_session()
         session.begin()
 
         try:
@@ -161,25 +163,30 @@ class Connection(api.Connection):
         """
         role = self.get_overcloud_role_by_id(role_id)
 
-        session = db_session.get_session()
+        session = get_session()
         session.begin()
 
         try:
             session.delete(role)
             session.commit()
 
+        except db_exception.DBError as e:
+            if isinstance(e.inner_exception, IntegrityError):
+                raise exception.OvercloudRoleInUse(name=role.name)
+            else:
+                raise
+
         finally:
             session.close()
 
-    @staticmethod
-    def get_overclouds():
+    def get_overclouds(self):
         """Returns all overcloud instances from the database.
 
         :return: list of overcloud instances; empty list if none are found
         :rtype:  list of tuskar.db.sqlalchemy.models.Overcloud
         """
 
-        session = db_session.get_session()
+        session = get_session()
         overclouds = session.query(models.Overcloud).\
             options(subqueryload(models.Overcloud.attributes)).\
             options(subqueryload(models.Overcloud.counts)).\
@@ -187,8 +194,7 @@ class Connection(api.Connection):
         session.close()
         return overclouds
 
-    @staticmethod
-    def get_overcloud_by_id(overcloud_id):
+    def get_overcloud_by_id(self, overcloud_id):
         """Returns a specific overcloud instance.
 
         :return: overcloud if one exists with the given ID
@@ -198,7 +204,7 @@ class Connection(api.Connection):
                  overcloud with the given ID exists
         """
 
-        session = db_session.get_session()
+        session = get_session()
         try:
             query = session.query(models.Overcloud).\
                 options(subqueryload(models.Overcloud.attributes)).\
@@ -227,7 +233,7 @@ class Connection(api.Connection):
         :raises: tuskar.common.exception.OvercloudExists: if an overcloud
                  role with the given name exists
         """
-        session = db_session.get_session()
+        session = get_session()
         session.begin()
 
         try:
@@ -277,7 +283,7 @@ class Connection(api.Connection):
 
         existing = self.get_overcloud_by_id(updated.id)
 
-        session = db_session.get_session()
+        session = get_session()
         session.begin()
 
         try:
@@ -384,7 +390,7 @@ class Connection(api.Connection):
         """
         overcloud = self.get_overcloud_by_id(overcloud_id)
 
-        session = db_session.get_session()
+        session = get_session()
         session.begin()
 
         try:

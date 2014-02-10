@@ -151,6 +151,10 @@ class OvercloudRoleExists(DuplicateEntry):
     message = _("Overcloud role with name %(name)s already exists.")
 
 
+class OvercloudRoleInUse(TuskarException):
+    message = _('Role %(name)s is in use by an overcloud.')
+
+
 class OvercloudRoleCountExists(DuplicateEntry):
     message = _("Count for overcloud %(cloud)s and "
                 "role %(role)s already exists.")
