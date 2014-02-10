@@ -138,6 +138,14 @@ class Overcloud(Base):
 
         # Counts
         if self.counts != wtypes.Unset:
-            db_model.counts = [c.to_db_model() for c in self.counts]
+
+            translated = []
+            for count in self.counts:
+                translated.append(db_models.OvercloudRoleCount(
+                    num_nodes=count.num_nodes,
+                    overcloud_role_id=count.overcloud_role_id,
+                    overcloud_id=self.id
+                ))
+            db_model.counts = translated
 
         return db_model

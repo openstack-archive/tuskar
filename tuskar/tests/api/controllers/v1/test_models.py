@@ -107,13 +107,11 @@ class OvercloudModelTests(unittest.TestCase):
             api_models.OvercloudRoleCount(
                 id=10,
                 overcloud_role_id=2,
-                overcloud_id=1,
                 num_nodes=50,
             ),
             api_models.OvercloudRoleCount(
                 id=11,
                 overcloud_role_id=3,
-                overcloud_id=1,
                 num_nodes=15,
             ),
         ]
@@ -148,8 +146,7 @@ class OvercloudModelTests(unittest.TestCase):
         for d_count, a_count in zip(db_model.counts, api_model.counts):
             self.assertTrue(isinstance(d_count,
                                        db_models.OvercloudRoleCount))
-            self.assertEqual(d_count.id, a_count.id)
             self.assertEqual(d_count.overcloud_role_id,
                              a_count.overcloud_role_id)
-            self.assertEqual(d_count.overcloud_id, a_count.overcloud_id)
+            self.assertEqual(d_count.overcloud_id, api_model.id)
             self.assertEqual(d_count.num_nodes, a_count.num_nodes)
