@@ -91,14 +91,21 @@ output) with::
 
     $ sqlite3 tuskar/openstack/common/db/tuskar.sqlite .schema
 
-Then, launch the app and try curl to see if it works::
+Then, launch the app::
 
     $ tuskar-api --config-file etc/tuskar/tuskar.conf
-    $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:8585/v1/overclouds/ | python -mjson.tool
 
 Assuming this is your first time running with a new database, you should
-simply get '[]' back from curl above. Currently the api supports only
-json return type, so we request that in the example call.
+populate the DB with some initial data::
+
+    $ python tools/initial_data.py
+
+This will create four Overcloud Roles.  You can then verify that everything
+worked by running:
+
+    $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:8585/v1/overcloud_roles/ | python -mjson.tool
+
+This command should return JSON for four Overcloud Roles.
 
 Running Tuskar API
 ------------------
