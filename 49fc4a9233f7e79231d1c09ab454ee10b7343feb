@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: Jiri Stransky <jistr@redhat.com>
+Code-Review+2: Jiri Stransky <jistr@redhat.com>
+Code-Review+2: Radomir Dopieralski <openstack@sheep.art.pl>
+Submitted-by: Jenkins
+Submitted-at: Tue, 11 Feb 2014 11:14:20 +0000
+Reviewed-on: https://review.openstack.org/72295
+Project: openstack/tuskar
+Branch: refs/heads/master
