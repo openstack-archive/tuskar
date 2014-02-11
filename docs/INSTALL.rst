@@ -85,19 +85,18 @@ output) with::
 Then, launch the app and try curl to see if it works::
 
     $ tuskar-api --config-file etc/tuskar/tuskar.conf
-    $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:8585/v1/resource_classes/ | python -mjson.tool
 
 Assuming this is your first time running with a new database, you should
-simply get '[]' back from curl above. Currently the api supports only
-json return type, so we request that in the example call.
+populate the DB with some initial data::
 
-Next, you can run a script to populate the DB with some sample data::
+    $ python tools/initial_data.py
 
-    $ python tools/sample_data.py
+This will create four Overcloud Roles.  You can then verify that everything
+worked by running:
 
-This will create 2 Resource Classes and three Racks. You need to have the Tuskar
-API server running. You can see more examples of using the API at our `cURL
-Commands page <docs/api/curl.rst>`_.
+    $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:8585/v1/overcloud-roles/ | python -mjson.tool
+
+This command should return json for four Overcloud Roles.
 
 
 Running Tuskar API
