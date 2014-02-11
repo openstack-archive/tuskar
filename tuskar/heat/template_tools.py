@@ -53,7 +53,11 @@ def merge_templates(rcs):
     scale_params = generate_scaling_params(rcs)
     overcloud_src_path = os.path.abspath(os.path.join(os.path.dirname(
                                   template_path), "overcloud-source.yaml"))
+    ssl_src_path = os.path.abspath(os.path.join(os.path.dirname(
+                                  template_path), "ssl-source.yaml"))
+    swift_src_path = os.path.abspath(os.path.join(os.path.dirname(
+                                  template_path), "swift-source.yaml"))
     #tmp_file_path = os.path.abspath(temp_file_name)
-    template = tht_merge.merge([overcloud_src_path], None, None,
+    template = tht_merge.merge([overcloud_src_path,  ssl_src_path, swift_src_path], None, None,
                                   included_template_dir=template_path, scaling=scale_params)
     return template
