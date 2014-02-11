@@ -31,6 +31,19 @@ class OvercloudsController(rest.RestController):
 
     TEMP_RCS = {'resource_categories': {'controller': 1, 'compute': 1}}
 
+    TEMP_PARAMS_LIST = {
+        'AdminToken'             : 'c5166331806d761c92b6f491f0e3f909e5639a37',
+        'AdminPassword'          : '067e24d0d2d82930b41bb933a730d6e30be5adb4',
+        'CinderPassword'         : '117aeb8cc919a998b860a8ee57d347f4eae5822d',
+        'GlancePassword'         : '2f90c38d4ce7a04e71b56b2f2fd7b7bfe10f8e58',
+        'HeatPassword'           : '24c8326d35078d30ded8032ebafeeda92c983958',
+        'NeutronPassword'        : '2a73e61eb2592c3104f6d6355f5622cb0982c3ab',
+        'NovaPassword'           : 'bf064f4a66eea26e9cef66186430fadd8bbfe0bb',
+        'NeutronPublicInterface' : 'eth0',
+        'SwiftPassword'          : 'f20b5065f142b739ae14b326a35851a987368386',
+        'SwiftHashSuffix'        : '89bae3856e96ca7c2f0d61ee66574193c7862edb',
+        'NovaComputeLibvirtType' : 'qemu'}
+
     _custom_actions = {'template_get': ['GET'], 'template_deploy':['POST']}
 
     @pecan.expose()
@@ -54,6 +67,7 @@ class OvercloudsController(rest.RestController):
         #keeping this for now until heat client methods are reworked:
         params = {}
         if heat.validate_template(overcloud):
+            params = self.TEMP_PARAMS_LIST
             if heat.exists_stack():
                 res = heat.update_stack(overcloud, params)
             else:
