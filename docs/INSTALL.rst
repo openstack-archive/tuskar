@@ -22,8 +22,17 @@ Setting up a local environment for development can be done with tox::
 
     $ sudo pip install virtualenv setuptools-git flake8 tox
 
+You may need to downgrade tox, due to an issue described here: https://bugs.launchpad.net/openstack-ci/+bug/1274135::
+
+    $ sudo pip uninstall --yes tox virtualenv
+    $ sudo rm -rf /tmp/pip-build-* /usr/local/lib/python2.7/dist-packages/tox \
+          /usr/local/lib/python2.7/dist-packages/virtualenv \
+          /usr/local/bin/tox /usr/local/bin/virtualenv
+    $ sudo pip install -U tox==1.6.1 virtualenv==1.10.1'
+
+Now create your virtualenv:
+
     $ cd <your_src_dir>/tuskar
-    # create virtualenv
     $ tox -e py27
 
 Note: if ``pip install`` fails due to an outdated setuptools, you can try to update it first::
@@ -85,20 +94,11 @@ output) with::
 Then, launch the app and try curl to see if it works::
 
     $ tuskar-api --config-file etc/tuskar/tuskar.conf
-    $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:8585/v1/resource_classes/ | python -mjson.tool
+    $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:8585/v1/overclouds/ | python -mjson.tool
 
 Assuming this is your first time running with a new database, you should
 simply get '[]' back from curl above. Currently the api supports only
 json return type, so we request that in the example call.
-
-Next, you can run a script to populate the DB with some sample data::
-
-    $ python tools/sample_data.py
-
-This will create 2 Resource Classes and three Racks. You need to have the Tuskar
-API server running. You can see more examples of using the API at our `cURL
-Commands page <docs/api/curl.rst>`_.
-
 
 Running Tuskar API
 ------------------

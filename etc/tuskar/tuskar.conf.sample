@@ -22,7 +22,7 @@
 #tuskar_api_port=8585
 
 # Local path holding tripleo-heat-templates (string value)
-#tht_local_dir=/etc/tuskar/tripleo-heat-templates/
+tht_local_dir=/etc/tuskar/tripleo-heat-templates/
 
 
 #
@@ -431,7 +431,7 @@
 
 # The SQLAlchemy connection string used to connect to the
 # database (string value)
-#connection=sqlite:////tuskar/openstack/common/db/$sqlite_db
+connection=sqlite:///tuskar.sqlite
 
 # timeout before idle sql connections are reaped (integer
 # value)
