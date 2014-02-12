@@ -23,8 +23,9 @@ import httplib
 import json
 import logging
 import socket
-import urlparse
 import uuid
+
+import six.moves.urllib.parse as urlparse
 
 LOG = logging.getLogger(__name__)
 
