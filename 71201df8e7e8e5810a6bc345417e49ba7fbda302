@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Approved+1: Ladislav Smola <lsmola@redhat.com>
+Code-Review+1: Jay Dobies <jason.dobies@redhat.com>
+Code-Review+2: Jordan OMara <jomara@redhat.com>
+Code-Review+1: Dougal Matthews <dougal@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 12 Feb 2014 15:00:25 +0000
+Reviewed-on: https://review.openstack.org/72734
+Project: openstack/tuskar
+Branch: refs/heads/master
