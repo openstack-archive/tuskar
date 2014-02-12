@@ -23,7 +23,7 @@ import httplib
 import json
 import logging
 import socket
-import urlparse
+import six.moves.urllib.parse as urlparse
 import uuid
 
 LOG = logging.getLogger(__name__)
