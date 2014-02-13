@@ -129,8 +129,8 @@ class OvercloudRoleCount(Base):
     num_nodes = Column(Integer, nullable=False)
 
     def __eq__(self, other):
-        return self.overcloud_role_id == other.overcloud_role_id \
-               and self.overcloud_id == other.overcloud_id
+        return (self.overcloud_role_id == other.overcloud_role_id
+               and self.overcloud_id == other.overcloud_id)
 
 
 class OvercloudAttribute(Base):
@@ -156,8 +156,8 @@ class OvercloudAttribute(Base):
     value = Column(Text())
 
     def __eq__(self, other):
-        return self.overcloud_id == other.overcloud_id \
-               and self.key == other.key
+        return (self.overcloud_id == other.overcloud_id
+               and self.key == other.key)
 
 
 class Overcloud(Base):
