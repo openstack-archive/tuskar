@@ -23,7 +23,7 @@
               owner: root
               group: root
       OpenStack::Heat::Stack: {}
-      Openstack::ImageBuilder::Elements:
+      OpenStack::ImageBuilder::Elements:
       - boot-stack
       - heat-cfntools
       - heat-localip
