@@ -19,7 +19,7 @@ import __builtin__
 import os
 import os.path
 
-import mox
+from mox3 import mox
 
 from tuskar.common import utils
 from tuskar.tests import base

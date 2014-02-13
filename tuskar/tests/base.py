@@ -31,7 +31,7 @@ import shutil
 import sys
 
 import fixtures
-import mox
+from mox3 import mox
 import stubout
 import testtools
 import unittest2
