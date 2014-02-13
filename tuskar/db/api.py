@@ -18,6 +18,7 @@ Base classes for storage engines
 """
 
 import abc
+import six
 
 from tuskar.openstack.common.db import api as db_api
 
@@ -30,10 +31,9 @@ def get_instance():
     return IMPL
 
 
+@six.add_metaclass(abc.ABCMeta)
 class Connection(object):
     """Base class for storage system connections."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def __init__(self):
