@@ -140,5 +140,5 @@ class OvercloudRolesController(rest.RestController):
         LOG.debug('Retrieving all overcloud roles')
         db_roles = pecan.request.dbapi.get_overcloud_roles()
         transfer_roles = [models.OvercloudRole.from_db_model(c)
-                               for c in db_roles]
+                          for c in db_roles]
         return transfer_roles
