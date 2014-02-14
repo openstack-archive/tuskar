@@ -55,14 +55,16 @@ class JSONRenderer(object):
         """
 
         if 'faultcode' in namespace:
-            return self._render_fault(namespace['faultstring'],
+            return self._render_fault(
+                namespace['faultstring'],
                 namespace['debuginfo'])
 
         result = namespace['result']
         if isinstance(namespace['result'], api.Response):
             pecan.response.status_code = result.status_code
-            return self._render_fault(result.obj.faultstring,
-                result.obj.debuginfo, code=result.status_code)
+            return self._render_fault(
+                result.obj.faultstring, result.obj.debuginfo,
+                code=result.status_code)
 
         return wsme.rest.json.encode_result(
             result,

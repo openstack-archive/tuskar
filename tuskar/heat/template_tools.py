@@ -44,8 +44,10 @@ def generate_scaling_params(overcloud_roles):
         overcloud_role = overcloud_role.lower()
 
         if overcloud_role == OVERCLOUD_COMPUTE_ROLE:
-            scaling = dict(scaling.items() +
-                merge.parse_scaling(["NovaCompute=%s" % (count)]).items())
+            scaling = dict(
+                scaling.items() +
+                merge.parse_scaling(["NovaCompute=%s" % (count)]).items()
+            )
 
     return scaling
 

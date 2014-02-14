@@ -98,7 +98,7 @@ class OvercloudTests(base.TestCase):
         })
     )
     def test_create_stack_heat_exception(self, mock_heat_client,
-            mock_heat_merge_templates):
+                                         mock_heat_merge_templates):
         # Setup
         mock_heat_merge_templates.return_value = None
 
@@ -116,7 +116,7 @@ class OvercloudTests(base.TestCase):
         })
     )
     def test_create_stack_existing_exception(self, mock_heat_client,
-            mock_heat_merge_templates):
+                                             mock_heat_merge_templates):
         # Setup
         mock_heat_merge_templates.return_value = None
 
@@ -133,7 +133,7 @@ class OvercloudTests(base.TestCase):
         })
     )
     def test_create_stack_not_valid_exception(self, mock_heat_client,
-            mock_heat_merge_templates):
+                                              mock_heat_merge_templates):
         # Setup
         mock_heat_merge_templates.return_value = None
 
@@ -192,7 +192,7 @@ class OvercloudTests(base.TestCase):
         })
     )
     def test_update_stack_heat_exception(self, mock_heat_client,
-            mock_heat_merge_templates):
+                                         mock_heat_merge_templates):
         # Setup
         mock_heat_merge_templates.return_value = None
 
@@ -209,7 +209,7 @@ class OvercloudTests(base.TestCase):
         })
     )
     def test_update_stack_not_existing_exception(self, mock_heat_client,
-            mock_heat_merge_templates):
+                                                 mock_heat_merge_templates):
         # Setup
         mock_heat_merge_templates.return_value = None
 
@@ -226,7 +226,7 @@ class OvercloudTests(base.TestCase):
         })
     )
     def test_update_stack_not_valid_exception(self, mock_heat_client,
-            mock_heat_merge_templates):
+                                              mock_heat_merge_templates):
         # Setup
         mock_heat_merge_templates.return_value = None
 
