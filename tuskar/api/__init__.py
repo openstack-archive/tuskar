@@ -21,15 +21,18 @@ from tuskar.openstack.common import jsonutils
 flask.helpers.json = jsonutils
 
 API_SERVICE_OPTS = [
-    cfg.StrOpt('tuskar_api_bind_ip',
+    cfg.StrOpt(
+        'tuskar_api_bind_ip',
         default='0.0.0.0',
         help='IP for the Tuskar API server to bind to',
     ),
-    cfg.IntOpt('tuskar_api_port',
+    cfg.IntOpt(
+        'tuskar_api_port',
         default=8585,
         help='The port for the Tuskar API server',
     ),
-    cfg.StrOpt('tht_local_dir',
+    cfg.StrOpt(
+        'tht_local_dir',
         default='/etc/tuskar/tripleo-heat-templates/',
         help='Local path holding tripleo-heat-templates',
     )
