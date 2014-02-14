@@ -40,5 +40,4 @@ class PolicyFixture(fixtures.Fixture):
 
     def set_rules(self, rules):
         common_policy.set_rules(common_policy.Rules(
-                dict((k, common_policy.parse_rule(v))
-                     for k, v in rules.items())))
+            dict((k, common_policy.parse_rule(v)) for k, v in rules.items())))

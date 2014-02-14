@@ -40,8 +40,8 @@ def main():
     host = CONF.tuskar_api_bind_ip
     port = CONF.tuskar_api_port
     wsgi = simple_server.make_server(
-            host, port,
-            app.VersionSelectorApplication())
+        host, port,
+        app.VersionSelectorApplication())
 
     LOG = log.getLogger(__name__)
     LOG.info("Serving on http://%s:%s" % (host, port))

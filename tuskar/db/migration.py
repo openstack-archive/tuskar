@@ -26,9 +26,9 @@ CONF.import_opt('backend',
                 group='database')
 
 IMPL = utils.LazyPluggable(
-        pivot='backend',
-        config_group='database',
-        sqlalchemy='tuskar.db.sqlalchemy.migration')
+    pivot='backend',
+    config_group='database',
+    sqlalchemy='tuskar.db.sqlalchemy.migration')
 
 INIT_VERSION = 0
 
