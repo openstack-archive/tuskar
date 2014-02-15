@@ -32,7 +32,7 @@ class BaseTests(unittest.TestCase):
 
         # Test
         self.assertEqual(1, stub._lookup('a1'))
-        self.assertEqual(None, stub._lookup('a2'))
+        self.assertIsNone(stub._lookup('a2'))
 
 
 class OvercloudModelTests(unittest.TestCase):
