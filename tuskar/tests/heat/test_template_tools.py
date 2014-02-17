@@ -23,7 +23,7 @@ class TemplateToolsTests(unittest.TestCase):
     @mock.patch('tripleo_heat_merge.merge.parse_scaling')
     def test_generate_scaling_params(self, mock_parse_scaling):
         # Setup
-        overcloud_roles = {'controller': 1, 'compute': 12}
+        overcloud_roles = {'controller': 1, 'overcloud-compute': 12}
 
         # Test
         template_tools.generate_scaling_params(overcloud_roles)
@@ -34,7 +34,7 @@ class TemplateToolsTests(unittest.TestCase):
     @mock.patch('tripleo_heat_merge.merge.merge')
     def test_merge_templates(self, mock_merge):
         # Setup
-        overcloud_roles = {'controller': 1, 'compute': 12}
+        overcloud_roles = {'controller': 1, 'overcloud-compute': 12}
 
         # Test
         template_tools.merge_templates(overcloud_roles)
