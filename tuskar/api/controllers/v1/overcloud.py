@@ -56,7 +56,7 @@ def process_stack(params, create=False):
     elif not stack_exists and not create:
         raise exception.StackNotFound()
 
-    res = heat_client.create_stack(overcloud, params)
+    res = heat_client.create_stack(overcloud, {})
 
     if not res:
         if create:
