@@ -95,11 +95,12 @@ class HeatClient(object):
     def validate_template(self, template_body):
         """Validate given Heat template."""
         try:
-            self.connection.stacks.validate(template=template_body)
-            return True
+            allowed_data = self.connection.stacks.validate(
+                template=template_body)
+            return True, allowed_data
         except Exception:
             LOG.exception("Validation of the Heat template failed.")
-            return False
+            return False, None
 
     def get_stack(self, name=None):
         """Get overcloud Heat template."""
