@@ -23,7 +23,7 @@ from tripleo_heat_merge import merge
 
 
 # The name of the compute Overcloud role - defined for special case handling
-OVERCLOUD_COMPUTE_ROLE = 'compute'
+OVERCLOUD_COMPUTE_ROLE = 'overcloud-compute'
 
 
 def generate_scaling_params(overcloud_roles):

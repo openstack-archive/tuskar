@@ -25,12 +25,25 @@ import tuskar.heat.template_tools as template_tools
 LOG = logging.getLogger(__name__)
 
 
-# FIXME(lsmola) mocked params for POC, remove later by real ones
+# FIXME(lsmola) this is for debugging purposes only, remove before I3
 POC_PARAMS = {'controller': 1, 'compute': 1}
-POC_PARAMS_UPDATE = {'controller': 1, 'compute': 2}
 
+def parse_counts(counts):
+    parsed_counts = {}
+    for count_obj in counts:
+        print pecan.request.dbapi.get_overcloud_role_by_id()
+        role = pecan.request.dbapi.get_overcloud_role_by_id(
+            count_obj.overcloud_role_id)
+        count = count_obj.num_nodes
+        parsed_counts[role.image_name] = count
 
-def process_stack(params, create=False):
+    return parsed_counts
+
+def filter_template_attributes(attributes):
+    # TODO(lsmola) make proper filtering
+    return {}
+
+def process_stack(attributes, counts, create=False):
     """Helper function for processing the stack. Given a params dict containing
     the Overcloud Roles and initialization parameters create or update the
     stack.
@@ -43,7 +56,7 @@ def process_stack(params, create=False):
     :type create: bool
     """
 
-    overcloud = template_tools.merge_templates(params)
+    overcloud = template_tools.merge_templates(parse_counts(counts))
     heat_client = HeatClient()
 
     stack_exists = heat_client.exists_stack()
@@ -56,7 +69,8 @@ def process_stack(params, create=False):
     elif not stack_exists and not create:
         raise exception.StackNotFound()
 
-    res = heat_client.create_stack(overcloud, {})
+    res = heat_client.create_stack(overcloud,
+                                   filter_template_attributes(attributes))
 
     if not res:
         if create:
@@ -93,7 +107,6 @@ class OvercloudsController(rest.RestController):
         :raises: tuskar.common.exception.OvercloudExists: if an overcloud
                  with the given name exists
         """
-
         LOG.debug('Creating overcloud: %s' % transfer_overcloud)
 
         # Persist to the database
@@ -110,7 +123,8 @@ class OvercloudsController(rest.RestController):
         # step 2- put the right stack_id to the overcloud
         # step 3- initialize the stack
         # step 4- set the correct overcloud status
-        process_stack(POC_PARAMS, create=True)
+        process_stack(saved_overcloud.attributes, saved_overcloud.counts,
+                      create=True)
 
         return saved_overcloud
 
@@ -145,15 +159,16 @@ class OvercloudsController(rest.RestController):
         # Will raise a not found if there is no overcloud with the ID
         result = pecan.request.dbapi.update_overcloud(db_delta)
 
-        updated = models.Overcloud.from_db_model(result)
+        updated_overcloud = models.Overcloud.from_db_model(result)
 
         # FIXME(lsmola) This is just POC of updating a stack
         # this probably should also have workflow
         # step one- build template and stack-update
         # step 2- set the correct overcloud status
-        process_stack(POC_PARAMS_UPDATE)
+        process_stack(updated_overcloud.attributes, updated_overcloud.counts,
+                      create=True)
 
-        return updated
+        return updated_overcloud
 
     @wsme_pecan.wsexpose(None, int, status_code=204)
     def delete(self, overcloud_id):
@@ -168,6 +183,10 @@ class OvercloudsController(rest.RestController):
 
         # FIXME(lsmola) this should always try to delete both overcloud
         # and stack. So it requires some exception catch over below.
+        # FIXME(lsmola) there is also a workflow needed
+        # step one- delete stack and set status deleting in progress to
+        # overcloud
+        # step 2 - once stack is deleted, delete the overcloud
         LOG.debug('Deleting overcloud with ID: %s' % overcloud_id)
         pecan.request.dbapi.delete_overcloud_by_id(overcloud_id)
 
