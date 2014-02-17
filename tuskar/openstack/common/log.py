@@ -30,7 +30,6 @@ It also allows setting of formatting information through conf.
 """
 
 import ConfigParser
-import cStringIO
 import inspect
 import itertools
 import logging
@@ -41,6 +40,7 @@ import sys
 import traceback
 
 from oslo.config import cfg
+from six.moves import cStringIO
 
 from tuskar.openstack.common.gettextutils import _
 from tuskar.openstack.common import importutils
