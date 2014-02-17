@@ -28,9 +28,9 @@ You may need to downgrade tox, due to an issue described here: https://bugs.laun
     $ sudo rm -rf /tmp/pip-build-* /usr/local/lib/python2.7/dist-packages/tox \
           /usr/local/lib/python2.7/dist-packages/virtualenv \
           /usr/local/bin/tox /usr/local/bin/virtualenv
-    $ sudo pip install -U tox==1.6.1 virtualenv==1.10.1'
+    $ sudo pip install -U tox==1.6.1 virtualenv==1.10.1
 
-Now create your virtualenv:
+Now create your virtualenv::
 
     $ cd <your_src_dir>/tuskar
     $ tox -e py27
@@ -67,12 +67,12 @@ printed out when `stack.sh` finishes its job.
 
 You will need a local checkout of the tripleo-heat-templates. Uncomment the
 configuration entry that is defined for this purpose: tht_local_dir should point
-to your local copy of the tripleo-heat-templates.
+to your local copy of the tripleo-heat-templates::
 
-    tht_local_dir = "/etc/tuskar/tripleo-heat-templates/"
+    tht_local_dir = /etc/tuskar/tripleo-heat-templates/
 
 At tuskar startup, if the directory specified by tht_local_dir in your
-tuskar.conf doesn't exist startup will fail. You can clone the templates:
+tuskar.conf doesn't exist startup will fail. You can clone the templates::
 
     (sudo) git clone https://git.openstack.org/openstack/tripleo-heat-templates /etc/tuskar/tripleo-heat-templates/
 
@@ -101,7 +101,7 @@ populate the DB with some initial data::
     $ python tools/initial_data.py
 
 This will create four Overcloud Roles.  You can then verify that everything
-worked by running:
+worked by running::
 
     $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:8585/v1/overcloud_roles/ | python -mjson.tool
 
