@@ -158,6 +158,14 @@ class OvercloudTests(db_base.DbTestCase):
 
         self.connection = dbapi.Connection()
 
+        self.role_1 = models.OvercloudRole(
+            name='name-1',
+            description='desc-1',
+            image_name='image-1',
+            flavor_id='tuvwxyz',
+        )
+        self.saved_role = self.connection.create_overcloud_role(self.role_1)
+
         self.attributes_1 = models.OvercloudAttribute(
             key='key-1',
             value='value-1',
@@ -169,7 +177,7 @@ class OvercloudTests(db_base.DbTestCase):
         )
 
         self.count_1 = models.OvercloudRoleCount(
-            overcloud_role_id='cat-1',
+            overcloud_role_id=self.saved_role.id,
             num_nodes=4,
         )
 
@@ -188,6 +196,7 @@ class OvercloudTests(db_base.DbTestCase):
 
     def test_create_overcloud(self):
         # Test
+        self.connection.create_overcloud_role(self.role_1)
         saved = self.connection.create_overcloud(self.overcloud_1)
 
         # Verify
@@ -209,6 +218,16 @@ class OvercloudTests(db_base.DbTestCase):
         for index, count in enumerate(self.overcloud_1.counts):
             self.assertEqual(saved.counts[index].overcloud_role_id,
                              count.overcloud_role_id)
+            self.assertTrue(saved.counts[index] is not None)
+            self.assertTrue(isinstance(saved.counts[index].overcloud_role,
+                                                    models.OvercloudRole))
+            self.assertEqual(saved.counts[index].overcloud_role.name,
+                             self.role_1.name)
+            self.assertEqual(saved.counts[index].overcloud_role.description,
+                             self.role_1.description)
+            self.assertEqual(saved.counts[index].overcloud_role.image_name,
+                             self.role_1.image_name)
+
             self.assertEqual(saved.counts[index].num_nodes,
                              count.num_nodes)
 
@@ -304,15 +323,27 @@ class OvercloudTests(db_base.DbTestCase):
         self.assertEqual(found.attributes[2].value, 'value-4')
 
     def test_update_overcloud_counts(self):
+
         # Setup
+
+        # Roles
+        role_2 = self.connection.create_overcloud_role(models.OvercloudRole(
+            name='name-2',
+        ))
+        role_3 = self.connection.create_overcloud_role(models.OvercloudRole(
+            name='name-3',
+        ))
+        role_4 = self.connection.create_overcloud_role(models.OvercloudRole(
+            name='name-4',
+        ))
 
         # Add extra counts for enough data
         self.overcloud_1.counts.append(models.OvercloudRoleCount(
-            overcloud_role_id='cat-2',
+            overcloud_role_id=role_2.id,
             num_nodes=2,
         ))
         self.overcloud_1.counts.append(models.OvercloudRoleCount(
-            overcloud_role_id='cat-3',
+            overcloud_role_id=role_3.id,
             num_nodes=3,
         ))
         saved = self.connection.create_overcloud(self.overcloud_1)
@@ -329,7 +360,7 @@ class OvercloudTests(db_base.DbTestCase):
 
         # - Add a fourth
         saved.counts.append(models.OvercloudRoleCount(
-            overcloud_role_id='cat-4',
+            overcloud_role_id=role_4.id,
             num_nodes=4,
         ))
 
@@ -339,11 +370,11 @@ class OvercloudTests(db_base.DbTestCase):
         found = self.connection.get_overcloud_by_id(saved.id)
 
         self.assertEqual(3, len(found.counts))
-        self.assertEqual(found.counts[0].overcloud_role_id, 'cat-1')
+        self.assertEqual(found.counts[0].overcloud_role_id, self.saved_role.id)
         self.assertEqual(found.counts[0].num_nodes, 4)
-        self.assertEqual(found.counts[1].overcloud_role_id, 'cat-2')
+        self.assertEqual(found.counts[1].overcloud_role_id, role_2.id)
         self.assertEqual(found.counts[1].num_nodes, 100)
-        self.assertEqual(found.counts[2].overcloud_role_id, 'cat-4')
+        self.assertEqual(found.counts[2].overcloud_role_id, role_4.id)
         self.assertEqual(found.counts[2].num_nodes, 4)
 
     def test_update_nonexistent(self):
