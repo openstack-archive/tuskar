@@ -30,7 +30,6 @@ It also allows setting of formatting information through conf.
 """
 
 import ConfigParser
-import cStringIO
 import inspect
 import itertools
 import logging
@@ -41,6 +40,7 @@ import sys
 import traceback
 
 from oslo.config import cfg
+from six.moves import cStringIO
 
 from tuskar.openstack.common.gettextutils import _
 from tuskar.openstack.common import importutils
@@ -519,7 +519,7 @@ class ContextFormatter(logging.Formatter):
         if not record:
             return logging.Formatter.formatException(self, exc_info)
 
-        stringbuffer = cStringIO.StringIO()
+        stringbuffer = cStringIO()
         traceback.print_exception(exc_info[0], exc_info[1], exc_info[2],
                                   None, stringbuffer)
         lines = stringbuffer.getvalue().split('\n')
