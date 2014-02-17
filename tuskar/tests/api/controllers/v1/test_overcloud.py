@@ -71,10 +71,25 @@ class OvercloudTests(base.TestCase):
 
         mock_db_get.assert_called_once_with(12345)
 
+    @mock.patch('tuskar.db.sqlalchemy.api.Connection.get_overcloud_role_by_id')
+    def test_parse_counts(self, mock_db_get):
+        # Setup
+        fake_created = db_models.OvercloudRole(image_name='overcloud-compute')
+        mock_db_get.return_value = fake_created
+
+        mock_counts = [db_models.OvercloudRoleCount(overcloud_role_id=2,
+                                                    num_nodes=15)]
+
+        # Test
+        result = overcloud.parse_counts(mock_counts)
+
+        # Verify
+        self.assertEqual(result, {'overcloud-compute': 5})
+
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
         'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
-            'validate_template.return_value': True,
+            'validate_template.return_value': (True, {}),
             'exists_stack.return_value': False,
             'create_stack.return_value': True,
         })
@@ -84,7 +99,7 @@ class OvercloudTests(base.TestCase):
         mock_heat_merge_templates.return_value = None
 
         # Test
-        response = overcloud.process_stack({}, create=True)
+        response = overcloud.process_stack({}, {}, create=True)
 
         # Verify
         self.assertEqual(response, None)
@@ -92,7 +107,7 @@ class OvercloudTests(base.TestCase):
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
         'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
-            'validate_template.return_value': True,
+            'validate_template.return_value': (True, {}),
             'exists_stack.return_value': False,
             'create_stack.return_value': False,
         })
@@ -105,12 +120,12 @@ class OvercloudTests(base.TestCase):
         # Test and Verify
         self.assertRaises(
             exception.HeatTemplateCreateFailed,
-            overcloud.process_stack, {}, True)
+            overcloud.process_stack, {}, {}, True)
 
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
         'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
-            'validate_template.return_value': True,
+            'validate_template.return_value': (True, {}),
             'exists_stack.return_value': True,
             'create_stack.return_value': True,
         })
@@ -122,12 +137,13 @@ class OvercloudTests(base.TestCase):
 
         # Test and Verify
         self.assertRaises(
-            exception.StackAlreadyCreated, overcloud.process_stack, {}, True)
+            exception.StackAlreadyCreated, overcloud.process_stack, {}, {},
+            True)
 
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
         'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
-            'validate_template.return_value': False,
+            'validate_template.return_value': (False, {}),
             'exists_stack.return_value': False,
             'create_stack.return_value': True,
         })
@@ -139,7 +155,8 @@ class OvercloudTests(base.TestCase):
 
         # Test and Verify
         self.assertRaises(
-            exception.InvalidHeatTemplate, overcloud.process_stack, {}, True)
+            exception.InvalidHeatTemplate, overcloud.process_stack, {}, {},
+            True)
 
     @mock.patch('tuskar.api.controllers.v1.overcloud.process_stack')
     @mock.patch('tuskar.db.sqlalchemy.api.Connection.create_overcloud')
@@ -168,7 +185,7 @@ class OvercloudTests(base.TestCase):
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
         'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
-            'validate_template.return_value': True,
+            'validate_template.return_value': (True, {}),
             'exists_stack.return_value': True,
             'create_stack.return_value': True,
         })
@@ -178,7 +195,7 @@ class OvercloudTests(base.TestCase):
         mock_heat_merge_templates.return_value = None
 
         # Test
-        response = overcloud.process_stack({})
+        response = overcloud.process_stack({}, {})
 
         # Verify
         self.assertEqual(response, None)
@@ -186,9 +203,9 @@ class OvercloudTests(base.TestCase):
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
         'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
-            'validate_template.return_value': True,
+            'validate_template.return_value': (True, {}),
             'exists_stack.return_value': True,
-            'create_stack.return_value': False,
+            'update_stack.return_value': False,
         })
     )
     def test_update_stack_heat_exception(self, mock_heat_client,
@@ -198,12 +215,13 @@ class OvercloudTests(base.TestCase):
 
         # Test and Verify
         self.assertRaises(
-            exception.HeatTemplateUpdateFailed, overcloud.process_stack, {})
+            exception.HeatTemplateUpdateFailed, overcloud.process_stack, {},
+            {})
 
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
         'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
-            'validate_template.return_value': True,
+            'validate_template.return_value': (True, {}),
             'exists_stack.return_value': False,
             'create_stack.return_value': True,
         })
@@ -215,12 +233,12 @@ class OvercloudTests(base.TestCase):
 
         # Test and Verify
         self.assertRaises(
-            exception.StackNotFound, overcloud.process_stack, {})
+            exception.StackNotFound, overcloud.process_stack, {}, {})
 
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
         'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
-            'validate_template.return_value': False,
+            'validate_template.return_value': (False, {}),
             'exists_stack.return_value': True,
             'create_stack.return_value': True,
         })
@@ -232,7 +250,7 @@ class OvercloudTests(base.TestCase):
 
         # Test and Verify
         self.assertRaises(
-            exception.InvalidHeatTemplate, overcloud.process_stack, {})
+            exception.InvalidHeatTemplate, overcloud.process_stack, {}, {})
 
     @mock.patch('tuskar.api.controllers.v1.overcloud.process_stack')
     @mock.patch('tuskar.db.sqlalchemy.api.Connection.update_overcloud')
