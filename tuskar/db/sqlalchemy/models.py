@@ -128,6 +128,10 @@ class OvercloudRoleCount(Base):
     # Number of nodes of this configuration that should be deployed
     num_nodes = Column(Integer, nullable=False)
 
+    # Reference to the full role (this is not the foreign key relationship,
+    # that's overcloud_role_id above, this is to eager load the role data).
+    overcloud_role = relationship(OvercloudRole.__name__)
+
     def __eq__(self, other):
         return (self.overcloud_role_id == other.overcloud_role_id
                and self.overcloud_id == other.overcloud_id)
