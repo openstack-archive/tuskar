@@ -59,8 +59,9 @@ class RequestContext(object):
             because they possibly came in from older rpc messages.
         """
         if kwargs:
-            LOG.warn(_('Arguments dropped when creating context: %s') %
-                    str(kwargs))
+            LOG.warn(
+                _('Arguments dropped when creating context: %s') %
+                str(kwargs))
 
         self.user_id = user_id
         self.project_id = project_id
@@ -80,7 +81,7 @@ class RequestContext(object):
         if service_catalog:
             # Only include required parts of service_catalog
             self.service_catalog = [s for s in service_catalog
-                if s.get('type') in ('volume')]
+                                    if s.get('type') in ('volume')]
         else:
             # if list is empty or none
             self.service_catalog = []

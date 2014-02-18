@@ -58,8 +58,8 @@ heat_keystone_opts = [
                help='Keystone authentication URL'
                ),
     cfg.BoolOpt('insecure',
-               default=True,
-               help='Set to False when Heat API uses HTTPS'
+                default=True,
+                help='Set to False when Heat API uses HTTPS'
                 )
 ]
 
