@@ -60,7 +60,7 @@ heat_keystone_opts = [
     cfg.BoolOpt('insecure',
                default=True,
                help='Set to False when Heat API uses HTTPS'
-               )
+                )
 ]
 
 CONF = cfg.CONF
