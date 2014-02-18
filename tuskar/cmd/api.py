@@ -33,7 +33,7 @@ CONF = cfg.CONF
 
 
 def main():
-    # Pase config file and command line options, then start logging
+    # Parse config file and command line options, then start logging
     tuskar_service.prepare_service(sys.argv)
 
     # Build and start the WSGI app
