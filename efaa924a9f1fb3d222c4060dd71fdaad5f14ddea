@@ -1,0 +1,12 @@
+Verified+2: Jenkins
+Approved+1: Tomas Sedovic <tomas@sedovic.cz>
+Code-Review+2: Tomas Sedovic <tomas@sedovic.cz>
+Code-Review+1: Victor Sergeyev <vsergeyev@mirantis.com>
+Code-Review+2: Jiri Stransky <jistr@redhat.com>
+Code-Review+1: Jay Dobies <jason.dobies@redhat.com>
+Code-Review+1: Dougal Matthews <dougal@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 18 Feb 2014 01:07:05 +0000
+Reviewed-on: https://review.openstack.org/73799
+Project: openstack/tuskar
+Branch: refs/heads/master
