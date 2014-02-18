@@ -52,10 +52,12 @@ def main():
     try:
         os.listdir(heat_template_path)
     except OSError:
-        LOG.info("Can't find local tripleo-heat-template files at %s"
-                  % (heat_template_path))
-        LOG.info("Cannot proceed - missing tripleo heat templates " +
-                  "See INSTALL documentation for more info")
+        LOG.info(
+            "Can't find local tripleo-heat-template files at %s"
+            % (heat_template_path))
+        LOG.info(
+            "Cannot proceed - missing tripleo heat templates "
+            "See INSTALL documentation for more info")
         raise
     LOG.info("Using tripleo-heat-templates at %s" % (heat_template_path))
 

@@ -58,8 +58,8 @@ class GenericUtilsTestCase(base.TestCase):
             self.assertEqual(reloaded_data, fake_contents)
             self.reload_called = True
 
-        data = utils.read_cached_file("/this/is/a/fake", cache_data,
-                                                reload_func=test_reload)
+        data = utils.read_cached_file(
+            "/this/is/a/fake", cache_data, reload_func=test_reload)
         self.assertEqual(data, fake_contents)
         self.assertTrue(self.reload_called)
 

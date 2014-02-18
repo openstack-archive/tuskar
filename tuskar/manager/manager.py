@@ -40,8 +40,8 @@ class ManagerService(service.PeriodicService):
         # TODO(deva)
 
     def process_notification(self, notification):
-        LOG.debug(_('Received notification: %r') %
-                        notification.get('event_type'))
+        LOG.debug(
+            _('Received notification: %r') % notification.get('event_type'))
         # TODO(deva)
 
     def periodic_tasks(self, context):

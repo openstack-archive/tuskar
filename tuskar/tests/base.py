@@ -66,8 +66,8 @@ _DB_CACHE = None
 
 class Database(fixtures.Fixture):
 
-    def __init__(self, db_session, db_migrate, sql_connection,
-                    sqlite_db, sqlite_clean_db):
+    def __init__(self, db_session, db_migrate, sql_connection, sqlite_db,
+                 sqlite_clean_db):
         self.sql_connection = sql_connection
         self.sqlite_db = sqlite_db
         self.sqlite_clean_db = sqlite_clean_db
@@ -176,10 +176,12 @@ class TestCase(testtools.TestCase, unittest2.TestCase):
 
         global _DB_CACHE
         if not _DB_CACHE:
-            _DB_CACHE = Database(session, migration,
-                                    sql_connection=CONF.database.connection,
-                                    sqlite_db=CONF.sqlite_db,
-                                    sqlite_clean_db=CONF.sqlite_clean_db)
+            _DB_CACHE = Database(
+                session, migration,
+                sql_connection=CONF.database.connection,
+                sqlite_db=CONF.sqlite_db,
+                sqlite_clean_db=CONF.sqlite_clean_db
+            )
         self.useFixture(_DB_CACHE)
 
         mox_fixture = self.useFixture(MoxStubout())
