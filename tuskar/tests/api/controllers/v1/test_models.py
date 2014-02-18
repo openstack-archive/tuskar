@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import unittest
+import testtools
 
 from wsme import types as wtypes
 
@@ -20,7 +20,7 @@ from tuskar.api.controllers.v1 import models as api_models
 from tuskar.db.sqlalchemy import models as db_models
 
 
-class BaseTests(unittest.TestCase):
+class BaseTests(testtools.TestCase):
 
     def test_lookup(self):
         # Setup
@@ -32,10 +32,10 @@ class BaseTests(unittest.TestCase):
 
         # Test
         self.assertEqual(1, stub._lookup('a1'))
-        self.assertEqual(None, stub._lookup('a2'))
+        self.assertIsNone(stub._lookup('a2'))
 
 
-class OvercloudModelTests(unittest.TestCase):
+class OvercloudModelTests(testtools.TestCase):
 
     def test_from_db_model(self):
         # Setup
