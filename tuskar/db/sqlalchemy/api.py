@@ -208,6 +208,7 @@ class Connection(api.Connection):
             query = session.query(models.Overcloud).\
                 options(subqueryload(models.Overcloud.attributes)).\
                 options(subqueryload(models.Overcloud.counts)).\
+                options(subqueryload('counts.overcloud_role')).\
                 filter_by(id=overcloud_id)
             result = query.one()
 
