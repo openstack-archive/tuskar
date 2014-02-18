@@ -49,7 +49,7 @@ test_opts = [
     cfg.StrOpt('sqlite_clean_db',
                default='clean.sqlite',
                help='File name of clean sqlite db'),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(test_opts)
