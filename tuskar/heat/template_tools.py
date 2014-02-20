@@ -24,7 +24,7 @@ from tripleo_heat_merge import merge
 
 # The name of the compute Overcloud role - defined for special case handling
 OVERCLOUD_COMPUTE_ROLE = 'overcloud-compute'
-
+OVERCLOUD_VOLUME_ROLE = 'overcloud-block-storage'
 
 def generate_scaling_params(overcloud_roles):
     """Given a dictionary containing a key value mapping of Overcloud Role name
@@ -48,6 +48,11 @@ def generate_scaling_params(overcloud_roles):
                 scaling.items() +
                 merge.parse_scaling(["NovaCompute=%s" % (count)]).items()
             )
+        if overcloud_role == OVERCLOUD_VOLUME_ROLE:
+            scaling = dict(
+                scaling.items() +
+                merge.parse_scaling(["BlockStorage=%s" % (count)]).items()
+            )
 
     return scaling
 
@@ -69,12 +74,14 @@ def merge_templates(overcloud_roles):
 
     scale_params = generate_scaling_params(overcloud_roles)
     overcloud_src_path = _join_template_path("overcloud-source.yaml")
+    block_storage_path = _join_template_path("block-storage.yaml")
     ssl_src_path = _join_template_path("ssl-source.yaml")
     swift_src_path = _join_template_path("swift-source.yaml")
 
     template = merge.merge(
-        [overcloud_src_path, ssl_src_path, swift_src_path], None, None,
-        included_template_dir=cfg.CONF.tht_local_dir, scaling=scale_params
+        [overcloud_src_path, ssl_src_path, swift_src_path, block_storage_path],
+        None, None, included_template_dir=cfg.CONF.tht_local_dir,
+        scaling=scale_params
     )
 
     return template

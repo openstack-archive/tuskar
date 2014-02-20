@@ -26,7 +26,7 @@ LOG = logging.getLogger(__name__)
 
 
 # FIXME(lsmola) this is for debugging purposes only, remove before I3
-POC_PARAMS = {'controller': 1, 'compute': 1}
+POC_PARAMS = {'controller': 1, 'compute': 2}
 
 
 def parse_counts(counts):
@@ -91,7 +91,6 @@ def process_stack(attributes, counts, create=False):
     :param create: A flag to designate if we are creating or updating the stack
     :type create: bool
     """
-
     overcloud = template_tools.merge_templates(parse_counts(counts))
     heat_client = HeatClient()
 
