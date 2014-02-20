@@ -8,6 +8,7 @@ mock>=1.0
 mox>=0.5.3
 MySQL-python
 python-subunit
+stevedore>=0.14
 testrepository>=0.0.17
 testtools>=0.9.32
 unittest2

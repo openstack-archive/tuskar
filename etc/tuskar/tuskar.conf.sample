@@ -174,10 +174,12 @@
 
 # (Optional) Name of log file to output to. If no default is
 # set, logging will go to stdout. (string value)
+# Deprecated group/name - [DEFAULT]/logfile
 #log_file=<None>
 
 # (Optional) The base directory used for relative --log-file
 # paths (string value)
+# Deprecated group/name - [DEFAULT]/logdir
 #log_dir=<None>
 
 # Use syslog for logging. (boolean value)
@@ -410,10 +412,12 @@
 #
 
 # The backend to use for db (string value)
+# Deprecated group/name - [DEFAULT]/db_backend
 #backend=sqlalchemy
 
 # Enable the experimental use of thread pooling for all DB API
 # calls (boolean value)
+# Deprecated group/name - [DEFAULT]/dbapi_use_tpool
 #use_tpool=false
 
 
@@ -423,39 +427,64 @@
 
 # The SQLAlchemy connection string used to connect to the
 # database (string value)
+# Deprecated group/name - [DEFAULT]/sql_connection
 #connection=sqlite:////tuskar/openstack/common/db/$sqlite_db
 
 # timeout before idle sql connections are reaped (integer
 # value)
+# Deprecated group/name - [DEFAULT]/sql_idle_timeout
 #idle_timeout=3600
 
 # Minimum number of SQL connections to keep open in a pool
 # (integer value)
+# Deprecated group/name - [DEFAULT]/sql_min_pool_size
 #min_pool_size=1
 
 # Maximum number of SQL connections to keep open in a pool
 # (integer value)
+# Deprecated group/name - [DEFAULT]/sql_max_pool_size
 #max_pool_size=5
 
 # maximum db connection retries during startup. (setting -1
 # implies an infinite retry count) (integer value)
+# Deprecated group/name - [DEFAULT]/sql_max_retries
 #max_retries=10
 
 # interval between retries of opening a sql connection
 # (integer value)
+# Deprecated group/name - [DEFAULT]/sql_retry_interval
 #retry_interval=10
 
 # If set, use this value for max_overflow with sqlalchemy
 # (integer value)
+# Deprecated group/name - [DEFAULT]/sql_max_overflow
 #max_overflow=<None>
 
 # Verbosity of SQL debugging information. 0=None,
 # 100=Everything (integer value)
+# Deprecated group/name - [DEFAULT]/sql_connection_debug
 #connection_debug=0
 
 # Add python stack traces to SQL as comment strings (boolean
 # value)
+# Deprecated group/name - [DEFAULT]/sql_connection_trace
 #connection_trace=false
+
+
+[heat]
+
+#
+# Options defined in tuskar.heat.client
+#
+
+# Name of the overcloud Heat stack (string value)
+#stack_name=overcloud
+
+# Heat API service type registered in keystone (string value)
+#service_type=orchestration
+
+# Heat API service endpoint type in keystone (string value)
+#endpoint_type=publicURL
 
 
 [heat_keystone]
@@ -483,32 +512,6 @@
 #insecure=true
 
 
-[rpc_notifier2]
-
-#
-# Options defined in tuskar.openstack.common.notifier.rpc_notifier2
-#
-
-# AMQP topic(s) used for openstack notifications (list value)
-#topics=notifications
-
-
-[heat]
-
-#
-# Options defined in tuskar.heat.client
-#
-
-# Name of the overcloud Heat stack (string value)
-#stack_name=overcloud
-
-# Heat API service type registered in keystone (string value)
-#service_type=orchestration
-
-# Heat API service endpoint type in keystone (string value)
-#endpoint_type=publicURL
-
-
 [matchmaker_redis]
 
 #
@@ -532,7 +535,17 @@
 #
 
 # Matchmaker ring file (JSON) (string value)
+# Deprecated group/name - [DEFAULT]/matchmaker_ringfile
 #ringfile=/etc/oslo/matchmaker_ring.json
 
 
-# Total option count: 109
+[rpc_notifier2]
+
+#
+# Options defined in tuskar.openstack.common.notifier.rpc_notifier2
+#
+
+# AMQP topic(s) used for openstack notifications (list value)
+#topics=notifications
+
+
