@@ -69,14 +69,6 @@
 
 
 #
-# Options defined in tuskar.compute.nova
-#
-
-# nova overcloud keystone uri and credentials (string value)
-#nova_overcloud_config=/etc/tuskar/nova_overcloud_config.yml
-
-
-#
 # Options defined in tuskar.db.sqlalchemy.models
 #
 
@@ -543,4 +535,4 @@
 #ringfile=/etc/oslo/matchmaker_ring.json
 
 
-# Total option count: 110
+# Total option count: 109
