@@ -24,6 +24,12 @@ from tripleo_heat_merge import merge
 
 # The name of the compute Overcloud role - defined for special case handling
 OVERCLOUD_COMPUTE_ROLE = 'overcloud-compute'
+OVERCLOUD_VOLUME_ROLE = 'overcloud-cinder-volume'
+ROLES = {}
+ROLES[OVERCLOUD_COMPUTE_ROLE] = {'template_param': 'NovaCompute',
+                                 'file_name': 'overcloud-source.yaml'}
+ROLES[OVERCLOUD_VOLUME_ROLE] = {'template_param': 'BlockStorage',
+                                'file_name': 'block-storage.yaml'}
 
 
 def generate_scaling_params(overcloud_roles):
@@ -42,13 +48,13 @@ def generate_scaling_params(overcloud_roles):
 
     for overcloud_role, count in overcloud_roles.items():
         overcloud_role = overcloud_role.lower()
-
-        if overcloud_role == OVERCLOUD_COMPUTE_ROLE:
+        if overcloud_role in ROLES:
+            scale_str = "%s=%s" % (
+                        ROLES[overcloud_role]['template_param'], count)
             scaling = dict(
                 scaling.items() +
-                merge.parse_scaling(["NovaCompute=%s" % (count)]).items()
+                merge.parse_scaling([scale_str]).items()
             )
-
     return scaling
 
 
@@ -71,10 +77,14 @@ def merge_templates(overcloud_roles):
     overcloud_src_path = _join_template_path("overcloud-source.yaml")
     ssl_src_path = _join_template_path("ssl-source.yaml")
     swift_src_path = _join_template_path("swift-source.yaml")
-
-    template = merge.merge(
-        [overcloud_src_path, ssl_src_path, swift_src_path], None, None,
-        included_template_dir=cfg.CONF.tht_local_dir, scaling=scale_params
-    )
+    merge_paths = [overcloud_src_path, ssl_src_path, swift_src_path]
+    if OVERCLOUD_VOLUME_ROLE in overcloud_roles:
+        if overcloud_roles[OVERCLOUD_VOLUME_ROLE] > 0:
+            block_storage_path = _join_template_path(
+                ROLES[OVERCLOUD_VOLUME_ROLE]['file_name'])
+            merge_paths.append(block_storage_path)
+    template = merge.merge(merge_paths, None, None,
+                           included_template_dir=cfg.CONF.tht_local_dir,
+                           scaling=scale_params)
 
     return template
