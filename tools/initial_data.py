@@ -124,10 +124,6 @@ def generate_data():
                           description='compute role',
                           image_name='overcloud-compute')
     create_overcloud_role(conn, base_url,
-                          name='Object Storage',
-                          description='object storage role',
-                          image_name='overcloud-object-storage')
-    create_overcloud_role(conn, base_url,
                           name='Block Storage',
                           description='block storage role',
                           image_name='overcloud-block-storage')
