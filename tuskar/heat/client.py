@@ -94,13 +94,8 @@ class HeatClient(object):
 
     def validate_template(self, template_body):
         """Validate given Heat template."""
-        try:
-            allowed_data = self.connection.stacks.validate(
-                template=template_body)
-            return True, allowed_data
-        except Exception:
-            LOG.exception("Validation of the Heat template failed.")
-            return False, None
+        return self.connection.stacks.validate(
+            template=template_body)
 
     def get_stack(self, name=None):
         """Get overcloud Heat template."""
@@ -117,34 +112,20 @@ class HeatClient(object):
 
     def update_stack(self, template_body, params):
         """Update the Heat overcloud stack."""
-        try:
-            self.connection.stacks.update(stack_id=CONF.heat['stack_name'],
-                                          template=template_body,
-                                          parameters=params)
-            return True
-        except Exception:
-            LOG.exception("An error occurred updating the stack.")
-            return False
+        return self.connection.stacks.update(stack_id=CONF.heat['stack_name'],
+                                             template=template_body,
+                                             parameters=params)
 
     def delete_stack(self):
         """Delete the Heat overcloud stack."""
-        try:
-            self.connection.stacks.delete(stack_id=CONF.heat['stack_name'])
-            return True
-        except Exception:
-            LOG.exception("An error occurred deleting the stack.")
-            return False
+        return self.connection.stacks.delete(stack_id=CONF.heat['stack_name'])
 
     def create_stack(self, template_body, params):
         """Update the Heat overcloud stack."""
-        try:
-            self.connection.stacks.create(stack_name=CONF.heat['stack_name'],
-                                          template=template_body,
-                                          parameters=params)
-            return True
-        except Exception:
-            LOG.exception("An error occurred creating the stack.")
-            return False
+        return self.connection.stacks.create(
+            stack_name=CONF.heat['stack_name'],
+            template=template_body,
+            parameters=params)
 
     def exists_stack(self, name=None):
         if name is None:
