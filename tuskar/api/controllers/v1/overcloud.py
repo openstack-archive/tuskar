@@ -91,15 +91,18 @@ def process_stack(attributes, counts, create=False):
     :param create: A flag to designate if we are creating or updating the stack
     :type create: bool
     """
+    try:
+        overcloud = template_tools.merge_templates(parse_counts(counts))
+    except Exception as e:
+        raise exception.HeatTemplateCreateFailed(unicode(e))
 
-    overcloud = template_tools.merge_templates(parse_counts(counts))
     heat_client = HeatClient()
 
     stack_exists = heat_client.exists_stack()
-    valid, allowed_data = heat_client.validate_template(overcloud)
-
-    if not valid:
-        raise exception.InvalidHeatTemplate()
+    try:
+        allowed_data = heat_client.validate_template(overcloud)
+    except Exception as e:
+        raise exception.HeatTemplateValidateFailed(unicode(e))
 
     if stack_exists and create:
         raise exception.StackAlreadyCreated()
@@ -112,14 +115,14 @@ def process_stack(attributes, counts, create=False):
     else:
         operation = heat_client.update_stack
 
-    res = operation(overcloud,
-                    filter_template_attributes(allowed_data, attributes))
-
-    if not res:
+    try:
+        operation(overcloud,
+                  filter_template_attributes(allowed_data, attributes))
+    except Exception as e:
         if create:
-            raise exception.HeatTemplateCreateFailed()
-
-        raise exception.HeatTemplateUpdateFailed()
+            raise exception.HeatStackCreateFailed(unicode(e))
+        else:
+            raise exception.HeatStackUpdateFailed(unicode(e))
 
 
 class OvercloudsController(rest.RestController):
@@ -238,12 +241,10 @@ class OvercloudsController(rest.RestController):
             # If the stack doesn't exist, we have nothing else to do here.
             return
 
-        result = heat_client.delete_stack()
-
-        if not result:
-            raise wsme.exc.ClientSideError(_(
-                "Failed to delete the Heat overcloud."
-            ))
+        try:
+            heat_client.delete_stack()
+        except Exception:
+            raise exception.HeatStackDeleteFailed()
 
     @wsme_pecan.wsexpose(models.Overcloud, int)
     def get_one(self, overcloud_id):
