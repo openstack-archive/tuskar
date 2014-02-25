@@ -173,10 +173,6 @@ class ConfigNotFound(TuskarException):
     message = _("Could not find config at %(path)s")
 
 
-class InvalidHeatTemplate(TuskarException):
-    message = _("Validation of the Heat Template failed.")
-
-
 class StackNotFound(NotFound):
     message = _("The Stack for this Overcloud can't be found.")
 
@@ -185,9 +181,21 @@ class StackAlreadyCreated(DuplicateEntry):
     message = _("The Stack for this Overcloud already exists.")
 
 
-class HeatTemplateUpdateFailed(TuskarException):
-    message = _("The Heat template failed to update.")
-
-
 class HeatTemplateCreateFailed(TuskarException):
     message = _("The Heat template failed to create.")
+
+
+class HeatTemplateValidateFailed(TuskarException):
+    message = _("Validation of the Heat template failed.")
+
+
+class HeatStackUpdateFailed(TuskarException):
+    message = _("The Heat stack failed to update.")
+
+
+class HeatStackCreateFailed(TuskarException):
+    message = _("The Heat stack failed to update.")
+
+
+class HeatStackDeleteFailed(TuskarException):
+    message = _("The Heat stack failed to delete.")
