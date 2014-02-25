@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Code-Review+1: Timur Nurlygayanov <tnurlygayanov@mirantis.com>
+Approved+1: Petr Blaho <pblaho@redhat.com>
+Code-Review+2: Petr Blaho <pblaho@redhat.com>
+Code-Review+2: Jiri Stransky <jistr@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 25 Feb 2014 12:34:26 +0000
+Reviewed-on: https://review.openstack.org/76158
+Project: openstack/tuskar
+Branch: refs/heads/master
