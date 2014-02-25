@@ -29,7 +29,7 @@ LOG = logging.getLogger(__name__)
 POC_PARAMS = {'controller': 1, 'compute': 2}
 
 
-def parse_counts(counts):
+def parse_counts(counts, overcloud_roles=None):
     """Helper for parsing the OvercloudRoleCount object
 
     Given a list of OvercloudRoleCount objects return a dict of
@@ -43,7 +43,11 @@ def parse_counts(counts):
     """
     parsed_counts = {}
     for count_obj in counts:
-        image_name = count_obj.overcloud_role.image_name
+        if overcloud_roles is None:
+            image_name = count_obj.overcloud_role.image_name
+        else:
+            image_name = overcloud_roles[
+                count_obj.overcloud_role_id].image_name
         count = count_obj.num_nodes
         parsed_counts[image_name] = count
 
@@ -75,7 +79,7 @@ def filter_template_attributes(allowed_data, attributes):
     return filtered_data
 
 
-def process_stack(attributes, counts, create=False):
+def process_stack(attributes, counts, overcloud_roles=None, create=False):
     """Helper function for processing the stack.
 
     Given a params dict containing the Overcloud Roles and initialization
@@ -92,7 +96,8 @@ def process_stack(attributes, counts, create=False):
     :type create: bool
     """
     try:
-        overcloud = template_tools.merge_templates(parse_counts(counts))
+        overcloud = template_tools.merge_templates(
+            parse_counts(counts, overcloud_roles))
     except Exception as e:
         raise exception.HeatTemplateCreateFailed(unicode(e))
 
@@ -116,13 +121,16 @@ def process_stack(attributes, counts, create=False):
         operation = heat_client.update_stack
 
     try:
-        operation(overcloud,
-                  filter_template_attributes(allowed_data, attributes))
+        result = operation(
+            overcloud,
+            filter_template_attributes(allowed_data, attributes))
     except Exception as e:
         if create:
             raise exception.HeatStackCreateFailed(unicode(e))
         else:
             raise exception.HeatStackUpdateFailed(unicode(e))
+
+    return result
 
 
 class OvercloudsController(rest.RestController):
@@ -155,22 +163,29 @@ class OvercloudsController(rest.RestController):
         """
         LOG.debug('Creating overcloud: %s' % transfer_overcloud)
 
+        # FIXME(lsmola) This is just POC of creating a stack
+        # this has to be done properly with proper Work-flow abstraction of:
+        # step 1- build template and start stack-create
+        # step 2- put the right stack_id to the overcloud
+        # step 3- initialize the stack
+        # step 4- set the correct overcloud status
+        overcloud_roles = dict((overcloud_role.id, overcloud_role)
+                               for overcloud_role in
+                               pecan.request.dbapi.get_overcloud_roles())
+
+        stack = process_stack(transfer_overcloud.attributes,
+                              transfer_overcloud.counts,
+                              overcloud_roles=overcloud_roles,
+                              create=True)
+
         # Persist to the database
+        transfer_overcloud.stack_id = stack['stack']['id']
         db_overcloud = transfer_overcloud.to_db_model()
         result = pecan.request.dbapi.create_overcloud(db_overcloud)
 
         # Package for transfer back to the user
         saved_overcloud =\
             models.Overcloud.from_db_model(result)
-
-        # FIXME(lsmola) This is just POC of creating a stack
-        # this has to be done properly with proper Work-flow abstraction of:
-        # step one- build template and start stack-create
-        # step 2- put the right stack_id to the overcloud
-        # step 3- initialize the stack
-        # step 4- set the correct overcloud status
-        process_stack(saved_overcloud.attributes, result.counts,
-                      create=True)
 
         return saved_overcloud
 
@@ -209,8 +224,9 @@ class OvercloudsController(rest.RestController):
 
         # FIXME(lsmola) This is just POC of updating a stack
         # this probably should also have workflow
-        # step one- build template and stack-update
+        # step 1- build template and stack-update
         # step 2- set the correct overcloud status
+
         process_stack(updated_overcloud.attributes, updated_overcloud.counts,
                       create=True)
 
@@ -230,7 +246,7 @@ class OvercloudsController(rest.RestController):
         # FIXME(lsmola) this should always try to delete both overcloud
         # and stack. So it requires some exception catch over below.
         # FIXME(lsmola) there is also a workflow needed
-        # step one- delete stack and set status deleting in progress to
+        # step 1- delete stack and set status deleting in progress to
         # overcloud
         # step 2 - once stack is deleted, delete the overcloud
         LOG.debug('Deleting overcloud with ID: %s' % overcloud_id)

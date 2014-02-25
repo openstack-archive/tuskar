@@ -71,7 +71,7 @@ class OvercloudTests(base.TestCase):
 
         mock_db_get.assert_called_once_with(12345)
 
-    def test_parse_counts(self):
+    def test_parse_counts_overcloud_roles_as_relation(self):
         # Setup
         overcloud_role_1 = db_models.OvercloudRole(
             image_name='overcloud-compute')
@@ -80,15 +80,41 @@ class OvercloudTests(base.TestCase):
             image_name='overcloud-block-storage')
 
         overcloud_role_count_1 = db_models.OvercloudRoleCount(
-            overcloud_role_id=2, num_nodes=5, overcloud_role=overcloud_role_1)
+            num_nodes=5, overcloud_role=overcloud_role_1)
 
         overcloud_role_count_2 = db_models.OvercloudRoleCount(
-            overcloud_role_id=2, num_nodes=9, overcloud_role=overcloud_role_2)
+            num_nodes=9, overcloud_role=overcloud_role_2)
 
         mock_counts = [overcloud_role_count_1, overcloud_role_count_2]
 
         # Test
         result = overcloud.parse_counts(mock_counts)
+
+        # Verify
+        self.assertEqual(result, {'overcloud-compute': 5,
+                                  'overcloud-block-storage': 9})
+
+    def test_parse_counts_overcloud_roles_explicit(self):
+        # Setup
+        overcloud_role_1 = db_models.OvercloudRole(
+            image_name='overcloud-compute')
+
+        overcloud_role_2 = db_models.OvercloudRole(
+            image_name='overcloud-block-storage')
+
+        mock_overcloud_roles = {1: overcloud_role_1, 2: overcloud_role_2}
+
+        overcloud_role_count_1 = db_models.OvercloudRoleCount(
+            overcloud_role_id=1, num_nodes=5)
+
+        overcloud_role_count_2 = db_models.OvercloudRoleCount(
+            overcloud_role_id=2, num_nodes=9)
+
+        mock_counts = [overcloud_role_count_1, overcloud_role_count_2]
+
+        # Test
+        result = overcloud.parse_counts(mock_counts,
+                                        overcloud_roles=mock_overcloud_roles)
 
         # Verify
         self.assertEqual(result, {'overcloud-compute': 5,
@@ -121,7 +147,7 @@ class OvercloudTests(base.TestCase):
         'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
             'validate_template.return_value': {},
             'exists_stack.return_value': False,
-            'create_stack.return_value': True,
+            'create_stack.return_value': {'stack': {'id': '1'}},
         })
     )
     def test_create_stack(self, mock_heat_client, mock_heat_merge_templates):
@@ -132,7 +158,7 @@ class OvercloudTests(base.TestCase):
         response = overcloud.process_stack({}, {}, create=True)
 
         # Verify
-        self.assertEqual(response, None)
+        self.assertEqual(response, {'stack': {'id': '1'}})
 
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
@@ -150,7 +176,7 @@ class OvercloudTests(base.TestCase):
         # Test and Verify
         self.assertRaises(
             exception.HeatStackCreateFailed,
-            overcloud.process_stack, {}, {}, True)
+            overcloud.process_stack, {}, {}, create=True)
 
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
@@ -168,7 +194,7 @@ class OvercloudTests(base.TestCase):
         # Test and Verify
         self.assertRaises(
             exception.StackAlreadyCreated, overcloud.process_stack, {}, {},
-            True)
+            create=True)
 
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
@@ -186,18 +212,22 @@ class OvercloudTests(base.TestCase):
         # Test and Verify
         self.assertRaises(
             exception.HeatTemplateValidateFailed, overcloud.process_stack,
-            {}, {},
-            True)
+            {}, {}, create=True)
 
+    @mock.patch('tuskar.db.sqlalchemy.api.Connection.get_overcloud_roles')
     @mock.patch('tuskar.api.controllers.v1.overcloud.process_stack')
     @mock.patch('tuskar.db.sqlalchemy.api.Connection.create_overcloud')
-    def test_post(self, mock_db_create, mock_process_stack):
+    def test_post(self, mock_db_create, mock_process_stack,
+                  mock_get_overcloud_roles):
         # Setup
         create_me = {'name': 'new'}
 
         fake_created = db_models.Overcloud(name='created')
         mock_db_create.return_value = fake_created
-        mock_process_stack.return_value = None
+        mock_process_stack.return_value = {'stack': {'id': '1'}}
+        mock_get_overcloud_roles.return_value = [
+            mock.Mock(**{'id.return_value': 1, }),
+            mock.Mock(**{'id.return_value': 2, })]
 
         # Test
         response = self.app.post_json(URL_OVERCLOUDS, params=create_me)
@@ -218,7 +248,7 @@ class OvercloudTests(base.TestCase):
         'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
             'validate_template.return_value': {},
             'exists_stack.return_value': True,
-            'create_stack.return_value': True,
+            'update_stack.return_value': {'stack': {'id': '1'}},
         })
     )
     def test_update_stack(self, mock_heat_client, mock_heat_merge_templates):
@@ -229,7 +259,7 @@ class OvercloudTests(base.TestCase):
         response = overcloud.process_stack({}, {})
 
         # Verify
-        self.assertEqual(response, None)
+        self.assertEqual(response, {'stack': {'id': '1'}})
 
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
