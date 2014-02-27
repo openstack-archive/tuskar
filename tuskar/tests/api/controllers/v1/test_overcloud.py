@@ -345,9 +345,25 @@ class OvercloudTests(base.TestCase):
         # Setup
         changes = {'name': 'updated'}
 
+        overcloud_role_1 = db_models.OvercloudRole(
+            image_name='overcloud-compute', flavor_id='1')
+
+        overcloud_role_2 = db_models.OvercloudRole(
+            image_name='overcloud-cinder-volume', flavor_id='1')
+
+        overcloud_role_count_1 = db_models.OvercloudRoleCount(
+            overcloud_role_id=1, num_nodes=5, overcloud_role=overcloud_role_1)
+
+        overcloud_role_count_2 = db_models.OvercloudRoleCount(
+            overcloud_role_id=2, num_nodes=9, overcloud_role=overcloud_role_2)
+
+        attribute_1 = db_models.OvercloudAttribute(
+            overcloud_id=1, key='name', value='updated')
+
         fake_updated = db_models.Overcloud(name='after-update',
-                                           attributes=[],
-                                           counts=[])
+                                           attributes=[attribute_1],
+                                           counts=[overcloud_role_count_1,
+                                                   overcloud_role_count_2])
         mock_db_update.return_value = fake_updated
         mock_process_stack.return_value = None
 
@@ -366,6 +382,10 @@ class OvercloudTests(base.TestCase):
                                    db_models.Overcloud))
         self.assertEqual(db_update_model.id, 12345)
         self.assertEqual(db_update_model.name, changes['name'])
+
+        mock_process_stack.assert_called_once_with(
+            {'name': 'updated'}, [overcloud_role_count_1,
+                                  overcloud_role_count_2])
 
     @mock.patch('tuskar.db.sqlalchemy.api.'
                 'Connection.delete_overcloud_by_id')
