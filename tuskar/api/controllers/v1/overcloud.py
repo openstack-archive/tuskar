@@ -280,8 +280,7 @@ class OvercloudsController(rest.RestController):
         # step 1- build template and stack-update
         # step 2- set the correct overcloud status
 
-        process_stack(updated_overcloud.attributes, updated_overcloud.counts,
-                      create=True)
+        process_stack(updated_overcloud.attributes, result.counts)
 
         return updated_overcloud
 
