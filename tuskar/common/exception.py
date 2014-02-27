@@ -114,6 +114,11 @@ class TuskarException(Exception):
             return six.text_type(self)
 
 
+class Invalid(TuskarException):
+    message = _("Invalid.")
+    code = 400
+
+
 class NotAuthorized(TuskarException):
     message = _("Not authorized.")
     code = 403
@@ -153,7 +158,7 @@ class OvercloudRoleExists(DuplicateEntry):
     message = _("Overcloud role with name %(name)s already exists.")
 
 
-class OvercloudRoleInUse(TuskarException):
+class OvercloudRoleInUse(Invalid):
     message = _('Role %(name)s is in use by an overcloud.')
 
 
@@ -182,21 +187,29 @@ class StackAlreadyCreated(DuplicateEntry):
     message = _("The Stack for this Overcloud already exists.")
 
 
-class HeatTemplateCreateFailed(TuskarException):
+class ParseCountsAndFlavorsFailed(DuplicateEntry):
+    message = _("Parsing of counts and flavors from roles failed.")
+
+
+class HeatTemplateCreateFailed(Invalid):
     message = _("The Heat template failed to create.")
 
 
-class HeatTemplateValidateFailed(TuskarException):
+class HeatTemplateValidateFailed(Invalid):
     message = _("Validation of the Heat template failed.")
 
 
-class HeatStackUpdateFailed(TuskarException):
+class HeatStackProcessingAttributesFailed(Invalid):
+    message = _("Processing of Heat stack attributes failed")
+
+
+class HeatStackUpdateFailed(Invalid):
     message = _("The Heat stack failed to update.")
 
 
-class HeatStackCreateFailed(TuskarException):
+class HeatStackCreateFailed(Invalid):
     message = _("The Heat stack failed to update.")
 
 
-class HeatStackDeleteFailed(TuskarException):
+class HeatStackDeleteFailed(Invalid):
     message = _("The Heat stack failed to delete.")
