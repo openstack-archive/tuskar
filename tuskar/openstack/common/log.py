@@ -383,7 +383,7 @@ def _find_facility_from_conf():
                   'LOG_LOCAL0', 'LOG_LOCAL1', 'LOG_LOCAL2', 'LOG_LOCAL3',
                   'LOG_LOCAL4', 'LOG_LOCAL5', 'LOG_LOCAL6', 'LOG_LOCAL7']
         valid_facilities.extend(consts)
-        raise TypeError(_('syslog facility must be one of: %s') %
+        raise TypeError(('syslog facility must be one of: %s') %
                         ', '.join("'%s'" % fac
                                   for fac in valid_facilities))
 

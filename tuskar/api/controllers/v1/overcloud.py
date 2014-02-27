@@ -240,9 +240,9 @@ class OvercloudsController(rest.RestController):
         result = heat_client.delete_stack()
 
         if not result:
-            raise wsme.exc.ClientSideError(_(
+            raise wsme.exc.ClientSideError(
                 "Failed to delete the Heat overcloud."
-            ))
+            )
 
     @wsme_pecan.wsexpose(models.Overcloud, int)
     def get_one(self, overcloud_id):
