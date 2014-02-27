@@ -30,11 +30,12 @@ LOG = logging.getLogger(__name__)
 POC_PARAMS = {'controller': 1, 'compute': 2}
 
 
-def parse_counts(counts, overcloud_roles):
+def parse_counts_and_flavors(counts, overcloud_roles):
     """Helper for parsing the OvercloudRoleCount object
 
-    Given a list of OvercloudRoleCount objects return a dict of
-    (image_name, count) in a format used for building a template.
+    Given a list of OvercloudRoleCount and dict of OverlcoudRole objects
+    return a dict of (image_name, count) and (image_name, flavor_id) in a
+    format used for building a template.
 
     :param counts: List of tuskar.api.controllers.v1.models.OvercloudRoleCount
     :type  counts: list
@@ -43,16 +44,19 @@ def parse_counts(counts, overcloud_roles):
                             we can access image_name and flavor_id of roles
     :type  overcloud_roles: dict
 
-    :return: Dict of (image_name, count)
-    :rtype:  dict
+    :return: Tuple of dicts {(image_name, count)}, {(image_name, flavor_id)}
+    :rtype:  two dict objects
     """
     parsed_counts = {}
+    parsed_flavors = {}
     for count_obj in counts:
         image_name = overcloud_roles[count_obj.overcloud_role_id].image_name
+        flavor_id = overcloud_roles[count_obj.overcloud_role_id].flavor_id
         count = count_obj.num_nodes
         parsed_counts[image_name] = count
+        parsed_flavors[image_name] = flavor_id
 
-    return parsed_counts
+    return parsed_counts, parsed_flavors
 
 
 def filter_template_attributes(allowed_data, attributes):
@@ -86,6 +90,30 @@ def get_overcloud_roles_dict():
                 pecan.request.dbapi.get_overcloud_roles())
 
 
+def get_flavor_attributes(parsed_flavors):
+    """Helper for building dict of flavor attributes
+
+    Given a dict of parsed flavors, it will put a flavor_ids stored in
+    role into attributes that will be fed to heat stack create/update.
+
+    Mapping of image name to flavor_param is stored in template_tools.ROLES.
+
+    :param parsed_flavors: Dict of (image_name, flavor_id)
+    :type  parsed_flavors: dict
+
+    :return: Dict of (flavor_param, flavor_id) for Heat Template params
+    :rtype:  dict
+    """
+    flavor_attributes = {}
+    for image_name, flavor_id in parsed_flavors.items():
+        role = template_tools.ROLES.get(image_name, None)
+        if role:
+            flavor_param = role['flavor_param']
+            flavor_attributes[flavor_param] = flavor_id
+
+    return flavor_attributes
+
+
 def process_stack(attributes, counts, overcloud_roles, create=False):
     """Helper function for processing the stack.
 
@@ -106,25 +134,43 @@ def process_stack(attributes, counts, overcloud_roles, create=False):
     :param create: A flag to designate if we are creating or updating the stack
     :type create: bool
     """
+    heat_client = HeatClient()
+
     try:
-        overcloud = template_tools.merge_templates(
-            parse_counts(counts, overcloud_roles))
+        # Get how many of each role we want and what flavor each role uses.
+        parsed_counts, parsed_flavors = parse_counts_and_flavors(
+            counts, overcloud_roles)
+    except Exception as e:
+        raise exception.ParseCountsAndFlavorsFailed(six.text_type(e))
+
+    try:
+        # Build the template
+        overcloud = template_tools.merge_templates(parsed_counts)
     except Exception as e:
         raise exception.HeatTemplateCreateFailed(six.text_type(e))
 
-    heat_client = HeatClient()
-
-    stack_exists = heat_client.exists_stack()
     try:
+        # Get the parameters that the template accepts and validate
         allowed_data = heat_client.validate_template(overcloud)
     except Exception as e:
         raise exception.HeatTemplateValidateFailed(six.text_type(e))
 
+    stack_exists = heat_client.exists_stack()
     if stack_exists and create:
         raise exception.StackAlreadyCreated()
 
     elif not stack_exists and not create:
         raise exception.StackNotFound()
+
+    try:
+        # Put flavors from OverloudRoles into attributes
+        attributes.update(get_flavor_attributes(parsed_flavors))
+
+        # Filter the attributes to allowed only
+        filtered_attributes = filter_template_attributes(allowed_data,
+                                                         attributes)
+    except Exception as e:
+        raise exception.HeatStackProcessingAttributesFailed(six.text_type(e))
 
     if create:
         operation = heat_client.create_stack
@@ -132,9 +178,7 @@ def process_stack(attributes, counts, overcloud_roles, create=False):
         operation = heat_client.update_stack
 
     try:
-        result = operation(
-            overcloud,
-            filter_template_attributes(allowed_data, attributes))
+        result = operation(overcloud, filtered_attributes)
     except Exception as e:
         if create:
             raise exception.HeatStackCreateFailed(six.text_type(e))

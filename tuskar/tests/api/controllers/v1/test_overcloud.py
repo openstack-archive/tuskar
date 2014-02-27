@@ -74,10 +74,10 @@ class OvercloudTests(base.TestCase):
     def test_parse_counts_overcloud_roles_explicit(self):
         # Setup
         overcloud_role_1 = db_models.OvercloudRole(
-            image_name='overcloud-compute')
+            image_name='overcloud-compute', flavor_id='1')
 
         overcloud_role_2 = db_models.OvercloudRole(
-            image_name='overcloud-block-storage')
+            image_name='overcloud-cinder-volume', flavor_id='1')
 
         mock_overcloud_roles = {1: overcloud_role_1, 2: overcloud_role_2}
 
@@ -90,12 +90,34 @@ class OvercloudTests(base.TestCase):
         mock_counts = [overcloud_role_count_1, overcloud_role_count_2]
 
         # Test
-        result = overcloud.parse_counts(mock_counts,
-                                        overcloud_roles=mock_overcloud_roles)
+        result = overcloud.parse_counts_and_flavors(
+            mock_counts,
+            overcloud_roles=mock_overcloud_roles)
 
         # Verify
-        self.assertEqual(result, {'overcloud-compute': 5,
-                                  'overcloud-block-storage': 9})
+        self.assertEqual(result,
+                         ({'overcloud-compute': 5,
+                           'overcloud-cinder-volume': 9},
+                          {'overcloud-compute': '1',
+                           'overcloud-cinder-volume': '1'}))
+
+    def test_get_flavor_attributes(self):
+        # Setup
+        parsed_flavors = {'fake': '5',
+                          'overcloud-control': '1',
+                          'overcloud-compute': '2',
+                          'overcloud-cinder-volume': '3'}
+
+         # Test
+        result = overcloud.get_flavor_attributes(parsed_flavors)
+
+        # Verify
+        # The flavors names are stored in template_tools, so this also tests
+        # it hasn't been changed. This flavor names must match what is int
+        # the template.
+        self.assertEqual(result, {'OvercloudControlFlavor': '1',
+                                  'OvercloudComputeFlavor': '2',
+                                  'OvercloudBlockStorageFlavor': '3'})
 
     def test_filter_template_attributes(self):
         # Setup
