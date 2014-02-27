@@ -105,8 +105,8 @@ class RequestContext(object):
 
     def _set_read_deleted(self, read_deleted):
         if read_deleted not in ('no', 'yes', 'only'):
-            raise ValueError(_("read_deleted can only be one of 'no', "
-                               "'yes' or 'only', not %r") % read_deleted)
+            raise ValueError(("read_deleted can only be one of 'no', "
+                              "'yes' or 'only', not %r") % read_deleted)
         self._read_deleted = read_deleted
 
     def _del_read_deleted(self):
