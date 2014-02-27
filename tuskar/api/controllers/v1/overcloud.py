@@ -277,9 +277,8 @@ class OvercloudsController(rest.RestController):
         # this probably should also have workflow
         # step 1- build template and stack-update
         # step 2- set the correct overcloud status
-
-        process_stack(updated_overcloud.attributes, updated_overcloud.counts,
-                      get_overcloud_roles_dict(), create=True)
+        process_stack(updated_overcloud.attributes, result.counts,
+                      get_overcloud_roles_dict())
 
         return updated_overcloud
 
