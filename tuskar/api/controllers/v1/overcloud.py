@@ -29,7 +29,7 @@ LOG = logging.getLogger(__name__)
 POC_PARAMS = {'controller': 1, 'compute': 2}
 
 
-def parse_counts(counts, overcloud_roles=None):
+def parse_counts_and_flavors(counts, overcloud_roles=None):
     """Helper for parsing the OvercloudRoleCount object
 
     Given a list of OvercloudRoleCount objects return a dict of
@@ -38,20 +38,31 @@ def parse_counts(counts, overcloud_roles=None):
     :param counts: List of tuskar.api.controllers.v1.models.OvercloudRoleCount
     :type  counts: list
 
+    :param overcloud_roles: If Count objects are missing the overcloud_role
+                            relation, we need to explicitly pass the dict
+                            of (overcloud_role_id, overcloud_role)
+    :type  overcloud_roles: dict
+
     :return: Dict of (image_name, count)
     :rtype:  dict
     """
     parsed_counts = {}
+    parsed_flavors = {}
     for count_obj in counts:
         if overcloud_roles is None:
             image_name = count_obj.overcloud_role.image_name
+            flavor_id = count_obj.overcloud_role.flavor_id
         else:
             image_name = overcloud_roles[
                 count_obj.overcloud_role_id].image_name
+            flavor_id = overcloud_roles[
+                count_obj.overcloud_role_id].flavor_id
+
         count = count_obj.num_nodes
         parsed_counts[image_name] = count
+        parsed_flavors[image_name] = flavor_id
 
-    return parsed_counts
+    return parsed_counts, parsed_flavors
 
 
 def filter_template_attributes(allowed_data, attributes):
@@ -79,6 +90,27 @@ def filter_template_attributes(allowed_data, attributes):
     return filtered_data
 
 
+def add_flavors_to_template_attributes(attributes, parsed_flavors):
+    """Helper for adding flavor_ids to attributes
+
+    Given a dict of parsed flavors, it will put a flavor_ids stored in
+    role into attributes that will be fed to heat stack create/update.
+
+    Mapping of image name to flavor_param is stored in template_tools.ROLES.
+
+    :param attributes: Dict of key/value string attributes
+    :type  attributes: dict
+
+    :param parsed_flavors: Dict of (image_name, flavor_id)
+    :type  parsed_flavors: dict
+    """
+    for image_name, flavor_id in parsed_flavors.items():
+        role = template_tools.ROLES.get(image_name, None)
+        if role:
+            flavor_param = role['flavor_param']
+            attributes[flavor_param] = flavor_id
+
+
 def process_stack(attributes, counts, overcloud_roles=None, create=False):
     """Helper function for processing the stack.
 
@@ -92,28 +124,51 @@ def process_stack(attributes, counts, overcloud_roles=None, create=False):
     :param counts: Dictionary of counts of roles to be deployed
     :type  counts: dict
 
+    :param overcloud_roles: If Count objects are missing the overcloud_role
+                            relation, we need to explicitly pass the dict
+                            of (overcloud_role_id, overcloud_role)
+    :type  overcloud_roles: dict
+
     :param create: A flag to designate if we are creating or updating the stack
     :type create: bool
     """
+    heat_client = HeatClient()
+
     try:
-        overcloud = template_tools.merge_templates(
-            parse_counts(counts, overcloud_roles))
+        # Get how many of each role we want and what flavor each role uses.
+        parsed_counts, parsed_flavors = parse_counts_and_flavors(
+            counts, overcloud_roles)
+    except Exception as e:
+        raise exception.ParseCountsAndFlavorsFailed(unicode(e))
+
+    try:
+        # Build the template
+        overcloud = template_tools.merge_templates(parsed_counts)
     except Exception as e:
         raise exception.HeatTemplateCreateFailed(unicode(e))
 
-    heat_client = HeatClient()
-
-    stack_exists = heat_client.exists_stack()
     try:
+        # Get the parameters that the template accepts and validate
         allowed_data = heat_client.validate_template(overcloud)
     except Exception as e:
         raise exception.HeatTemplateValidateFailed(unicode(e))
 
+    stack_exists = heat_client.exists_stack()
     if stack_exists and create:
         raise exception.StackAlreadyCreated()
 
     elif not stack_exists and not create:
         raise exception.StackNotFound()
+
+    try:
+        # Put flavors from OverloudRoles into attributes
+        add_flavors_to_template_attributes(attributes, parsed_flavors)
+
+        # Filter the attributes to allowed only
+        filtered_attributes = filter_template_attributes(allowed_data,
+                                                         attributes)
+    except Exception as e:
+        raise exception.HeatStackProcessingAttributesFailed(unicode(e))
 
     if create:
         operation = heat_client.create_stack
@@ -121,9 +176,7 @@ def process_stack(attributes, counts, overcloud_roles=None, create=False):
         operation = heat_client.update_stack
 
     try:
-        result = operation(
-            overcloud,
-            filter_template_attributes(allowed_data, attributes))
+        result = operation(overcloud, filtered_attributes)
     except Exception as e:
         if create:
             raise exception.HeatStackCreateFailed(unicode(e))
