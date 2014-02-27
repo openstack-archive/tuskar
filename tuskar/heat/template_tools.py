@@ -22,13 +22,21 @@ from oslo.config import cfg
 from tripleo_heat_merge import merge
 
 
-# The name of the compute Overcloud role - defined for special case handling
+# TODO(lsmola) For now static definition of roles for Icehouse
+# we will need to load these associations from somewhere.
+OVERCLOUD_CONTROL_ROLE = 'overcloud-control'
 OVERCLOUD_COMPUTE_ROLE = 'overcloud-compute'
 OVERCLOUD_VOLUME_ROLE = 'overcloud-cinder-volume'
+
 ROLES = {}
+ROLES[OVERCLOUD_CONTROL_ROLE] = {'template_param': 'Control',
+                                 'flavor_param': 'OvercloudControlFlavor',
+                                 'file_name': None}
 ROLES[OVERCLOUD_COMPUTE_ROLE] = {'template_param': 'NovaCompute',
+                                 'flavor_param': 'OvercloudComputeFlavor',
                                  'file_name': 'overcloud-source.yaml'}
 ROLES[OVERCLOUD_VOLUME_ROLE] = {'template_param': 'BlockStorage',
+                                'flavor_param': 'OvercloudBlockStorageFlavor',
                                 'file_name': 'block-storage.yaml'}
 
 
