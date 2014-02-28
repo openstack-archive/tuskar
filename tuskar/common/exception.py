@@ -20,6 +20,7 @@ SHOULD include dedicated exception logging.
 """
 
 from oslo.config import cfg
+import six
 
 from tuskar.openstack.common.gettextutils import _  # noqa
 from tuskar.openstack.common import log as logging
@@ -110,7 +111,7 @@ class TuskarException(Exception):
         if self.__class__.__name__.endswith('_Remote'):
             return self.args[0]
         else:
-            return unicode(self)
+            return six.text_type(self)
 
 
 class NotAuthorized(TuskarException):

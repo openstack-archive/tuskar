@@ -15,6 +15,7 @@ import pecan
 import wsme
 
 from pecan import rest
+import six
 from wsmeext import pecan as wsme_pecan
 
 from tuskar.api.controllers.v1 import models
@@ -94,7 +95,7 @@ def process_stack(attributes, counts, create=False):
     try:
         overcloud = template_tools.merge_templates(parse_counts(counts))
     except Exception as e:
-        raise exception.HeatTemplateCreateFailed(unicode(e))
+        raise exception.HeatTemplateCreateFailed(six.text_type(e))
 
     heat_client = HeatClient()
 
@@ -102,7 +103,7 @@ def process_stack(attributes, counts, create=False):
     try:
         allowed_data = heat_client.validate_template(overcloud)
     except Exception as e:
-        raise exception.HeatTemplateValidateFailed(unicode(e))
+        raise exception.HeatTemplateValidateFailed(six.text_type(e))
 
     if stack_exists and create:
         raise exception.StackAlreadyCreated()
@@ -120,9 +121,9 @@ def process_stack(attributes, counts, create=False):
                   filter_template_attributes(allowed_data, attributes))
     except Exception as e:
         if create:
-            raise exception.HeatStackCreateFailed(unicode(e))
+            raise exception.HeatStackCreateFailed(six.text_type(e))
         else:
-            raise exception.HeatStackUpdateFailed(unicode(e))
+            raise exception.HeatStackUpdateFailed(six.text_type(e))
 
 
 class OvercloudsController(rest.RestController):
