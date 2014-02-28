@@ -1,18 +1,17 @@
-# Hacking already pins down pep8, pyflakes and flake8
-hacking>=0.8.0,<0.9
 
 coverage>=3.6
 discover
 fixtures>=0.3.14
+# Hacking already pins down pep8, pyflakes and flake8
+hacking>=0.8.0,<0.9
 mock>=1.0
 mox>=0.5.3
 MySQL-python
 python-subunit
+# Doc requirements
+sphinx>=1.1.2,<1.2
+sphinxcontrib-pecanwsme>=0.5
 stevedore>=0.14
 testrepository>=0.0.17
 testtools>=0.9.32
 unittest2
-
-# Doc requirements
-sphinx>=1.1.2,<1.2
-sphinxcontrib-pecanwsme>=0.5
