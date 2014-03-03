@@ -25,10 +25,6 @@ import tuskar.heat.template_tools as template_tools
 LOG = logging.getLogger(__name__)
 
 
-# FIXME(lsmola) this is for debugging purposes only, remove before I3
-POC_PARAMS = {'controller': 1, 'compute': 2}
-
-
 def parse_counts(counts):
     """Helper for parsing the OvercloudRoleCount object
 
@@ -128,13 +124,36 @@ def process_stack(attributes, counts, create=False):
 class OvercloudsController(rest.RestController):
     """REST controller for the Overcloud class."""
 
-    _custom_actions = {'template_get': ['GET']}
+    _custom_actions = {'template_parameters': ['GET']}
 
-    # FIXME(lsmola) this is for debugging purposes only, remove before I3
-    @pecan.expose()
-    def template_get(self):
-        overcloud = template_tools.merge_templates(POC_PARAMS)
-        return overcloud
+    @pecan.expose('json')
+    def template_parameters(self):
+        # TODO(lsmola) returning all possible parameters now, later in J
+        # user should pick what to build first and we should return
+        # appropriate parameters.
+        fixed_params = {template_tools.OVERCLOUD_COMPUTE_ROLE: 1,
+                        template_tools.OVERCLOUD_VOLUME_ROLE: 1}
+
+        # We don't want user to fill flavor based parameters, cause
+        # it is already stored in OvercloudRoles
+        except_parameters = ('OvercloudControlFlavor',
+                             'OvercloudComputeFlavor',
+                             'OvercloudBlockStorageFlavor')
+
+        overcloud = template_tools.merge_templates(fixed_params)
+
+        heat_client = HeatClient()
+        try:
+            allowed_data = heat_client.validate_template(overcloud)
+            # Send back only wanted parameters
+            template_parameters = dict((key, value) for key, value
+                                       in allowed_data['Parameters'].items()
+                                       if key not in except_parameters)
+
+        except Exception as e:
+            raise exception.HeatTemplateValidateFailed(unicode(e))
+
+        return template_parameters
 
     @wsme.validate(models.Overcloud)
     @wsme_pecan.wsexpose(models.Overcloud,
