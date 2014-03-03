@@ -119,6 +119,30 @@ class OvercloudTests(base.TestCase):
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
         'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
+            'validate_template.return_value': {
+                'Parameters': {'AdminPassword': 'unset',
+                               'OvercloudControlFlavor': 'unset',
+                               'OvercloudComputeFlavor': 'unset',
+                               'OvercloudBlockStorageFlavor': 'unset'}},
+        })
+    )
+    def test_template_parameters_get(self, mock_heat_client,
+                                     mock_heat_merge_templates):
+        # Setup
+        mock_heat_merge_templates.return_value = None
+
+        # Test
+        url = URL_OVERCLOUDS + '/' + 'template_parameters_get'
+        response = self.app.get(url)
+        result = response.json
+
+        # Verify
+        self.assertEqual(response.status_int, 200)
+        self.assertEqual(result, {'AdminPassword': 'unset'})
+
+    @mock.patch('tuskar.heat.template_tools.merge_templates')
+    @mock.patch(
+        'tuskar.heat.client.HeatClient.__new__', return_value=mock.Mock(**{
             'validate_template.return_value': {},
             'exists_stack.return_value': False,
             'create_stack.return_value': True,
