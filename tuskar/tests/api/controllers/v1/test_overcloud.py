@@ -71,32 +71,6 @@ class OvercloudTests(base.TestCase):
 
         mock_db_get.assert_called_once_with(12345)
 
-    def test_parse_counts_overcloud_roles_as_relation(self):
-        # Setup
-        overcloud_role_1 = db_models.OvercloudRole(
-            image_name='overcloud-compute', flavor_id='1')
-
-        overcloud_role_2 = db_models.OvercloudRole(
-            image_name='overcloud-cinder-volume', flavor_id='1')
-
-        overcloud_role_count_1 = db_models.OvercloudRoleCount(
-            num_nodes=5, overcloud_role=overcloud_role_1)
-
-        overcloud_role_count_2 = db_models.OvercloudRoleCount(
-            num_nodes=9, overcloud_role=overcloud_role_2)
-
-        mock_counts = [overcloud_role_count_1, overcloud_role_count_2]
-
-        # Test
-        result = overcloud.parse_counts_and_flavors(mock_counts)
-
-        # Verify
-        self.assertEqual(result,
-                         ({'overcloud-compute': 5,
-                           'overcloud-cinder-volume': 9},
-                          {'overcloud-compute': '1',
-                           'overcloud-cinder-volume': '1'}))
-
     def test_parse_counts_overcloud_roles_explicit(self):
         # Setup
         overcloud_role_1 = db_models.OvercloudRole(
@@ -180,7 +154,7 @@ class OvercloudTests(base.TestCase):
         mock_heat_merge_templates.return_value = None
 
         # Test
-        response = overcloud.process_stack({}, {}, create=True)
+        response = overcloud.process_stack({}, {}, {}, create=True)
 
         # Verify
         self.assertEqual(response, {'stack': {'id': '1'}})
@@ -201,7 +175,7 @@ class OvercloudTests(base.TestCase):
         # Test and Verify
         self.assertRaises(
             exception.HeatStackCreateFailed,
-            overcloud.process_stack, {}, {}, create=True)
+            overcloud.process_stack, {}, {}, {}, create=True)
 
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
@@ -219,7 +193,7 @@ class OvercloudTests(base.TestCase):
         # Test and Verify
         self.assertRaises(
             exception.StackAlreadyCreated, overcloud.process_stack, {}, {},
-            create=True)
+            {}, create=True)
 
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
@@ -237,7 +211,7 @@ class OvercloudTests(base.TestCase):
         # Test and Verify
         self.assertRaises(
             exception.HeatTemplateValidateFailed, overcloud.process_stack,
-            {}, {}, create=True)
+            {}, {}, {}, create=True)
 
     @mock.patch('tuskar.db.sqlalchemy.api.Connection.get_overcloud_roles')
     @mock.patch('tuskar.api.controllers.v1.overcloud.process_stack')
@@ -281,7 +255,7 @@ class OvercloudTests(base.TestCase):
         mock_heat_merge_templates.return_value = None
 
         # Test
-        response = overcloud.process_stack({}, {})
+        response = overcloud.process_stack({}, {}, {})
 
         # Verify
         self.assertEqual(response, {'stack': {'id': '1'}})
@@ -302,7 +276,7 @@ class OvercloudTests(base.TestCase):
         # Test and Verify
         self.assertRaises(
             exception.HeatStackUpdateFailed, overcloud.process_stack, {},
-            {})
+            {}, {})
 
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
@@ -319,7 +293,7 @@ class OvercloudTests(base.TestCase):
 
         # Test and Verify
         self.assertRaises(
-            exception.StackNotFound, overcloud.process_stack, {}, {})
+            exception.StackNotFound, overcloud.process_stack, {}, {}, {})
 
     @mock.patch('tuskar.heat.template_tools.merge_templates')
     @mock.patch(
@@ -337,7 +311,7 @@ class OvercloudTests(base.TestCase):
         # Test and Verify
         self.assertRaises(
             exception.HeatTemplateValidateFailed, overcloud.process_stack,
-            {}, {})
+            {}, {}, {})
 
     @mock.patch('tuskar.api.controllers.v1.overcloud.process_stack')
     @mock.patch('tuskar.db.sqlalchemy.api.Connection.update_overcloud')
@@ -385,7 +359,7 @@ class OvercloudTests(base.TestCase):
 
         mock_process_stack.assert_called_once_with(
             {'name': 'updated'}, [overcloud_role_count_1,
-                                  overcloud_role_count_2])
+                                  overcloud_role_count_2], {})
 
     @mock.patch('tuskar.db.sqlalchemy.api.'
                 'Connection.delete_overcloud_by_id')

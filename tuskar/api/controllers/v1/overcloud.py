@@ -30,18 +30,18 @@ LOG = logging.getLogger(__name__)
 POC_PARAMS = {'controller': 1, 'compute': 2}
 
 
-def parse_counts_and_flavors(counts, overcloud_roles=None):
+def parse_counts_and_flavors(counts, overcloud_roles):
     """Helper for parsing the OvercloudRoleCount object
 
-    Given a list of OvercloudRoleCount objects return a dict of
-    (image_name, count) in a format used for building a template.
+    Given a list of OvercloudRoleCount and dict of OverlcoudRole objects
+    return a dict of (image_name, count) and (image_name, flavor_id) in a
+    format used for building a template.
 
     :param counts: List of tuskar.api.controllers.v1.models.OvercloudRoleCount
     :type  counts: list
 
-    :param overcloud_roles: If Count objects are missing the overcloud_role
-                            relation, we need to explicitly pass the dict
-                            of (overcloud_role_id, overcloud_role)
+    :param overcloud_roles: Dict of (overcloud_role_id, overcloud_role) so
+                            we can access image_name and flavor_id of roles
     :type  overcloud_roles: dict
 
     :return: Tuple of dicts {(image_name, count)}, {(image_name, flavor_id)}
@@ -50,16 +50,10 @@ def parse_counts_and_flavors(counts, overcloud_roles=None):
     parsed_counts = {}
     parsed_flavors = {}
     for count_obj in counts:
-        # TODO(lsmola) we can probably merge this behavior. Need for this is
-        # explained above.
-        if overcloud_roles is None:
-            image_name = count_obj.overcloud_role.image_name
-            flavor_id = count_obj.overcloud_role.flavor_id
-        else:
-            image_name = overcloud_roles[
-                count_obj.overcloud_role_id].image_name
-            flavor_id = overcloud_roles[
-                count_obj.overcloud_role_id].flavor_id
+        image_name = overcloud_roles[
+            count_obj.overcloud_role_id].image_name
+        flavor_id = overcloud_roles[
+            count_obj.overcloud_role_id].flavor_id
 
         count = count_obj.num_nodes
         parsed_counts[image_name] = count
@@ -117,7 +111,13 @@ def get_flavor_attributes(parsed_flavors):
     return flavor_attributes
 
 
-def process_stack(attributes, counts, overcloud_roles=None, create=False):
+def get_overcloud_roles_dict():
+    return dict((overcloud_role.id, overcloud_role)
+                for overcloud_role in
+                pecan.request.dbapi.get_overcloud_roles())
+
+
+def process_stack(attributes, counts, overcloud_roles, create=False):
     """Helper function for processing the stack.
 
     Given a params dict containing the Overcloud Roles and initialization
@@ -228,13 +228,9 @@ class OvercloudsController(rest.RestController):
         # step 2- put the right stack_id to the overcloud
         # step 3- initialize the stack
         # step 4- set the correct overcloud status
-        overcloud_roles = dict((overcloud_role.id, overcloud_role)
-                               for overcloud_role in
-                               pecan.request.dbapi.get_overcloud_roles())
-
         stack = process_stack(transfer_overcloud.attributes,
                               transfer_overcloud.counts,
-                              overcloud_roles=overcloud_roles,
+                              get_overcloud_roles_dict(),
                               create=True)
 
         # Persist to the database
@@ -285,8 +281,8 @@ class OvercloudsController(rest.RestController):
         # this probably should also have workflow
         # step 1- build template and stack-update
         # step 2- set the correct overcloud status
-
-        process_stack(updated_overcloud.attributes, result.counts)
+        process_stack(updated_overcloud.attributes, result.counts,
+                      get_overcloud_roles_dict())
 
         return updated_overcloud
 
