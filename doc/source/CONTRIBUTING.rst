@@ -143,4 +143,10 @@ This will run tests under Python 2.6, 2.7 and verify `PEP 8
 <http://www.python.org/dev/peps/pep-0008/>`_ compliance. The identical test
 suite is run by OpenStack's Jenkins whenever you send a patch.
 
+PEP8 check runs ::
+
+  $ ./tools/requirements_style_check.sh requirements.txt test-requirements.txt
+
+as last check. This can fail on Fedora 20 due to `sort bug <https://bugzilla.redhat.com/show_bug.cgi?id=1055597>`_.
+
 Additional details forthcoming.
