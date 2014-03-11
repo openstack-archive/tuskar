@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: James Slagle <jslagle@redhat.com>
+Code-Review+2: James Slagle <jslagle@redhat.com>
+Code-Review+2: Jiri Stransky <jistr@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 11 Mar 2014 14:45:43 +0000
+Reviewed-on: https://review.openstack.org/79516
+Project: openstack/tuskar
+Branch: refs/heads/master
