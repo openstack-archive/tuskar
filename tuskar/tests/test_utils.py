@@ -13,11 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import __builtin__
 import os
 import os.path
 
 import mox
+import six.moves.builtins as __builtin__
 
 from tuskar.common import utils
 from tuskar.tests import base
