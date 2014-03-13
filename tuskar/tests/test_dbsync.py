@@ -19,11 +19,11 @@ from tuskar.db import migration
 from tuskar.tests.db import base
 
 
-class DbSyncTestCase(base.DbTestCase):
+class DbUpgradeTestCase(base.DbTestCase):
     def setUp(self):
-        super(DbSyncTestCase, self).setUp()
+        super(DbUpgradeTestCase, self).setUp()
 
-    def test_sync_and_version(self):
-        migration.db_sync()
-        v = migration.db_version()
+    def test_upgrade_and_version(self):
+        migration.upgrade('head')
+        v = migration.version()
         self.assertTrue(v > migration.INIT_VERSION)

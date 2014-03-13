@@ -39,6 +39,7 @@ from oslo.config import cfg
 from tuskar.db import migration
 
 from tuskar.common import paths
+from tuskar.db.sqlalchemy import models
 from tuskar.openstack.common.db.sqlalchemy import session
 from tuskar.openstack.common import log as logging
 from tuskar.tests import conf_fixture
@@ -76,13 +77,15 @@ class Database(fixtures.Fixture):
         self.engine.dispose()
         conn = self.engine.connect()
         if sql_connection == "sqlite://":
-            if db_migrate.db_version() > db_migrate.INIT_VERSION:
-                return
-        else:
+            self.setup_sqlite(db_migrate)
+        elif sql_connection.startswith('sqlite:///'):
             testdb = paths.state_path_rel(sqlite_db)
             if os.path.exists(testdb):
                 return
-        db_migrate.db_sync()
+            self.setup_sqlite(db_migrate)
+        else:
+            db_migrate.upgrade('head')
+
         self.post_migrations()
         if sql_connection == "sqlite://":
             conn = self.engine.connect()
@@ -91,6 +94,12 @@ class Database(fixtures.Fixture):
         else:
             cleandb = paths.state_path_rel(sqlite_clean_db)
             shutil.copyfile(testdb, cleandb)
+
+    def setup_sqlite(self, db_migrate):
+        if db_migrate.version():
+            return
+        models.Base.metadata.create_all(self.engine)
+        db_migrate.stamp('head')
 
     def setUp(self):
         super(Database, self).setUp()
@@ -102,6 +111,7 @@ class Database(fixtures.Fixture):
         else:
             shutil.copyfile(paths.state_path_rel(self.sqlite_clean_db),
                             paths.state_path_rel(self.sqlite_db))
+            self.addCleanup(os.unlink, self.sqlite_db)
 
     def post_migrations(self):
         """Any addition steps that are needed outside of the migrations."""
