@@ -76,13 +76,13 @@ class Database(fixtures.Fixture):
         self.engine.dispose()
         conn = self.engine.connect()
         if sql_connection == "sqlite://":
-            if db_migrate.db_version() > db_migrate.INIT_VERSION:
+            if db_migrate.version() > db_migrate.INIT_VERSION:
                 return
         else:
             testdb = paths.state_path_rel(sqlite_db)
             if os.path.exists(testdb):
                 return
-        db_migrate.db_sync()
+        db_migrate.upgrade('head')
         self.post_migrations()
         if sql_connection == "sqlite://":
             conn = self.engine.connect()
