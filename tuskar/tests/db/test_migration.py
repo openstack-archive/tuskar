@@ -28,7 +28,7 @@ class CurrentDatabaseSchemaTests(db_base.DbTestCase):
     """
 
     def test_migration_ok(self):
-        db_migration.db_sync()
+        db_migration.upgrade('head')
         # Should not raise any exceptions
 
     def test_verify_overcloud_roles(self):
