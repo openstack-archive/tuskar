@@ -32,7 +32,7 @@ class TemplateToolsTests(unittest.TestCase):
         mock_parse_scaling.assert_called_once_with(['NovaCompute=12'])
 
     @mock.patch('tripleo_heat_merge.merge.merge')
-    def test_merge_templates(self, mock_merge):
+    def test_merge_templates_compute(self, mock_merge):
         # Setup
         overcloud_roles = {'controller': 1, 'overcloud-compute': 12}
 
@@ -42,12 +42,54 @@ class TemplateToolsTests(unittest.TestCase):
         # Verify
         mock_merge.assert_called_once_with([
             '/etc/tuskar/tripleo-heat-templates/overcloud-source.yaml',
-            '/etc/tuskar/tripleo-heat-templates/ssl-source.yaml',
-            '/etc/tuskar/tripleo-heat-templates/swift-source.yaml'],
+            '/etc/tuskar/tripleo-heat-templates/ssl-source.yaml', ],
             None,
             None,
             scaling={
-                'NovaCompute0': 12
+                'NovaCompute0': 12,
+            },
+            included_template_dir='/etc/tuskar/tripleo-heat-templates/'
+        )
+
+    @mock.patch('tripleo_heat_merge.merge.merge')
+    def test_merge_templates_block_storage(self, mock_merge):
+        # Setup
+        overcloud_roles = {'controller': 1, 'overcloud-cinder-volume': 12}
+
+        # Test
+        template_tools.merge_templates(overcloud_roles)
+
+        # Verify
+        mock_merge.assert_called_once_with([
+            '/etc/tuskar/tripleo-heat-templates/overcloud-source.yaml',
+            '/etc/tuskar/tripleo-heat-templates/ssl-source.yaml',
+            '/etc/tuskar/tripleo-heat-templates/block-storage.yaml', ],
+            None,
+            None,
+            scaling={
+                'BlockStorage0': 12,
+            },
+            included_template_dir='/etc/tuskar/tripleo-heat-templates/'
+        )
+
+    @mock.patch('tripleo_heat_merge.merge.merge')
+    def test_merge_templates_object_storage(self, mock_merge):
+        # Setup
+        overcloud_roles = {'controller': 1, 'overcloud-swift-storage': 12}
+
+        # Test
+        template_tools.merge_templates(overcloud_roles)
+
+        # Verify
+        mock_merge.assert_called_once_with([
+            '/etc/tuskar/tripleo-heat-templates/overcloud-source.yaml',
+            '/etc/tuskar/tripleo-heat-templates/ssl-source.yaml',
+            '/etc/tuskar/tripleo-heat-templates/swift-source.yaml',
+            '/etc/tuskar/tripleo-heat-templates/swift-storage-source.yaml', ],
+            None,
+            None,
+            scaling={
+                'SwiftStorage0': 12,
             },
             included_template_dir='/etc/tuskar/tripleo-heat-templates/'
         )
