@@ -127,6 +127,10 @@ def generate_data():
                           name='Block Storage',
                           description='block storage role',
                           image_name='overcloud-cinder-volume')
+    create_overcloud_role(conn, base_url,
+                          name='Object Storage',
+                          description='object storage role',
+                          image_name='overcloud-swift-storage')
 
 
 if __name__ == '__main__':

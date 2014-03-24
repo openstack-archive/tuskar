@@ -27,6 +27,7 @@ from tripleo_heat_merge import merge
 OVERCLOUD_CONTROL_ROLE = 'overcloud-control'
 OVERCLOUD_COMPUTE_ROLE = 'overcloud-compute'
 OVERCLOUD_VOLUME_ROLE = 'overcloud-cinder-volume'
+OVERCLOUD_OBJECT_STORAGE_ROLE = 'overcloud-swift-storage'
 
 ROLES = {}
 ROLES[OVERCLOUD_CONTROL_ROLE] = {'template_param': 'Control',
@@ -34,10 +35,14 @@ ROLES[OVERCLOUD_CONTROL_ROLE] = {'template_param': 'Control',
                                  'file_name': None}
 ROLES[OVERCLOUD_COMPUTE_ROLE] = {'template_param': 'NovaCompute',
                                  'flavor_param': 'OvercloudComputeFlavor',
-                                 'file_name': 'overcloud-source.yaml'}
+                                 'file_names': ['overcloud-source.yaml']}
 ROLES[OVERCLOUD_VOLUME_ROLE] = {'template_param': 'BlockStorage',
                                 'flavor_param': 'OvercloudBlockStorageFlavor',
-                                'file_name': 'block-storage.yaml'}
+                                'file_names': ['block-storage.yaml']}
+ROLES[OVERCLOUD_OBJECT_STORAGE_ROLE] = {
+    'template_param': 'SwiftStorage',
+    'flavor_param': 'OvercloudSwiftStorageFlavor',
+    'file_names': ['swift-source.yaml', 'swift-storage-source.yaml']}
 
 
 def generate_scaling_params(overcloud_roles):
@@ -72,6 +77,16 @@ def _join_template_path(file_name):
     )
 
 
+def merge_paths(merged_paths, overcloud_roles, role):
+    if role in overcloud_roles:
+        if overcloud_roles[role] > 0:
+            paths = [_join_template_path(file_name) for file_name
+                     in ROLES[role]['file_names']]
+            return merged_paths + paths
+
+    return merged_paths
+
+
 def merge_templates(overcloud_roles):
     """Merge the Overcloud Roles with overcloud.yaml using merge from
     tripleo_heat_merge
@@ -84,14 +99,14 @@ def merge_templates(overcloud_roles):
     scale_params = generate_scaling_params(overcloud_roles)
     overcloud_src_path = _join_template_path("overcloud-source.yaml")
     ssl_src_path = _join_template_path("ssl-source.yaml")
-    swift_src_path = _join_template_path("swift-source.yaml")
-    merge_paths = [overcloud_src_path, ssl_src_path, swift_src_path]
-    if OVERCLOUD_VOLUME_ROLE in overcloud_roles:
-        if overcloud_roles[OVERCLOUD_VOLUME_ROLE] > 0:
-            block_storage_path = _join_template_path(
-                ROLES[OVERCLOUD_VOLUME_ROLE]['file_name'])
-            merge_paths.append(block_storage_path)
-    template = merge.merge(merge_paths, None, None,
+    merged_paths = [overcloud_src_path, ssl_src_path]
+
+    merged_paths = merge_paths(merged_paths, overcloud_roles,
+                               OVERCLOUD_OBJECT_STORAGE_ROLE)
+    merged_paths = merge_paths(merged_paths, overcloud_roles,
+                               OVERCLOUD_VOLUME_ROLE)
+
+    template = merge.merge(merged_paths, None, None,
                            included_template_dir=cfg.CONF.tht_local_dir,
                            scaling=scale_params)
 
