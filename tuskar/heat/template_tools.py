@@ -27,17 +27,21 @@ from tripleo_heat_merge import merge
 OVERCLOUD_CONTROL_ROLE = 'overcloud-control'
 OVERCLOUD_COMPUTE_ROLE = 'overcloud-compute'
 OVERCLOUD_VOLUME_ROLE = 'overcloud-cinder-volume'
+OVERCLOUD_OBJECT_STORAGE_ROLE = 'overcloud-swift-storage'
 
 ROLES = {}
-ROLES[OVERCLOUD_CONTROL_ROLE] = {'template_param': 'Control',
-                                 'flavor_param': 'OvercloudControlFlavor',
-                                 'file_name': None}
-ROLES[OVERCLOUD_COMPUTE_ROLE] = {'template_param': 'NovaCompute',
-                                 'flavor_param': 'OvercloudComputeFlavor',
-                                 'file_name': 'overcloud-source.yaml'}
-ROLES[OVERCLOUD_VOLUME_ROLE] = {'template_param': 'BlockStorage',
-                                'flavor_param': 'OvercloudBlockStorageFlavor',
-                                'file_name': 'block-storage.yaml'}
+ROLES[OVERCLOUD_CONTROL_ROLE] = {
+    'template_param': 'Control',
+    'flavor_param': 'OvercloudControlFlavor', }
+ROLES[OVERCLOUD_COMPUTE_ROLE] = {
+    'template_param': 'NovaCompute',
+    'flavor_param': 'OvercloudComputeFlavor', }
+ROLES[OVERCLOUD_VOLUME_ROLE] = {
+    'template_param': 'BlockStorage',
+    'flavor_param': 'OvercloudBlockStorageFlavor', }
+ROLES[OVERCLOUD_OBJECT_STORAGE_ROLE] = {
+    'template_param': 'SwiftStorage',
+    'flavor_param': 'OvercloudSwiftStorageFlavor', }
 
 
 def generate_scaling_params(overcloud_roles):
@@ -52,7 +56,8 @@ def generate_scaling_params(overcloud_roles):
     :rtype:  dict
     """
 
-    scaling = {}
+    # Default values, merge.py needs also the 0 counts.
+    scaling = {'NovaCompute0': 0, 'SwiftStorage0': 0, 'BlockStorage0': 0, }
 
     for overcloud_role, count in overcloud_roles.items():
         overcloud_role = overcloud_role.lower()
@@ -71,7 +76,6 @@ def _join_template_path(file_name):
         os.path.join(os.path.dirname(cfg.CONF.tht_local_dir), file_name)
     )
 
-
 def merge_templates(overcloud_roles):
     """Merge the Overcloud Roles with overcloud.yaml using merge from
     tripleo_heat_merge
@@ -82,16 +86,19 @@ def merge_templates(overcloud_roles):
     # TODO(dmatthews): Add exception handling to catch merge errors
 
     scale_params = generate_scaling_params(overcloud_roles)
-    overcloud_src_path = _join_template_path("overcloud-source.yaml")
+    overcloud_source = _join_template_path("overcloud-source.yaml")
+    block_storage = _join_template_path("block-storage.yaml")
+    swift_source = _join_template_path("swift-source.yaml")
+    swift_storage_source = _join_template_path("swift-storage-source.yaml")
     ssl_src_path = _join_template_path("ssl-source.yaml")
-    swift_src_path = _join_template_path("swift-source.yaml")
-    merge_paths = [overcloud_src_path, ssl_src_path, swift_src_path]
-    if OVERCLOUD_VOLUME_ROLE in overcloud_roles:
-        if overcloud_roles[OVERCLOUD_VOLUME_ROLE] > 0:
-            block_storage_path = _join_template_path(
-                ROLES[OVERCLOUD_VOLUME_ROLE]['file_name'])
-            merge_paths.append(block_storage_path)
-    template = merge.merge(merge_paths, None, None,
+
+    # Adding all templates like in tripleo-heat-templates Makefile.
+    # They will be used by merge.py according to scale_params. So the
+    # decision what template to pick will not be here.
+    merged_paths = [overcloud_source, block_storage, swift_source,
+                    swift_storage_source, ssl_src_path]
+
+    template = merge.merge(merged_paths, None, None,
                            included_template_dir=cfg.CONF.tht_local_dir,
                            scaling=scale_params)
 
