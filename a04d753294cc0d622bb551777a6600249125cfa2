@@ -1,0 +1,12 @@
+Verified+2: Jenkins
+Approved+1: Imre Farkas <ifarkas@redhat.com>
+Code-Review+2: Imre Farkas <ifarkas@redhat.com>
+Approved+1: Ladislav Smola <lsmola@redhat.com>
+Code-Review+2: Ladislav Smola <lsmola@redhat.com>
+Code-Review+2: Jiri Stransky <jistr@redhat.com>
+Code-Review+1: Jay Dobies <jason.dobies@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 01 Apr 2014 09:04:53 +0000
+Reviewed-on: https://review.openstack.org/84178
+Project: openstack/tuskar
+Branch: refs/heads/master
