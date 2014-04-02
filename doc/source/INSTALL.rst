@@ -35,7 +35,8 @@ Now create your virtualenv::
     $ cd <your_src_dir>/tuskar
     $ tox -e py27
 
-Note: if ``pip install`` fails due to an outdated setuptools, you can try to update it first::
+.. note::
+  If ``pip install`` fails due to an outdated setuptools, you can try to update it first::
 
     $ sudo pip install --upgrade setuptools
 
@@ -49,7 +50,7 @@ Copy the sample configuration file:
 
     $ cp etc/tuskar/tuskar.conf.sample etc/tuskar/tuskar.conf
 
-Edit the config file and uncomment the `heat_keystone` section at the bottom:
+Edit the config file and uncomment the ``heat_keystone`` section at the bottom:
 
 ::
 
@@ -61,9 +62,10 @@ Edit the config file and uncomment the `heat_keystone` section at the bottom:
     auth_url = http://localhost:35357/v2.0
     insecure = True
 
-Note: replace these values with credentials for our undercloud OpenStack. If
-you're using `Devstack <http://devstack.org/>`_, the username and password are
-printed out when `stack.sh` finishes its job.
+.. note::
+  Replace these values with credentials for our undercloud OpenStack. If
+  you're using `Devstack <http://devstack.org/>`_, the username and password are
+  printed out when ``stack.sh`` finishes its job.
 
 You will need a local checkout of the tripleo-heat-templates. Uncomment the
 configuration entry that is defined for this purpose: tht_local_dir should point
@@ -106,6 +108,14 @@ worked by running::
     $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:8585/v1/overcloud_roles/ | python -mjson.tool
 
 This command should return JSON for four Overcloud Roles.
+
+Keystone Configuration
+^^^^^^^^^^^^^^^^^^^^^^
+
+By default, Tuskar is configured to skip authentication for REST API calls.
+Keystone authentication can be enabled by making the appropriate changes to
+the ``tuskar.conf`` file as described here:
+http://docs.openstack.org/developer/keystone/configuringservices.html
 
 Running Tuskar API
 ------------------
