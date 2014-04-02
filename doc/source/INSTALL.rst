@@ -35,7 +35,8 @@ Now create your virtualenv::
     $ cd <your_src_dir>/tuskar
     $ tox -e py27
 
-Note: if ``pip install`` fails due to an outdated setuptools, you can try to update it first::
+.. note::
+  If ``pip install`` fails due to an outdated setuptools, you can try to update it first::
 
     $ sudo pip install --upgrade setuptools
 
@@ -49,7 +50,7 @@ Copy the sample configuration file:
 
     $ cp etc/tuskar/tuskar.conf.sample etc/tuskar/tuskar.conf
 
-Edit the config file and uncomment the `heat_keystone` section at the bottom:
+Edit the config file and uncomment the ``heat_keystone`` section at the bottom:
 
 ::
 
@@ -61,9 +62,10 @@ Edit the config file and uncomment the `heat_keystone` section at the bottom:
     auth_url = http://localhost:35357/v2.0
     insecure = True
 
-Note: replace these values with credentials for our undercloud OpenStack. If
-you're using `Devstack <http://devstack.org/>`_, the username and password are
-printed out when `stack.sh` finishes its job.
+.. note::
+  Replace these values with credentials for our undercloud OpenStack. If
+  you're using `Devstack <http://devstack.org/>`_, the username and password are
+  printed out when ``stack.sh`` finishes its job.
 
 You will need a local checkout of the tripleo-heat-templates. Uncomment the
 configuration entry that is defined for this purpose: tht_local_dir should point
@@ -106,6 +108,38 @@ worked by running::
     $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:8585/v1/overcloud_roles/ | python -mjson.tool
 
 This command should return JSON for four Overcloud Roles.
+
+Keystone Configuration
+^^^^^^^^^^^^^^^^^^^^^^
+
+In order to configure Tuskar to use Keystone for authentication, the
+following steps must be taken:
+
+Register the Tuskar service with Keystone. The ``service-id`` value is
+determined when the service is created by the ``service-create`` command and
+can be found using ``keystone service-list``.
+
+::
+
+  $ keystone service-create \
+      --name=tuskar \
+      --type=management
+
+  $ keystone endpoint-create \
+      --region RegionOne \
+      --service-id=$SERVICE_ID \
+      --publicurl=http://localhost:8585/ \
+      --internalurl=http://localhost:8585/
+
+Once Keystone is updated, the Tuskar configuration file
+(``etc/tuskar/tuskar.conf``) must be changed to use
+keystone authentication. The ``auth_strategy`` parameter should be changed
+from ``noauth`` to ``keystone``.
+
+::
+
+  auth_strategy=keystone
+
 
 Running Tuskar API
 ------------------
