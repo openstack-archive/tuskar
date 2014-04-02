@@ -195,13 +195,15 @@ class OvercloudsController(rest.RestController):
         # user should pick what to build first and we should return
         # appropriate parameters.
         fixed_params = {template_tools.OVERCLOUD_COMPUTE_ROLE: 1,
-                        template_tools.OVERCLOUD_VOLUME_ROLE: 1}
+                        template_tools.OVERCLOUD_VOLUME_ROLE: 1,
+                        template_tools.OVERCLOUD_OBJECT_STORAGE_ROLE: 1}
 
         # We don't want user to fill flavor based parameters, cause
         # it is already stored in OvercloudRoles
         except_parameters = ('OvercloudControlFlavor',
                              'OvercloudComputeFlavor',
-                             'OvercloudBlockStorageFlavor')
+                             'OvercloudBlockStorageFlavor',
+                             'OvercloudSwiftStorageFlavor')
 
         overcloud = template_tools.merge_templates(fixed_params)
 
