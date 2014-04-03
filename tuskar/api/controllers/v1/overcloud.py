@@ -199,11 +199,17 @@ class OvercloudsController(rest.RestController):
                         template_tools.OVERCLOUD_OBJECT_STORAGE_ROLE: 1}
 
         # We don't want user to fill flavor based parameters, cause
-        # it is already stored in OvercloudRoles
+        # it is already stored in OvercloudRoles, also Image parameters
+        # are expected to be default, otherwise our associations
+        # will not work.
         except_parameters = ('OvercloudControlFlavor',
                              'OvercloudComputeFlavor',
                              'OvercloudBlockStorageFlavor',
-                             'OvercloudSwiftStorageFlavor')
+                             'OvercloudSwiftStorageFlavor',
+                             'NovaImage',
+                             'notcomputeImage',
+                             'BlockStorageImage',
+                             'SwiftStorageImage',)
 
         overcloud = template_tools.merge_templates(fixed_params)
 
