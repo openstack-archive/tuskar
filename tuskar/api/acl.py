@@ -20,10 +20,6 @@
 
 from keystoneclient.middleware import auth_token
 from oslo.config import cfg
-from pecan import hooks
-from webob import exc
-
-from tuskar.common import policy
 
 
 OPT_GROUP_NAME = 'keystone_authtoken'
@@ -32,25 +28,12 @@ OPT_GROUP_NAME = 'keystone_authtoken'
 def register_opts(conf):
     """Register keystoneclient middleware options
     """
-    conf.register_opts(auth_token.opts,
-                       group=OPT_GROUP_NAME)
+    conf.register_opts(auth_token.opts, group=OPT_GROUP_NAME)
     auth_token.CONF = conf
-
-
-register_opts(cfg.CONF)
 
 
 def install(app, conf):
     """Install ACL check on application."""
+    register_opts(cfg.CONF)
     return auth_token.AuthProtocol(app,
                                    conf=dict(conf.get(OPT_GROUP_NAME)))
-
-
-class AdminAuthHook(hooks.PecanHook):
-    """Verify that the user has admin rights
-    """
-
-    def before(self, state):
-        headers = state.request.headers
-        if not policy.check_is_admin(headers.get('X-Roles', "").split(",")):
-            raise exc.HTTPUnauthorized()
