@@ -49,12 +49,9 @@ def setup_app(pecan_config=None, extra_hooks=None):
     if not pecan_config:
         pecan_config = get_pecan_config()
 
-    if pecan_config.app.enable_acl:
-        app_hooks.append(acl.AdminAuthHook())
-
     pecan.configuration.set_config(dict(pecan_config), overwrite=True)
 
-# TODO(deva): add middleware.ParsableErrorMiddleware from Ceilometer
+    # TODO(deva): add middleware.ParsableErrorMiddleware from Ceilometer
     app = pecan.make_app(
         pecan_config.app.root,
         custom_renderers=dict(wsmejson=renderers.JSONRenderer),
