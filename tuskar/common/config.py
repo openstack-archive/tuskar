@@ -18,8 +18,8 @@
 from oslo.config import cfg
 
 from tuskar.common import paths
+from tuskar.common import rpc
 from tuskar.openstack.common.db.sqlalchemy import session as db_session
-from tuskar.openstack.common import rpc
 from tuskar import version
 
 _DEFAULT_SQL_CONNECTION = 'sqlite:///' + paths.state_path_def('$sqlite_db')
@@ -33,3 +33,4 @@ def parse_args(argv, default_config_files=None):
              project='tuskar',
              version=version.version_string(),
              default_config_files=default_config_files)
+    rpc.init(cfg.CONF)

@@ -17,11 +17,12 @@
 
 from tuskar.common import service
 from tuskar.openstack.common import log
+from tuskar.openstack.common import periodic_task
 
 LOG = log.getLogger(__name__)
 
 
-class ManagerService(service.PeriodicService):
+class ManagerService(periodic_task.PeriodicTasks):
     """Tuskar Manager Service.
 
     A single instance of this class is created within the tuskar-manager

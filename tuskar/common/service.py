@@ -20,11 +20,12 @@
 import socket
 
 from oslo.config import cfg
+from oslo import messaging
 
+from tuskar.common import rpc
 from tuskar.openstack.common import context
 from tuskar.openstack.common import log
-from tuskar.openstack.common import rpc
-from tuskar.openstack.common.rpc import service as rpc_service
+from tuskar.openstack.common import service
 
 
 cfg.CONF.register_opts([
@@ -41,15 +42,43 @@ cfg.CONF.register_opts([
 ])
 
 
-class PeriodicService(rpc_service.Service):
+class RPCService(service.Service):
+    def __init__(self, host, manager_module, manager_class):
+        super(RPCService, self).__init__()
+        self.host = host
+        manager_module = importutils.import_module(manager_module)
+        manager_class = getattr(manager_module, manager_class)
+        self.manager = manager_class(host, manager_module.MANAGER_TOPIC)
+        self.topic = self.manager.topic
+        self.rpcserver = None
 
     def start(self):
-        super(PeriodicService, self).start()
+        super(RPCService, self).start()
         admin_context = context.RequestContext('admin', 'admin', is_admin=True)
         self.tg.add_timer(cfg.CONF.periodic_interval,
                           self.manager.periodic_tasks,
                           context=admin_context)
+        self.manager.init_host()
+        LOG.debug(_("Creating RPC server for service %s"), self.topic)
+        target = messaging.Target(topic=self.topic, server=self.host)
+        endpoints = [self.manager]
+        serializer = objects_base.IronicObjectSerializer()
+        self.rpcserver = rpc.get_server(target, endpoints, serializer)
+        self.rpcserver.start()
 
+    def stop(self):
+        super(RPCService, self).stop()
+        try:
+            self.rpcserver.stop()
+            self.rpcserver.wait()
+        except Exception as e:
+            LOG.exception(_('Service error occurred when stopping the '
+                            'RPC server. Error: %s'), e)
+        try:
+            self.manager.del_host()
+        except Exception as e:
+            LOG.exception(_('Service error occurred when cleaning up '
+                            'the RPC manager. Error: %s'), e)
 
 def prepare_service(argv=[]):
     rpc.set_defaults(control_exchange='tuskar')
