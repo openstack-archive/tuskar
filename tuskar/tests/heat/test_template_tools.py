@@ -45,7 +45,8 @@ class TemplateToolsTests(unittest.TestCase):
             '/etc/tuskar/tripleo-heat-templates/block-storage.yaml',
             '/etc/tuskar/tripleo-heat-templates/swift-source.yaml',
             '/etc/tuskar/tripleo-heat-templates/swift-storage-source.yaml',
-            '/etc/tuskar/tripleo-heat-templates/ssl-source.yaml', ],
+            '/etc/tuskar/tripleo-heat-templates/ssl-source.yaml',
+            '/etc/tuskar/tripleo-heat-templates/nova-compute-config.yaml', ],
             None,
             None,
             scaling={
@@ -68,7 +69,8 @@ class TemplateToolsTests(unittest.TestCase):
             '/etc/tuskar/tripleo-heat-templates/block-storage.yaml',
             '/etc/tuskar/tripleo-heat-templates/swift-source.yaml',
             '/etc/tuskar/tripleo-heat-templates/swift-storage-source.yaml',
-            '/etc/tuskar/tripleo-heat-templates/ssl-source.yaml', ],
+            '/etc/tuskar/tripleo-heat-templates/ssl-source.yaml',
+            '/etc/tuskar/tripleo-heat-templates/nova-compute-config.yaml', ],
             None,
             None,
             scaling={
@@ -91,7 +93,8 @@ class TemplateToolsTests(unittest.TestCase):
             '/etc/tuskar/tripleo-heat-templates/block-storage.yaml',
             '/etc/tuskar/tripleo-heat-templates/swift-source.yaml',
             '/etc/tuskar/tripleo-heat-templates/swift-storage-source.yaml',
-            '/etc/tuskar/tripleo-heat-templates/ssl-source.yaml', ],
+            '/etc/tuskar/tripleo-heat-templates/ssl-source.yaml',
+            '/etc/tuskar/tripleo-heat-templates/nova-compute-config.yaml', ],
             None,
             None,
             scaling={
