@@ -22,9 +22,8 @@ from tuskar.common import utils
 
 CONF = cfg.CONF
 CONF.import_opt('backend',
-                'tuskar.openstack.common.db.api',
+                'oslo.db.options',
                 group='database')
-
 IMPL = utils.LazyPluggable(
     pivot='backend',
     config_group='database',
