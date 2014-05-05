@@ -54,7 +54,8 @@ class PeriodicService(rpc_service.Service):
 def prepare_service(argv=[]):
     rpc.set_defaults(control_exchange='tuskar')
     cfg.set_defaults(log.log_opts,
-                     default_log_levels=['amqplib=WARN',
+                     default_log_levels=['amqp=WARN',
+                                         'amqplib=WARN',
                                          'qpid.messaging=INFO',
                                          'sqlalchemy=WARN',
                                          'keystoneclient=INFO',
