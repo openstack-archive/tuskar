@@ -37,9 +37,9 @@ import unittest2
 from oslo.config import cfg
 
 from tuskar.db import migration
+from tuskar.db.sqlalchemy import api as sqla_api
 
 from tuskar.common import paths
-from tuskar.openstack.common.db.sqlalchemy import session
 from tuskar.openstack.common import log as logging
 from tuskar.tests import conf_fixture
 from tuskar.tests import policy_fixture
@@ -54,9 +54,9 @@ test_opts = [
 CONF = cfg.CONF
 CONF.register_opts(test_opts)
 CONF.import_opt('connection',
-                'tuskar.openstack.common.db.sqlalchemy.session',
+                'oslo.db.options',
                 group='database')
-CONF.import_opt('sqlite_db', 'tuskar.openstack.common.db.sqlalchemy.session')
+CONF.import_opt('sqlite_db', 'oslo.db.options', group='database')
 CONF.set_override('use_stderr', False)
 
 logging.setup('tuskar')
@@ -177,9 +177,9 @@ class TestCase(testtools.TestCase, unittest2.TestCase):
         global _DB_CACHE
         if not _DB_CACHE:
             _DB_CACHE = Database(
-                session, migration,
+                sqla_api, migration,
                 sql_connection=CONF.database.connection,
-                sqlite_db=CONF.sqlite_db,
+                sqlite_db=CONF.database.sqlite_db,
                 sqlite_clean_db=CONF.sqlite_clean_db
             )
         self.useFixture(_DB_CACHE)

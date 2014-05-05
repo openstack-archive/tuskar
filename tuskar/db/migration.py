@@ -21,10 +21,10 @@ from oslo.config import cfg
 from tuskar.common import utils
 
 CONF = cfg.CONF
-CONF.import_opt('backend',
-                'tuskar.openstack.common.db.api',
-                group='database')
-
+#CONF.import_opt('backend',
+#                'oslo.db.api',
+#                group='database')
+CONF.import_opt('backend', 'oslo.db.options', group='database')
 IMPL = utils.LazyPluggable(
     pivot='backend',
     config_group='database',

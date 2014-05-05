@@ -17,6 +17,8 @@
 """SQLAlchemy storage backend."""
 
 from oslo.config import cfg
+from oslo.db import exception as db_exception
+from oslo.db.sqlalchemy import session as db_session
 
 # TODO(deva): import MultipleResultsFound and handle it appropriately
 from sqlalchemy.exc import IntegrityError
@@ -26,16 +28,39 @@ from sqlalchemy.orm import subqueryload
 from tuskar.common import exception
 from tuskar.db import api
 from tuskar.db.sqlalchemy import models
-from tuskar.openstack.common.db import exception as db_exception
-from tuskar.openstack.common.db.sqlalchemy import session as db_session
 from tuskar.openstack.common import log
 
 
 CONF = cfg.CONF
 CONF.import_opt('connection',
-                'tuskar.openstack.common.db.sqlalchemy.session',
+                'oslo.db.sqlalchemy.session',
                 group='database')
 LOG = log.getLogger(__name__)
+
+#_DEFAULT_SQL_CONNECTION = 'sqlite:///' + paths.state_path_def('tuskar.sqlite')
+#db_options.set_defaults(_DEFAULT_SQL_CONNECTION, 'tuskar.sqlite')
+
+_FACADE = None
+
+
+def _create_facade_lazily():
+    global _FACADE
+    if _FACADE is None:
+        _FACADE = db_session.EngineFacade(
+            CONF.database.connection,
+            **dict(CONF.database.iteritems())
+        )
+    return _FACADE
+
+
+def get_engine():
+    facade = _create_facade_lazily()
+    return facade.get_engine()
+
+
+def get_session(**kwargs):
+    facade = _create_facade_lazily()
+    return facade.get_session(**kwargs)
 
 
 def get_backend():
@@ -52,10 +77,6 @@ def model_query(model, *args, **kwargs):
     session = kwargs.get('session') or db_session.get_session()
     query = session.query(model, *args)
     return query
-
-
-def get_session():
-    return db_session.get_session(sqlite_fk=True)
 
 
 class Connection(api.Connection):

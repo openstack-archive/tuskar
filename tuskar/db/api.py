@@ -20,10 +20,16 @@ Base classes for storage engines
 import abc
 import six
 
-from tuskar.openstack.common.db import api as db_api
+from oslo.config import cfg
+from oslo.db import api as db_api
+
+CONF = cfg.CONF
+CONF.import_opt('backend', 'oslo.db.options',
+                group='database')
 
 _BACKEND_MAPPING = {'sqlalchemy': 'tuskar.db.sqlalchemy.api'}
-IMPL = db_api.DBAPI(backend_mapping=_BACKEND_MAPPING)
+IMPL = db_api.DBAPI(CONF.database.backend, backend_mapping=_BACKEND_MAPPING,
+                    lazy=True)
 
 
 def get_instance():
