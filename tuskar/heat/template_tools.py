@@ -92,12 +92,13 @@ def merge_templates(overcloud_roles):
     swift_source = _join_template_path("swift-source.yaml")
     swift_storage_source = _join_template_path("swift-storage-source.yaml")
     ssl_src_path = _join_template_path("ssl-source.yaml")
+    nova_compute_config = _join_template_path("nova-compute-config.yaml")
 
     # Adding all templates like in tripleo-heat-templates Makefile.
     # They will be used by merge.py according to scale_params. So the
     # decision what template to pick will not be here.
     merged_paths = [overcloud_source, block_storage, swift_source,
-                    swift_storage_source, ssl_src_path]
+                    swift_storage_source, ssl_src_path, nova_compute_config]
 
     template = merge.merge(merged_paths, None, None,
                            included_template_dir=cfg.CONF.tht_local_dir,
