@@ -1,3 +1,4 @@
+pbr>=0.5.21,<1.0
 
 anyjson>=0.3.3
 argparse
@@ -10,14 +11,12 @@ iso8601>=0.1.8
 kombu>=2.4.8
 lxml>=2.3
 oslo.config>=1.2.0
-pbr>=0.5.21,<1.0
 pecan>=0.2.0
 posix_ipc
 python-heatclient>=0.2.3
 python-keystoneclient>=0.4.1
 python-novaclient>=2.15.0
 PyYAML>=3.1.0
-setuptools_git>=0.4
 six>=1.4.1
 SQLAlchemy>=0.7.8,<=0.7.99
 sqlalchemy-migrate>=0.8.2
