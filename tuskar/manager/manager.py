@@ -36,12 +36,12 @@ class ManagerService(service.PeriodicService):
         # TODO(deva): connect with storage driver
 
     def initialize(self, service):
-        LOG.debug(_('Manager initializing service hooks'))
+        LOG.debug('Manager initializing service hooks')
         # TODO(deva)
 
     def process_notification(self, notification):
         LOG.debug(
-            _('Received notification: %r') % notification.get('event_type'))
+            'Received notification: %r' % notification.get('event_type'))
         # TODO(deva)
 
     def periodic_tasks(self, context):
