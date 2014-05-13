@@ -26,8 +26,8 @@ from tuskar.api import renderers
 auth_opts = [
     cfg.StrOpt(
         'auth_strategy',
-        default='noauth',
-        help='Method to use for auth: noauth or keystone.'),
+        default='keystone',
+        help='Method to use for auth: keystone or noauth.'),
 ]
 
 CONF = cfg.CONF
