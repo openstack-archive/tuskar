@@ -16,7 +16,7 @@
 import os
 import os.path
 
-import mox
+from mox3 import mox
 import six.moves.builtins as __builtin__
 
 from tuskar.common import utils
