@@ -29,8 +29,8 @@ import shutil
 import sys
 
 import fixtures
-import mox
-import stubout
+from mox3 import mox
+from mox3 import stubout
 import testtools
 import unittest2
 
