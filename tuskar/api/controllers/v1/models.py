@@ -112,7 +112,15 @@ class Overcloud(Base):
         # Attributes
         translated = {}
         for db_attribute in db_overcloud.attributes:
-            translated[db_attribute.key] = db_attribute.value
+            # FIXME(rpodolyaka): a workaround for bug 1308172. To fix this
+            # properly we should either stop storing passwords in Tuskar API
+            # or delegate this task to another service.
+            if 'password' in db_attribute.key.lower():
+                value = '******'
+            else:
+                value = db_attribute.value
+
+            translated[db_attribute.key] = value
         transfer_overcloud.attributes = translated
 
         # Counts
