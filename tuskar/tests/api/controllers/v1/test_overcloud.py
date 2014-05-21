@@ -38,7 +38,12 @@ class OvercloudTests(base.TestCase):
     @mock.patch('tuskar.db.sqlalchemy.api.Connection.get_overclouds')
     def test_get_all(self, mock_db_get):
         # Setup
-        fake_results = [db_models.Overcloud(name='foo')]
+        fake_attrs = [
+            db_models.OvercloudAttribute(key='key1', value='value1'),
+            db_models.OvercloudAttribute(key='password', value='secret'),
+            db_models.OvercloudAttribute(key='AdminPassword', value='secret'),
+        ]
+        fake_results = [db_models.Overcloud(name='foo', attributes=fake_attrs)]
         mock_db_get.return_value = fake_results
 
         # Test
@@ -50,6 +55,9 @@ class OvercloudTests(base.TestCase):
         self.assertTrue(isinstance(result, list))
         self.assertEqual(1, len(result))
         self.assertEqual(result[0]['name'], 'foo')
+        self.assertEqual(result[0]['attributes']['key1'], 'value1')
+        self.assertEqual(result[0]['attributes']['password'], '******')
+        self.assertEqual(result[0]['attributes']['AdminPassword'], '******')
 
         mock_db_get.assert_called_once()
 
@@ -57,7 +65,12 @@ class OvercloudTests(base.TestCase):
                 'Connection.get_overcloud_by_id')
     def test_get_one(self, mock_db_get):
         # Setup
-        fake_result = db_models.Overcloud(name='foo')
+        fake_attrs = [
+            db_models.OvercloudAttribute(key='key1', value='value1'),
+            db_models.OvercloudAttribute(key='password', value='secret'),
+            db_models.OvercloudAttribute(key='AdminPassword', value='secret'),
+        ]
+        fake_result = db_models.Overcloud(name='foo', attributes=fake_attrs)
         mock_db_get.return_value = fake_result
 
         # Test
@@ -68,6 +81,9 @@ class OvercloudTests(base.TestCase):
         # Verify
         self.assertEqual(response.status_int, 200)
         self.assertEqual(result['name'], 'foo')
+        self.assertEqual(result['attributes']['key1'], 'value1')
+        self.assertEqual(result['attributes']['password'], '******')
+        self.assertEqual(result['attributes']['AdminPassword'], '******')
 
         mock_db_get.assert_called_once_with(12345)
 

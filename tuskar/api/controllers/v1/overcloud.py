@@ -298,7 +298,8 @@ class OvercloudsController(rest.RestController):
         # Will raise a not found if there is no overcloud with the ID
         result = pecan.request.dbapi.update_overcloud(db_delta)
 
-        updated_overcloud = models.Overcloud.from_db_model(result)
+        updated_overcloud = models.Overcloud.from_db_model(
+            result, mask_passwords=False)
 
         # FIXME(lsmola) This is just POC of updating a stack
         # this probably should also have workflow
@@ -307,7 +308,7 @@ class OvercloudsController(rest.RestController):
         process_stack(updated_overcloud.attributes, result.counts,
                       get_overcloud_roles_dict())
 
-        return updated_overcloud
+        return models.Overcloud.from_db_model(result)
 
     @wsme_pecan.wsexpose(None, int, status_code=204)
     def delete(self, overcloud_id):

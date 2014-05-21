@@ -104,7 +104,8 @@ class Overcloud(Base):
     counts = [OvercloudRoleCount]
 
     @classmethod
-    def from_db_model(cls, db_overcloud, skip_fields=None):
+    def from_db_model(cls, db_overcloud, skip_fields=None,
+                      mask_passwords=True):
         # General Data
         transfer_overcloud = super(Overcloud, cls)\
             .from_db_model(db_overcloud, skip_fields=['attributes', 'counts'])
@@ -112,7 +113,15 @@ class Overcloud(Base):
         # Attributes
         translated = {}
         for db_attribute in db_overcloud.attributes:
-            translated[db_attribute.key] = db_attribute.value
+            # FIXME(rpodolyaka): a workaround for bug 1308172. To fix this
+            # properly we should either stop storing passwords in Tuskar API
+            # or delegate this task to another service.
+            if mask_passwords and 'password' in db_attribute.key.lower():
+                value = '******'
+            else:
+                value = db_attribute.value
+
+            translated[db_attribute.key] = value
         transfer_overcloud.attributes = translated
 
         # Counts
