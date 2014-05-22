@@ -45,6 +45,7 @@ class RequestContext(object):
                  roles=None, remote_address=None, timestamp=None,
                  request_id=None, auth_token=None, overwrite=True,
                  quota_class=None, user_name=None, project_name=None,
+                 password=None, trust_id=None, trustor_user_id=None,
                  service_catalog=None, instance_lock_checked=False, **kwargs):
         """Initialize this RequestContext.
 
@@ -65,6 +66,8 @@ class RequestContext(object):
 
         self.user_id = user_id
         self.project_id = project_id
+        self.trust_id = trust_id
+        self.trustor_user_id = trustor_user_id
         self.roles = roles or []
         self.read_deleted = read_deleted
         self.remote_address = remote_address
@@ -93,6 +96,7 @@ class RequestContext(object):
         # See https://lists.launchpad.net/openstack/msg12200.html
         self.quota_class = quota_class
         self.user_name = user_name
+        self.password = password
         self.project_name = project_name
         self.is_admin = is_admin
         if self.is_admin is None:
@@ -130,10 +134,13 @@ class RequestContext(object):
                 'auth_token': self.auth_token,
                 'quota_class': self.quota_class,
                 'user_name': self.user_name,
+                'password': self.password,
                 'service_catalog': self.service_catalog,
                 'project_name': self.project_name,
                 'instance_lock_checked': self.instance_lock_checked,
                 'tenant': self.tenant,
+                'trust_id': self.trust_id,
+                'trustor_user_id': self.trustor_user_id,
                 'user': self.user}
 
     @classmethod

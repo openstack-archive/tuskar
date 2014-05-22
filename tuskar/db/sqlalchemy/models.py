@@ -20,7 +20,7 @@ from oslo.config import cfg
 
 from sqlalchemy import (Column, ForeignKey, Integer, String, Text)
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import (relationship, backref)
 
 from tuskar.openstack.common.db.sqlalchemy import models
 
@@ -46,6 +46,7 @@ TABLE_OVERCLOUD = 'overclouds'
 TABLE_OVERCLOUD_ATTRIBUTES = 'overcloud_attributes'
 TABLE_OVERCLOUD_ROLE = 'overcloud_roles'
 TABLE_OVERCLOUD_ROLE_COUNT = 'overcloud_role_counts'
+TABLE_USER_CREDS = 'user_creds'
 
 
 class TuskarBase(models.TimestampMixin, models.ModelBase):
@@ -186,6 +187,11 @@ class Overcloud(Base):
     # User-readable text describing the overcloud
     description = Column(String(length=LENGTH_DESCRIPTION))
 
+    # User Credentials for communicating to other OpenStack Services
+    user_creds_id = Column(Integer,
+                           ForeignKey('user_creds.id'),
+                           nullable=True)
+
     # List of configuration attributes for the overcloud
     attributes = relationship(OvercloudAttribute.__name__,
                               cascade='all,delete')
@@ -209,3 +215,22 @@ class Overcloud(Base):
         d['counts'] = count_dicts
 
         return d
+
+
+class UserCreds(Base):
+    """Represents user credentials and mirrors the 'context'
+    handed in by wsgi.
+    """
+
+    __tablename__ = TABLE_USER_CREDS
+
+    id = Column(Integer, primary_key=True)
+    username = Column(String(255))
+    password = Column(String(255))
+    decrypt_method = Column(String(64))
+    tenant = Column(String(1024))
+    auth_url = Column(String)
+    project_id = Column(String(256))
+    trust_id = Column(String(255))
+    trustor_user_id = Column(String(64))
+    overcloud = relationship(Overcloud, backref=backref('user_creds'))

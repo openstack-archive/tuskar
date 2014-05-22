@@ -24,3 +24,9 @@ class DbTestCase(base.TestCase):
     def setUp(self):
         super(DbTestCase, self).setUp()
         self.context = tuskar_context.get_admin_context()
+
+    def create_user_creds(self, ctx, **kwargs):
+        ctx_dict = ctx.to_dict()
+        ctx_dict.update(kwargs)
+        ctx = tuskar_context.RequestContext.from_dict(ctx_dict)
+        return self.connection.user_creds_create(ctx)

@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from tuskar.common import context
 from tuskar.common import exception
 from tuskar.db.sqlalchemy import api as dbapi
 from tuskar.db.sqlalchemy import models
@@ -243,6 +244,7 @@ class OvercloudTests(db_base.DbTestCase):
         self.assertEqual(saved.description, None)
         self.assertEqual(saved.attributes, [])
         self.assertEqual(saved.counts, [])
+        self.assertEqual(saved.user_creds_id, None)
 
     def test_create_overcloud_duplicate_name(self):
         # Setup
@@ -459,3 +461,69 @@ class OvercloudTests(db_base.DbTestCase):
         self.assertRaises(exception.OvercloudNotFound,
                           self.connection.get_overcloud_by_id,
                           'fake-id')
+
+
+def dummy_context(user='test_username', project_id='test_tenant_id',
+                  password='password', roles=[], user_id=None):
+        return context.RequestContext.from_dict(
+            {
+                'project_id': project_id,
+                'tenant': 'test_tenant',
+                'username': user,
+                'user_id': user_id,
+                'password': password,
+                'roles': roles,
+                'is_admin': False,
+                'auth_url': 'http://server.test:5000/v2.0',
+                'auth_token': 'abcd1234'
+            })
+
+
+class UserCredsTest(db_base.DbTestCase):
+    def setUp(self):
+        super(UserCredsTest, self).setUp()
+        self.connection = dbapi.Connection()
+        self.ctx = dummy_context()
+
+    def test_user_creds_create_trust(self):
+        user_creds = self.create_user_creds(self.ctx, trust_id='test_trust_id',
+                                            trustor_user_id='trustor_id')
+        self.assertIsNotNone(user_creds.id)
+        self.assertEqual('test_trust_id',
+                         dbapi._decrypt(user_creds.trust_id,
+                                        user_creds.decrypt_method))
+        self.assertEqual('trustor_id', user_creds.trustor_user_id)
+        self.assertIsNone(user_creds.username)
+        self.assertIsNone(user_creds.password)
+        self.assertEqual(self.ctx.tenant, user_creds.tenant)
+        self.assertEqual(self.ctx.project_id, user_creds.project_id)
+
+    def test_user_creds_create_password(self):
+        user_creds = self.create_user_creds(self.ctx)
+        self.assertIsNotNone(user_creds.id)
+        self.assertEqual(self.ctx.password,
+                         dbapi._decrypt(user_creds.password,
+                                        user_creds.decrypt_method))
+
+    def test_user_creds_get(self):
+        user_creds = self.create_user_creds(self.ctx)
+        ret_user_creds = self.connection.user_creds_get(user_creds.id)
+        self.assertEqual(dbapi._decrypt(user_creds.password,
+                                        user_creds.decrypt_method),
+                         ret_user_creds['password'])
+
+    def test_user_creds_get_noexist(self):
+        self.assertIsNone(self.connection.user_creds_get(123456))
+
+    def test_user_creds_delete(self):
+        user_creds = self.create_user_creds(self.ctx)
+        self.assertIsNotNone(user_creds.id)
+        self.connection.user_creds_delete(self.ctx, user_creds.id)
+        creds = self.connection.user_creds_get(user_creds.id)
+        self.assertIsNone(creds)
+        err = self.assertRaises(
+            exception.NotFound, self.connection.user_creds_delete,
+            self.ctx, user_creds.id)
+        exp_msg = ('Attempt to delete user creds with id '
+                   '%s that does not exist' % user_creds.id)
+        self.assertIn(exp_msg, str(err))

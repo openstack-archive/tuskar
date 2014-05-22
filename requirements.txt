@@ -13,6 +13,7 @@ lxml>=2.3
 oslo.config>=1.2.0
 pecan>=0.2.0
 posix_ipc
+pycrypto>=2.6
 python-heatclient>=0.2.3
 python-keystoneclient>=0.4.1
 python-novaclient>=2.15.0

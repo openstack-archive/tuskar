@@ -52,6 +52,7 @@ class CurrentDatabaseSchemaTests(db_base.DbTestCase):
             'description': 'String',
             'created_at': 'DateTime',
             'updated_at': 'DateTime',
+            'user_creds_id': 'Integer'
         }
         self._assert_columns(table, expected)
 
@@ -64,6 +65,23 @@ class CurrentDatabaseSchemaTests(db_base.DbTestCase):
             'value': 'Text',
             'created_at': 'DateTime',
             'updated_at': 'DateTime',
+        }
+        self._assert_columns(table, expected)
+
+    def test_verify_user_creds(self):
+        table = self._get_db_table('user_creds')
+        expected = {
+            'id': 'Integer',
+            'created_at': 'DateTime',
+            'updated_at': 'DateTime',
+            'username': 'String',
+            'password': 'String',
+            'decrypt_method': 'String',
+            'tenant': 'String',
+            'auth_url': 'String',
+            'project_id': 'String',
+            'trust_id': 'String',
+            'trustor_user_id': 'String'
         }
         self._assert_columns(table, expected)
 

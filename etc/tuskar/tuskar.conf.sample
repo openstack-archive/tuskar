@@ -34,6 +34,15 @@
 
 
 #
+# Options defined in tuskar.common.crypt
+#
+
+# Encryption key used for authentication info in database.
+# (string value)
+#auth_encryption_key=notgood but just long enough i think
+
+
+#
 # Options defined in tuskar.common.exception
 #
 

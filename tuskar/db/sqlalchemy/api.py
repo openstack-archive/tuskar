@@ -23,6 +23,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import subqueryload
 
+from tuskar.common import crypt
 from tuskar.common import exception
 from tuskar.db import api
 from tuskar.db.sqlalchemy import models
@@ -56,6 +57,22 @@ def model_query(model, *args, **kwargs):
 
 def get_session():
     return db_session.get_session(sqlite_fk=True)
+
+
+def _encrypt(value):
+    if value is not None:
+        return crypt.encrypt(value.encode('utf-8'))
+    else:
+        return None, None
+
+
+def _decrypt(enc_value, method):
+    if method is None:
+        return None
+    decryptor = getattr(crypt, method)
+    value = decryptor(enc_value)
+    if value is not None:
+        return unicode(value, 'utf-8')
 
 
 class Connection(api.Connection):
@@ -399,3 +416,49 @@ class Connection(api.Connection):
 
         finally:
             session.close()
+
+    def user_creds_create(self, context):
+        values = context.to_dict()
+        user_creds_ref = models.UserCreds()
+        if values.get('trust_id'):
+            method, trust_id = _encrypt(values.get('trust_id'))
+            user_creds_ref.trust_id = trust_id
+            user_creds_ref.decrypt_method = method
+            user_creds_ref.trustor_user_id = values.get('trustor_user_id')
+            user_creds_ref.username = None
+            user_creds_ref.password = None
+            user_creds_ref.tenant = values.get('tenant')
+            user_creds_ref.project_id = values.get('project_id')
+        else:
+            user_creds_ref.update(values)
+            method, password = _encrypt(values['password'])
+            user_creds_ref.password = password
+            user_creds_ref.decrypt_method = method
+        user_creds_ref.save(get_session())
+        return user_creds_ref
+
+    def user_creds_get(self, user_creds_id):
+        db_result = model_query(models.UserCreds).get(user_creds_id)
+        if db_result is None:
+            return None
+        # Return a dict copy of db results, do not decrypt details into
+        # db_result or it can be committed back to the DB in decrypted form
+        result = dict(db_result)
+        del result['decrypt_method']
+        result['password'] = _decrypt(result['password'],
+                                      db_result.decrypt_method)
+        result['trust_id'] = _decrypt(result['trust_id'],
+                                      db_result.decrypt_method)
+        return result
+
+    def user_creds_delete(self, context, user_creds_id):
+        creds = model_query(models.UserCreds,
+                            context=context).get(user_creds_id)
+        if not creds:
+            raise exception.NotFound(
+                _('Attempt to delete user creds with id '
+                  '%(id)s that does not exist') % {'id': user_creds_id})
+        session = get_session()
+        with session.begin():
+            session.delete(creds)
+            session.flush()
