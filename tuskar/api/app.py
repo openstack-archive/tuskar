@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # Copyright © 2012 New Dream Network, LLC (DreamHost)
 # All Rights Reserved.
