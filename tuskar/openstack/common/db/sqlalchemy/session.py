@@ -398,13 +398,19 @@ def get_session(autocommit=True, expire_on_commit=False,
 #               'c1'")
 # N columns - (IntegrityError) (1062, "Duplicate entry 'values joined
 #               with -' for key 'name_of_our_constraint'")
+
+# FIXME(jistr): manually updated to work around this bug:
+# https://bugs.launchpad.net/tuskar/+bug/1290849
 _DUP_KEY_RE_DB = {
-    "sqlite": re.compile(r"^.*columns?([^)]+)(is|are)\s+not\s+unique$"),
-    "postgresql": re.compile(r"^.*duplicate\s+key.*\"([^\"]+)\"\s*\n.*$"),
-    "mysql": re.compile(r"^.*\(1062,.*'([^\']+)'\"\)$")
+    "sqlite": (re.compile(r"^.*columns?([^)]+)(is|are)\s+not\s+unique$"),
+               re.compile(r"^.*UNIQUE\s+constraint\s+failed:\s+(.+)$")),
+    "postgresql": (re.compile(r"^.*duplicate\s+key.*\"([^\"]+)\"\s*\n.*$"),),
+    "mysql": (re.compile(r"^.*\(1062,.*'([^\']+)'\"\)$"),),
 }
 
 
+# FIXME(jistr): manually updated to work around this bug:
+# https://bugs.launchpad.net/tuskar/+bug/1290849
 def _raise_if_duplicate_entry_error(integrity_error, engine_name):
     """
     In this function will be raised DBDuplicateEntry exception if integrity
@@ -424,13 +430,16 @@ def _raise_if_duplicate_entry_error(integrity_error, engine_name):
     if engine_name not in ["mysql", "sqlite", "postgresql"]:
         return
 
-    m = _DUP_KEY_RE_DB[engine_name].match(integrity_error.message)
-    if not m:
+    for pattern in _DUP_KEY_RE_DB[engine_name]:
+        m = pattern.match(integrity_error.message)
+        if m:
+            break
+    else:
         return
     columns = m.group(1)
 
     if engine_name == "sqlite":
-        columns = columns.strip().split(", ")
+        columns = [c.split('.')[-1] for c in columns.strip().split(", ")]
     else:
         columns = get_columns_from_uniq_cons_or_name(columns)
     raise exception.DBDuplicateEntry(columns, integrity_error)
