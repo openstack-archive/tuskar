@@ -37,7 +37,7 @@ import unittest2
 
 from tuskar.common import paths
 from tuskar.db import migration
-from tuskar.openstack.common.db.sqlalchemy import session
+from tuskar.db.sqlalchemy import api as sqla_api
 from tuskar.openstack.common import log as logging
 from tuskar.tests import conf_fixture
 from tuskar.tests import policy_fixture
@@ -52,9 +52,11 @@ test_opts = [
 CONF = cfg.CONF
 CONF.register_opts(test_opts)
 CONF.import_opt('connection',
-                'tuskar.openstack.common.db.sqlalchemy.session',
+                'tuskar.openstack.common.db.options',
                 group='database')
-CONF.import_opt('sqlite_db', 'tuskar.openstack.common.db.sqlalchemy.session')
+CONF.import_opt('sqlite_db',
+                'tuskar.openstack.common.db.options',
+                group='database')
 CONF.set_override('use_stderr', False)
 
 logging.setup('tuskar')
@@ -64,13 +66,13 @@ _DB_CACHE = None
 
 class Database(fixtures.Fixture):
 
-    def __init__(self, db_session, db_migrate, sql_connection, sqlite_db,
+    def __init__(self, db_api, db_migrate, sql_connection, sqlite_db,
                  sqlite_clean_db):
         self.sql_connection = sql_connection
         self.sqlite_db = sqlite_db
         self.sqlite_clean_db = sqlite_clean_db
 
-        self.engine = db_session.get_engine()
+        self.engine = db_api.get_engine()
         self.engine.dispose()
         conn = self.engine.connect()
         if sql_connection == "sqlite://":
@@ -175,9 +177,9 @@ class TestCase(testtools.TestCase, unittest2.TestCase):
         global _DB_CACHE
         if not _DB_CACHE:
             _DB_CACHE = Database(
-                session, migration,
+                sqla_api, migration,
                 sql_connection=CONF.database.connection,
-                sqlite_db=CONF.sqlite_db,
+                sqlite_db=CONF.database.sqlite_db,
                 sqlite_clean_db=CONF.sqlite_clean_db
             )
         self.useFixture(_DB_CACHE)
