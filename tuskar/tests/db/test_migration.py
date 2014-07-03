@@ -16,7 +16,7 @@
 import sqlalchemy
 
 from tuskar.db import migration as db_migration
-from tuskar.openstack.common.db.sqlalchemy import session as db_session
+from tuskar.db.sqlalchemy import api as sqla_api
 from tuskar.tests.db import base as db_base
 
 
@@ -70,7 +70,7 @@ class CurrentDatabaseSchemaTests(db_base.DbTestCase):
     @staticmethod
     def _get_db_table(table_name):
         metadata = sqlalchemy.MetaData()
-        metadata.bind = db_session.get_engine()
+        metadata.bind = sqla_api.get_engine()
         return sqlalchemy.Table(table_name, metadata, autoload=True)
 
     def _assert_columns(self, table, column_types):
