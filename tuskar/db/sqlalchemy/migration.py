@@ -23,11 +23,11 @@ import sqlalchemy
 
 from tuskar.common import exception
 from tuskar.db import migration
-from tuskar.openstack.common.db.sqlalchemy import session as db_session
+from tuskar.db.sqlalchemy import api as sqla_api
 
 _REPOSITORY = None
 
-get_engine = db_session.get_engine
+get_engine = sqla_api.get_engine
 
 
 def db_sync(version=None):

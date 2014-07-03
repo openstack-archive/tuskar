@@ -1,1 +1,2 @@
 export TUSKAR_CONFIG_GENERATOR_EXTRA_MODULES=keystoneclient.middleware.auth_token
+export TUSKAR_CONFIG_GENERATOR_EXTRA_LIBRARIES=oslo.db
