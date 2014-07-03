@@ -9,6 +9,7 @@ Flask>=0.10,<1.0
 greenlet>=0.3.2
 iso8601>=0.1.8
 kombu>=2.4.8
+lockfile>=0.8
 lxml>=2.3
 oslo.config>=1.2.0
 pecan>=0.2.0

@@ -22,7 +22,7 @@ from tuskar.common import utils
 
 CONF = cfg.CONF
 CONF.import_opt('backend',
-                'tuskar.openstack.common.db.api',
+                'tuskar.openstack.common.db.options',
                 group='database')
 
 IMPL = utils.LazyPluggable(
