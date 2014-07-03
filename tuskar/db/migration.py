@@ -17,13 +17,10 @@
 """Database setup and migration commands."""
 
 from oslo.config import cfg
-
 from tuskar.common import utils
+from oslo.db.options import set_defaults
 
-CONF = cfg.CONF
-CONF.import_opt('backend',
-                'tuskar.openstack.common.db.api',
-                group='database')
+set_defaults(cfg.CONF)
 
 IMPL = utils.LazyPluggable(
     pivot='backend',
