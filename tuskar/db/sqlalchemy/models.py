@@ -21,7 +21,7 @@ from sqlalchemy import (Column, ForeignKey, Integer, String, Text)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from tuskar.openstack.common.db.sqlalchemy import models
+from oslo.db.sqlalchemy import models
 
 
 sql_opts = [

@@ -20,8 +20,8 @@ from oslo.config import cfg
 from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
 
+from tuskar.db.sqlalchemy.api import get_session
 from tuskar.db.sqlalchemy.models import StoredFile
-from tuskar.openstack.common.db.sqlalchemy import session as db_session
 from tuskar.storage.drivers.base import BaseDriver
 from tuskar.storage.exceptions import NameAlreadyUsed
 from tuskar.storage.exceptions import UnknownName
@@ -37,9 +37,6 @@ sql_opts = [
 
 cfg.CONF.register_opts(sql_opts)
 
-
-def get_session():
-    return db_session.get_session(sqlite_fk=True)
 
 
 class SQLAlchemyDriver(BaseDriver):
