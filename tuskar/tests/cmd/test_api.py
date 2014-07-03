@@ -25,10 +25,14 @@ from tuskar.tests.base import TestCase
 class ApiCommandTests(TestCase):
 
     @patch('wsgiref.simple_server.make_server')
-    def test_start(self, mock_make_server):
+    def test_main(self, mock_make_server):
 
         try:
             main(['test.py', '--config-file', 'etc/tuskar/tuskar.conf.sample'])
+
+            # Catch BaseException's and re-raise as Exception, otherwise
+            # exceptions raised by the argument parser code wont be caught and
+            # create a cryptic test failure.
         except BaseException as e:
             raise Exception(e)
 

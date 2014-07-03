@@ -33,7 +33,7 @@ class ConfFixture(fixtures.Fixture):
         super(ConfFixture, self).setUp()
 
         self.conf.set_default('connection', "sqlite://", group='database')
-        self.conf.set_default('sqlite_synchronous', False)
+        self.conf.set_default('sqlite_synchronous', False, group='database')
         self.conf.set_default('use_ipv6', True)
         self.conf.set_default('verbose', True)
         self.conf.set_default('tht_local_dir',

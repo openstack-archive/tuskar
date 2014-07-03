@@ -15,23 +15,24 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""
-Run storage database migration.
-"""
-import sys
+from mock import patch
 
-from tuskar.common import service
-from tuskar.db import migration
-from tuskar.db.sqlalchemy.api import get_backend
+from tuskar.cmd.dbsync import main
+from tuskar.tests.base import TestCase
 
 
-def main(argv=None):
+class DBSyncCommandTests(TestCase):
 
-    if argv is None:
-        argv = sys.argv
+    @patch('tuskar.db.migration.db_sync')
+    def test_main(self, mock_db_sync):
 
-    # Prepare the Tuskar service and load the database backend.
-    service.prepare_service(argv)
-    get_backend()
+        try:
+            main(['test.py', '--config-file', 'etc/tuskar/tuskar.conf.sample'])
 
-    migration.db_sync()
+            # Catch BaseException's and re-raise as Exception, otherwise
+            # exceptions raised by the argument parser code wont be caught and
+            # create a cryptic test failure.
+        except BaseException as e:
+            raise Exception(e)
+
+        mock_db_sync.assert_called_once_with()

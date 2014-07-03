@@ -15,9 +15,11 @@
 
 """SQLAlchemy storage backend."""
 
-from oslo.config import cfg
+import threading
 
-# TODO(deva): import MultipleResultsFound and handle it appropriately
+from oslo.config import cfg
+from oslo.db import exception as db_exception
+from oslo.db.sqlalchemy import session as db_session
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import subqueryload
@@ -25,16 +27,35 @@ from sqlalchemy.orm import subqueryload
 from tuskar.common import exception
 from tuskar.db import api
 from tuskar.db.sqlalchemy import models
-from tuskar.openstack.common.db import exception as db_exception
-from tuskar.openstack.common.db.sqlalchemy import session as db_session
 from tuskar.openstack.common import log
 
 
 CONF = cfg.CONF
-CONF.import_opt('connection',
-                'tuskar.openstack.common.db.sqlalchemy.session',
-                group='database')
 LOG = log.getLogger(__name__)
+
+
+_FACADE = None
+_LOCK = threading.Lock()
+
+
+def _create_facade_lazily():
+    global _LOCK, _FACADE
+    if _FACADE is None:
+        with _LOCK:
+            if _FACADE is None:
+                _FACADE = db_session.EngineFacade.from_config(CONF)
+
+    return _FACADE
+
+
+def get_engine():
+    facade = _create_facade_lazily()
+    return facade.get_engine()
+
+
+def get_session(**kwargs):
+    facade = _create_facade_lazily()
+    return facade.get_session(**kwargs)
 
 
 def get_backend():
@@ -48,13 +69,9 @@ def model_query(model, *args, **kwargs):
     :param session: if present, the session to use
     """
 
-    session = kwargs.get('session') or db_session.get_session()
+    session = kwargs.get('session') or get_session()
     query = session.query(model, *args)
     return query
-
-
-def get_session():
-    return db_session.get_session(sqlite_fk=True)
 
 
 class Connection(api.Connection):
