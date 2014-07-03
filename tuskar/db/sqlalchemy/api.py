@@ -33,9 +33,32 @@ from tuskar.openstack.common import log
 
 CONF = cfg.CONF
 CONF.import_opt('connection',
-                'tuskar.openstack.common.db.sqlalchemy.session',
+                'tuskar.openstack.common.db.options',
                 group='database')
 LOG = log.getLogger(__name__)
+
+
+_FACADE = None
+
+
+def _create_facade_lazily():
+    global _FACADE
+    if _FACADE is None:
+        _FACADE = db_session.EngineFacade.from_config(
+            CONF.database.connection,
+            CONF
+        )
+    return _FACADE
+
+
+def get_engine():
+    facade = _create_facade_lazily()
+    return facade.get_engine()
+
+
+def get_session(**kwargs):
+    facade = _create_facade_lazily()
+    return facade.get_session(**kwargs)
 
 
 def get_backend():
@@ -49,13 +72,9 @@ def model_query(model, *args, **kwargs):
     :param session: if present, the session to use
     """
 
-    session = kwargs.get('session') or db_session.get_session()
+    session = kwargs.get('session') or get_session()
     query = session.query(model, *args)
     return query
-
-
-def get_session():
-    return db_session.get_session(sqlite_fk=True)
 
 
 class Connection(api.Connection):
