@@ -23,8 +23,10 @@ import sys
 
 from tuskar.common import service
 from tuskar.db import migration
+from tuskar.db.sqlalchemy.api import get_backend
 
 
 def main():
+    get_backend()
     service.prepare_service(sys.argv)
     migration.db_sync()
