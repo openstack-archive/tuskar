@@ -20,7 +20,9 @@ Run storage database migration.
 """
 
 from tuskar.db import migration
+from tuskar.db.sqlalchemy.api import get_backend
 
 
 def main():
+    get_backend()
     migration.db_sync()
