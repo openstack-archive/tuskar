@@ -13,25 +13,38 @@
 
 import pecan
 
-from tuskar.api.controllers.v1 import controller
+from tuskar.api.controllers.v1 import controller as v1_controller
+from tuskar.api.controllers.v2 import controller as v2_controller
 
 
 class RootController(object):
 
-    v1 = controller.Controller()
+    v1 = v1_controller.Controller()
+    v2 = v2_controller.Controller()
 
     @pecan.expose('json')
     def index(self):
         return {
             'versions': {
-                'values': [{
-                    'status': 'development',
-                    'media-types': [{'base': 'application/json'}],
-                    'id': 'v1.0',
-                    'links': [{
-                        'href': '/v1/',
-                        'rel': 'self',
-                    }]
-                }]
+                'values': [
+                    {
+                        'status': 'development',
+                        'media-types': [{'base': 'application/json'}],
+                        'id': 'v1.0',
+                        'links': [{
+                            'href': '/v1/',
+                            'rel': 'self',
+                        }]
+                    },
+                    {
+                        'status': 'development',
+                        'media-types': [{'base': 'application/json'}],
+                        'id': 'v2.0',
+                        'links': [{
+                            'href': '/v2/',
+                            'rel': 'self',
+                        }]
+                    }
+                ]
             }
         }
