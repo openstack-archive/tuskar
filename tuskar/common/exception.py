@@ -220,3 +220,7 @@ class PlanNotFound(NotFound):
 
 class PlanDeleteFailed(Invalid):
     message = _("The plan failed to delete.")
+
+
+class PlanExists(DuplicateEntry):
+    message = _("Plan with name %(name)s already exists.")
