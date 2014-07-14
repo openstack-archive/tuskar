@@ -42,3 +42,15 @@ class PlansTests(base.TestCase):
         self.assertTrue(isinstance(result, list))
         self.assertEqual(1, len(result))
         self.assertEqual(result[0]['name'], 'foo')
+
+    def test_get_one(self):
+        # Setup
+
+        # Test
+        url = URL_PLANS + '/' + 'qwerty12345'
+        response = self.app.get(url)
+        result = response.json
+
+        # Verify
+        self.assertEqual(response.status_int, 200)
+        self.assertEqual(result['name'], 'foo')

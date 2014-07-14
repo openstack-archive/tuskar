@@ -41,3 +41,27 @@ class PlansController(rest.RestController):
             }),
         ]
         return plans
+
+    @wsme_pecan.wsexpose(models.Plan, str)
+    def get_one(self, plan_uuid):
+        """Returns a specific plan.
+
+        An exception is raised if no plan is found with the
+        given UUID.
+
+        :param plan_uuid: identifies the plan being fetched
+        :type  plan_uuid: str
+
+        :return: matching plan
+        :rtype:  tuskar.api.controllers.v2.models.Plan
+
+        :raises: tuskar.common.exception.PlanNotFound if there
+                 is no plan with the given UUID
+        """
+
+        LOG.debug('Retrieving plan with UUID: %s' % plan_uuid)
+        plan = models.Plan(**{
+            'uuid': '42',
+            'name': 'foo',
+        })
+        return plan
