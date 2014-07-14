@@ -14,6 +14,7 @@
 import logging
 
 from pecan import rest
+import wsme
 from wsmeext import pecan as wsme_pecan
 
 from tuskar.api.controllers.v2 import models
@@ -80,3 +81,27 @@ class PlansController(rest.RestController):
         LOG.debug('Deleting plan with UUID: %s' % plan_uuid)
 
         # delete plan here
+
+    @wsme.validate(models.Plan)
+    @wsme_pecan.wsexpose(models.Plan,
+                         body=models.Plan,
+                         status_code=201)
+    def post(self, transfer_plan):
+        """Creates a new plan.
+
+        :param transfer_plan: data submitted by the user
+        :type  transfer_plan:
+            tuskar.api.controllers.v1.models.Plan
+
+        :return: created plan
+        :rtype:  tuskar.api.controllers.v1.models.Plan
+
+        :raises: tuskar.common.exception.PlanExists: if a plan
+                 with the given name exists
+        """
+        LOG.debug('Creating plan: %s' % transfer_plan)
+
+        # Persist
+
+        # Package for transfer back to the user
+        return transfer_plan

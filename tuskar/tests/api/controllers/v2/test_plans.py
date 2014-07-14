@@ -62,3 +62,15 @@ class PlansTests(base.TestCase):
 
         # Verify
         self.assertEqual(response.status_int, 204)
+
+    def test_post(self):
+        # Setup
+        plan_data = {'name': 'new'}
+
+        # Test
+        response = self.app.post_json(URL_PLANS, params=plan_data)
+        result = response.json
+
+        # Verify
+        self.assertEqual(response.status_int, 201)
+        self.assertEqual(result['name'], plan_data['name'])

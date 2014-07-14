@@ -218,3 +218,7 @@ class HeatStackDeleteFailed(Invalid):
 
 class PlanNotFound(NotFound):
     message = _('Plan could not be found.')
+
+
+class PlanExists(DuplicateEntry):
+    message = _("Plan with name %(name)s already exists.")
