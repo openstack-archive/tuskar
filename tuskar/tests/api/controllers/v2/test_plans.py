@@ -54,3 +54,11 @@ class PlansTests(base.TestCase):
         # Verify
         self.assertEqual(response.status_int, 200)
         self.assertEqual(result['name'], 'foo')
+
+    def test_delete(self):
+        # Test
+        url = URL_PLANS + '/' + 'qwerty12345'
+        response = self.app.delete(url)
+
+        # Verify
+        self.assertEqual(response.status_int, 204)
