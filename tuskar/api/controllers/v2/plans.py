@@ -65,3 +65,18 @@ class PlansController(rest.RestController):
             'name': 'foo',
         })
         return plan
+
+    @wsme_pecan.wsexpose(None, str, status_code=204)
+    def delete(self, plan_uuid):
+        """Deletes the given plan.
+
+        :param plan_uuid: identifies the plan being deleted
+        :type  plan_uuid: str
+
+        :raises: tuskar.common.exception.PlanNotFound if there
+                 is no plan with the given UUID
+        """
+
+        LOG.debug('Deleting plan with UUID: %s' % plan_uuid)
+
+        # delete plan here
