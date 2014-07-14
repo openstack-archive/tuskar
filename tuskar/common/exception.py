@@ -214,3 +214,7 @@ class HeatStackCreateFailed(Invalid):
 
 class HeatStackDeleteFailed(Invalid):
     message = _("The Heat stack failed to delete.")
+
+
+class PlanNotFound(NotFound):
+    message = _('Plan could not be found.')
