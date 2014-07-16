@@ -14,12 +14,14 @@
 import pecan
 
 from tuskar.api.controllers.v2.plans import PlansController
+from tuskar.api.controllers.v2.roles import RolesController
 
 
 class Controller(object):
     """Version 2 API controller root."""
 
     plans = PlansController()
+    roles = RolesController()
 
     @pecan.expose('json')
     def index(self):
