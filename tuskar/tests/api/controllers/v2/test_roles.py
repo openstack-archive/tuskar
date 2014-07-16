@@ -19,6 +19,7 @@ from tuskar.tests import base
 
 
 URL_ROLES = '/v2/roles'
+URL_PLAN_ROLES = '/v2/plans/plan_uuid/roles'
 
 
 class RolesTests(base.TestCase):
@@ -42,3 +43,17 @@ class RolesTests(base.TestCase):
         self.assertTrue(isinstance(result, list))
         self.assertEqual(1, len(result))
         self.assertEqual(result[0]['name'], 'foo')
+
+    def test_post(self):
+        # Setup
+        role_data = {'uuid': 'qwert12345'}
+
+        # Test
+        response = self.app.post_json(URL_PLAN_ROLES, params=role_data)
+        result = response.json
+
+        # Verify
+        self.assertEqual(response.status_int, 201)
+        self.assertEqual(result['uuid'], '42')
+        self.assertEqual(result['name'], 'foo')
+        self.assertEqual(result['roles'][0]['uuid'], 'qwert12345')

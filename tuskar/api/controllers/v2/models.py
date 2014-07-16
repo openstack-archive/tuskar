@@ -52,3 +52,4 @@ class Plan(Base):
 
     uuid = str
     name = wtypes.text
+    roles = wtypes.ArrayType(Role)
