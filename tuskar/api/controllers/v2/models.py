@@ -41,6 +41,13 @@ class Base(wtypes.Base):
         return value
 
 
+class Role(Base):
+    """Transfer object for roles."""
+
+    uuid = str
+    name = wtypes.text
+
+
 class Plan(Base):
     """Transfer object for plans."""
 
