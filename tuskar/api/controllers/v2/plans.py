@@ -18,12 +18,15 @@ import wsme
 from wsmeext import pecan as wsme_pecan
 
 from tuskar.api.controllers.v2 import models
+from tuskar.api.controllers.v2 import roles
 
 LOG = logging.getLogger(__name__)
 
 
 class PlansController(rest.RestController):
     """REST controller for the Plan class."""
+
+    roles = roles.RolesController()
 
     @wsme_pecan.wsexpose([models.Plan])
     def get_all(self):
