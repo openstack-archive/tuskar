@@ -1,4 +1,3 @@
-#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -41,3 +40,31 @@ class RolesController(rest.RestController):
             }),
         ]
         return roles
+
+    @wsme_pecan.wsexpose(models.Plan,
+                         str,
+                         str,
+                         status_code=201)
+    def post(self, plan_uuid, id):
+        """Adds a new role to plan.
+
+        :param plan_uuid: identifies the plan
+        :type  plan_uuid: str
+
+        :param role_uuid: identifies the role to be added to plan
+        :type  role_uuid: str
+
+        :return: modified plan
+        :rtype:  tuskar.api.controllers.v2.models.Plan
+        """
+        role_uuid = id
+        LOG.debug('Adding role: %s' % role_uuid)
+
+        # Persist
+
+        # Package for transfer back to the user
+        plan = models.Plan(**{
+            'uuid': '42',
+            'name': 'foo',
+        })
+        return plan
