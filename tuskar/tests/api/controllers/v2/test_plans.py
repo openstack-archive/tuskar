@@ -74,3 +74,15 @@ class PlansTests(base.TestCase):
         # Verify
         self.assertEqual(response.status_int, 201)
         self.assertEqual(result['name'], plan_data['name'])
+
+    def test_templates(self):
+        # Setup
+
+        # Test
+        url = URL_PLANS + '/' + 'foo' + '/' + 'templates'
+        response = self.app.get(url)
+        result = response.body
+
+        # Verify
+        self.assertEqual(response.status_int, 200)
+        self.assertEqual(result, 'foo')
