@@ -1,4 +1,3 @@
-#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -12,9 +11,10 @@
 # under the License.
 
 import logging
-import wsme
 
+import pecan
 from pecan import rest
+import wsme
 from wsmeext import pecan as wsme_pecan
 
 from tuskar.api.controllers.v2 import models
@@ -25,6 +25,8 @@ LOG = logging.getLogger(__name__)
 
 class PlansController(rest.RestController):
     """REST controller for the Plan class."""
+
+    _custom_actions = {'templates': ['GET']}
 
     roles = roles.RolesController()
 
@@ -108,3 +110,7 @@ class PlansController(rest.RestController):
 
         # Package for transfer back to the user
         return transfer_plan
+
+    @pecan.expose()
+    def templates(self, plan_uuid):
+        return plan_uuid
