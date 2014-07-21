@@ -18,6 +18,7 @@ the internal Tuskar domain model.
 """
 
 import logging
+
 from wsme import types as wtypes
 
 from tuskar.db.sqlalchemy import models as db_models

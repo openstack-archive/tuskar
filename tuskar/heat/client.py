@@ -22,7 +22,9 @@
 """A client library for accessing Heat CloudFormations API using Boto"""
 
 from os import environ as env
+
 from oslo.config import cfg
+
 from tuskar.openstack.common import log as logging
 
 heat_opts = [
@@ -74,7 +76,7 @@ from keystoneclient.v2_0 import client as ksclient
 
 
 class HeatClient(object):
-    """Heat CloudFormations API client to use in Tuskar"""
+    """Heat CloudFormations API client to use in Tuskar."""
 
     def __init__(self):
         try:
@@ -133,6 +135,6 @@ class HeatClient(object):
         try:
             self.get_stack(name)
             return True
-        #return false if 404
+        # return false if 404
         except HeatStackNotFound:
             return False

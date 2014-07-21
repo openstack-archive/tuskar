@@ -11,9 +11,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
 import os
 
+import mock
 from pecan.testing import load_test_app
 
 from tuskar.api.controllers.v1 import overcloud
@@ -123,7 +123,7 @@ class OvercloudTests(base.TestCase):
                           'overcloud-compute': '2',
                           'overcloud-cinder-volume': '3'}
 
-         # Test
+        # Test
         result = overcloud.get_flavor_attributes(parsed_flavors)
 
         # Verify
