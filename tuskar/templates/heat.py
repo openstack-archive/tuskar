@@ -378,6 +378,18 @@ class Environment(object):
             [p for p in self._parameters
              if not ns_utils.matches_template_namespace(namespace, p.name)]
 
+    def find_parameter_by_name(self, name):
+        """Returns the parameter instance with the given name.
+
+        :type name: str
+        :rtype: tuskar.templates.heat.EnvironmentParameter
+        :raise ValueError: if there is no parameter with the given name
+        """
+        matching = [p for p in self._parameters if p.name == name]
+        if len(matching) == 0:
+            raise ValueError('No parameter named %s found' % name)
+        return matching[0]
+
     def add_registry_entry(self, entry):
         """Adds a registry entry to the environment.
 
