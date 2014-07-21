@@ -30,15 +30,13 @@ import sys
 
 import fixtures
 import mox
+from oslo.config import cfg
 import stubout
 import testtools
 import unittest2
 
-from oslo.config import cfg
-
-from tuskar.db import migration
-
 from tuskar.common import paths
+from tuskar.db import migration
 from tuskar.openstack.common.db.sqlalchemy import session
 from tuskar.openstack.common import log as logging
 from tuskar.tests import conf_fixture

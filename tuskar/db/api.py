@@ -17,6 +17,7 @@ Base classes for storage engines
 """
 
 import abc
+
 import six
 
 from tuskar.openstack.common.db import api as db_api

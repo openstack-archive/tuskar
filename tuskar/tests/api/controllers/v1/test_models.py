@@ -12,7 +12,6 @@
 # under the License.
 
 import testtools
-
 from wsme import types as wtypes
 
 from tuskar.api.controllers.v1 import models as api_models
