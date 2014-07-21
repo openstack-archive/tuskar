@@ -366,6 +366,25 @@ class EnvironmentTests(unittest.TestCase):
         self.assertEqual(1, len(e.registry_entries))
         self.assertEqual(e.registry_entries[0].filename, 'f2')
 
+    def test_find_parameter_by_name(self):
+        # Setup
+        e = heat.Environment()
+        parameter = heat.EnvironmentParameter('p1', 'v1')
+        e.add_parameter(parameter)
+
+        # Test
+        found = e.find_parameter_by_name('p1')
+
+        # Verify
+        self.assertTrue(found is parameter)
+
+    def test_find_parameter_by_name_missing_parameter(self):
+        # Setup
+        e = heat.Environment()
+
+        # Test
+        self.assertRaises(ValueError, e.find_parameter_by_name, 'missing')
+
 
 class EnvironmentParameterTests(unittest.TestCase):
 

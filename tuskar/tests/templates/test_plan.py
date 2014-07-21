@@ -71,17 +71,6 @@ class DeploymentPlanTests(unittest.TestCase):
             expected_value = {'get_param': [v]}
             self.assertEqual(prop.value, expected_value)
 
-        # Verify Outputs
-        self.assertEqual(2, len(p.master_template.outputs))
-        for original, added in zip(t.outputs, p.master_template.outputs):
-            self.assertTrue(added is not original)
-
-            expected_name = ns_utils.apply_template_namespace('ns1',
-                                                              original.name)
-            expected_value = {'get_attr': [expected_id, original.name]}
-            self.assertEqual(added.name, expected_name)
-            self.assertEqual(added.value, expected_value)
-
         # Verify Environment Parameters
         self.assertEqual(2, len(p.environment.parameters))
         for env_param, template_param in zip(p.environment.parameters,
@@ -122,6 +111,26 @@ class DeploymentPlanTests(unittest.TestCase):
 
         self.assertEqual(2, len(p.environment.parameters))
         self.assertEqual(1, len(p.environment.registry_entries))
+
+    def test_set_value(self):
+        # Setup
+        p = plan.DeploymentPlan()
+        set_me = heat.EnvironmentParameter('p1', 'v1')
+        p.environment.add_parameter(set_me)
+
+        # Test
+        p.set_value('p1', 'v2')
+
+        # Verify
+        self.assertEqual(p.environment.find_parameter_by_name('p1').value,
+                         'v2')
+
+    def test_set_value_missing_parameter(self):
+        # Setup
+        p = plan.DeploymentPlan()
+
+        # Test
+        self.assertRaises(ValueError, p.set_value, 'missing', 'irrelevant')
 
     def _generate_template(self):
         t = heat.Template()

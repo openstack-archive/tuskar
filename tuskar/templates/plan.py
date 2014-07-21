@@ -69,6 +69,19 @@ class DeploymentPlan(object):
         self._remove_from_master_template(namespace)
         self._remove_from_environment(namespace)
 
+    def set_value(self, name, value):
+        """Sets the value for the attribute with the given name. The name
+        must correspond exactly with an attribute of the plan itself; in
+        other words, the namespace of the template from which the attribute
+        originally came from should already be applied.
+
+        :type name: str
+        :type value: str
+        :raise ValueError: if there is no parameter with the given name
+        """
+        p = self.environment.find_parameter_by_name(name)
+        p.value = value
+
     def _add_to_master_template(self, namespace, template, resource_alias):
         # Add Parameters
         for add_me in template.parameters:
