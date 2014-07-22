@@ -57,3 +57,15 @@ class RolesTests(base.TestCase):
         self.assertEqual(result['uuid'], '42')
         self.assertEqual(result['name'], 'foo')
         self.assertEqual(result['roles'][0]['uuid'], 'qwert12345')
+
+    def test_delete(self):
+        # Setup
+
+        # Test
+        response = self.app.delete_json(URL_PLAN_ROLES + '/role_name/role_ver')
+        result = response.json
+
+        # Verify
+        self.assertEqual(response.status_int, 200)
+        self.assertEqual(result['uuid'], '42')
+        self.assertEqual(result['name'], 'foo')
