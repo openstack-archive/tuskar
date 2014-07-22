@@ -132,6 +132,30 @@ class DeploymentPlanTests(unittest.TestCase):
         # Test
         self.assertRaises(ValueError, p.set_value, 'missing', 'irrelevant')
 
+    def test_plan_parameters(self):
+        # Setup
+        p = plan.DeploymentPlan()
+        t = self._generate_template()
+        p.add_template('ns1', t, 't1.yaml')
+        p.set_value(ns_utils.apply_template_namespace('ns1', 'param-1'), 'v1')
+
+        # Test
+        params = p.plan_parameters
+
+        # Verify
+        self.assertEqual(2, len(params))
+        params.sort(key=lambda x: x.name)
+
+        self.assertTrue(isinstance(params[0], plan.PlanParameter))
+        self.assertEqual(params[0].name,
+                         ns_utils.apply_template_namespace('ns1', 'param-1'))
+        self.assertEqual(params[0].value, 'v1')
+
+        self.assertTrue(isinstance(params[1], plan.PlanParameter))
+        self.assertEqual(params[1].name,
+                         ns_utils.apply_template_namespace('ns1', 'param-2'))
+        self.assertEqual(params[1].value, '')
+
     def _generate_template(self):
         t = heat.Template()
 
@@ -142,3 +166,25 @@ class DeploymentPlanTests(unittest.TestCase):
         t.add_output(heat.Output('out-2', 'value-2'))
 
         return t
+
+
+class PlanParameterTests(unittest.TestCase):
+
+    def test_from_heat_param(self):
+        # Setup
+        h = heat.Parameter('n1', 't1', description='d1', label='l1',
+                           default='def-1', hidden='h1')
+
+        # Test
+        p = plan.PlanParameter.from_heat_parameter(h, 'v1')
+
+        # Verify
+        self.assertTrue(p is not None)
+        self.assertTrue(isinstance(p, plan.PlanParameter))
+        self.assertEqual(p.name, 'n1')
+        self.assertEqual(p.param_type, 't1')
+        self.assertEqual(p.description, 'd1')
+        self.assertEqual(p.label, 'l1')
+        self.assertEqual(p.default, 'def-1')
+        self.assertEqual(p.hidden, 'h1')
+        self.assertEqual(p.value, 'v1')
