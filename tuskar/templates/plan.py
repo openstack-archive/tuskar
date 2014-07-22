@@ -24,6 +24,7 @@ import copy
 from tuskar.templates.heat import Environment
 from tuskar.templates.heat import EnvironmentParameter
 from tuskar.templates.heat import Output
+from tuskar.templates.heat import Parameter
 from tuskar.templates.heat import RegistryEntry
 from tuskar.templates.heat import Resource
 from tuskar.templates.heat import ResourceProperty
@@ -40,6 +41,31 @@ class DeploymentPlan(object):
         self.master_template = \
             master_template or Template(description=description)
         self.environment = environment or Environment()
+
+    @property
+    def plan_parameters(self):
+        """Returns a list of parameters, including both their definition
+        and current value, for the plan.
+
+        :rtype: list of tuskar.templates.plan.PlanParameter
+        """
+        # The assumption here is that there are an equal number of master
+        # template and environment parameters (which should be enforced by
+        # add_template). To be safe, order them both by name and zip them
+        # together for easy combining.
+
+        sorted_template_params = sorted(self.master_template.parameters,
+                                        key=lambda x: x.name)
+        sorted_env_params = sorted(self.environment.parameters,
+                                   key=lambda x: x.name)
+
+        collated = zip(sorted_template_params, sorted_env_params)
+        plan_parameters = []
+        for heat_param, env_param in collated:
+            p = PlanParameter.from_heat_parameter(heat_param, env_param.value)
+            plan_parameters.append(p)
+
+        return plan_parameters
 
     def add_template(self, namespace, template, filename):
         """Adds a new template to the plan. The pieces of the template will
@@ -145,6 +171,46 @@ class DeploymentPlan(object):
         # Remove Resource Registry Entry
         resource_alias = ns_utils.apply_resource_alias_namespace(namespace)
         self.environment.remove_registry_entry_by_alias(resource_alias)
+
+
+class PlanParameter(Parameter):
+    """Represents a parameter on a deployment plan, which is a combination of
+    its definition (which comes from the master template) and its current
+    value (which comes from the environment).
+    """
+
+    @classmethod
+    def from_heat_parameter(cls, heat_parameter, value):
+        """Factory method for converting a Heat parameter into a plan
+        parameter.
+
+        :type heat_parameter: tuskar.templates.heat.Parameter
+        :type value: str
+        :rtype: tuskar.templates.plan.PlanParameter
+        """
+        p = cls(heat_parameter.name, heat_parameter.param_type, value,
+                description=heat_parameter.description,
+                label=heat_parameter.label,
+                default=heat_parameter.default,
+                hidden=heat_parameter.hidden)
+        return p
+
+    def __init__(self, name, param_type, value,
+                 description=None, label=None, default=None, hidden=None):
+        """
+        :type name: str
+        :type param_type: str
+        :type value: str
+        :type description: str
+        :type label: str
+        :type default: str
+        :type hidden: bool
+        """
+        super(PlanParameter, self).__init__(name, param_type,
+                                            description=description,
+                                            label=label, default=default,
+                                            hidden=hidden)
+        self.value = value
 
 
 def _generate_resource_id(namespace):
