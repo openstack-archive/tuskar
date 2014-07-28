@@ -33,15 +33,22 @@ def compose_template(template):
     :rtype:  str
     """
     parameters = _compose_parameters(template)
+    parameter_groups = _compose_parameter_groups(template)
     resources = _compose_resources(template)
     outputs = _compose_outputs(template)
 
     template_dict = {
         'heat_template_version': template.version,
         'parameters': parameters,
+        'parameter_groups': parameter_groups,
         'resources': resources,
         'outputs': outputs,
     }
+
+    # Remove optional sections if they have no values
+    for x in ('parameters', 'parameter_groups', 'outputs'):
+        if len(template_dict[x]) == 0:
+            template_dict.pop(x)
 
     if template.description is not None:
         template_dict['description'] = template.description
@@ -98,6 +105,24 @@ def _compose_parameters(template):
         parameters[p.name] = details
 
     return parameters
+
+
+def _compose_parameter_groups(template):
+    groups = []
+    for g in template.parameter_groups:
+        details = {
+            'label': g.label,
+            'description': g.description,
+            'parameters': list(g.parameter_names),  # yaml doesn't handle tuple
+        }
+
+        details = _strip_missing(details)
+        if len(details['parameters']) == 0:
+            details.pop('parameters')
+
+        groups.append(details)
+
+    return groups
 
 
 def _compose_resources(template):
