@@ -23,10 +23,9 @@ import sys
 
 from oslo.config import cfg
 
-from tuskar.openstack.common import service
-
 from tuskar.common import service as tuskar_service
 from tuskar.manager import manager
+from tuskar.openstack.common import service
 
 CONF = cfg.CONF
 

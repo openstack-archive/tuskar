@@ -12,6 +12,7 @@
 # under the License.
 
 import logging
+
 import pecan
 from pecan import rest
 import wsme

@@ -13,6 +13,7 @@
 # under the License.
 
 import unittest
+
 import yaml
 
 from tuskar.templates import composer

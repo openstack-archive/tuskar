@@ -28,7 +28,6 @@ from tuskar.templates.heat import RegistryEntry
 from tuskar.templates.heat import Resource
 from tuskar.templates.heat import ResourceProperty
 from tuskar.templates.heat import Template
-
 import tuskar.templates.namespace as ns_utils
 
 

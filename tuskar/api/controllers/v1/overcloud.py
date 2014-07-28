@@ -11,11 +11,11 @@
 # under the License.
 
 import logging
-import pecan
-import wsme
 
+import pecan
 from pecan import rest
 import six
+import wsme
 from wsmeext import pecan as wsme_pecan
 
 from tuskar.api.controllers.v1 import models
