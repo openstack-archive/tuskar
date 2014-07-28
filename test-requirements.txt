@@ -6,7 +6,6 @@ discover
 fixtures>=0.3.14
 mock>=1.0
 mox>=0.5.3
-MySQL-python
 python-subunit
 # Doc requirements
 sphinx>=1.1.2,<1.2
