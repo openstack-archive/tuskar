@@ -208,3 +208,30 @@ class Overcloud(Base):
         d['counts'] = count_dicts
 
         return d
+
+
+class StoredFile(Base):
+    """Tuskar Stored File
+
+    The StoredFile model is used by the tuskar.storage package and more
+    specifically for the SQLAlchemy storage driver. Simply put it is a
+    collection of text files with some metadata.
+    """
+
+    __tablename__ = "stored_file"
+
+    #: UUID's are used as the unique identifier.
+    uuid = Column(String(length=36), primary_key=True)
+
+    #: contents contains the full file contents as a string.
+    contents = Column(String(), nullable=False)
+
+    #: Object type flags the type of file that this is, i.e. template or
+    #: environment file.
+    object_type = Column(String(length=20), nullable=False)
+
+    #: Names provide a short human readable description of a file.
+    name = Column(String(length=20), nullable=True)
+
+    #: Versions are an automatic incrementing count.
+    version = Column(Integer(), nullable=True)

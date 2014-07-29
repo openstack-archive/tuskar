@@ -13,6 +13,7 @@
 # under the License.
 
 from tuskar.openstack.common import jsonutils
+from tuskar.storage import get_driver
 from tuskar.storage.models import DeploymentPlan
 
 
@@ -28,14 +29,20 @@ class _BaseStore(object):
     #: like swift may use different containers.
     object_type = None
 
+    #: Flag to designate if the objects should be versioned by the driver.
+    versioned = False
+
     def __init__(self, driver=None):
         """Given the driver to be used, set up an instance of the store. The
         driver can then be re-used between different stores.
 
+        If the driver isn't provided, load it based on the Tuskar ini with the
+        tuskar.storage.get_driver method.
+
         :param driver: The type of object, used for routing the storage.
         :type  driver: tuskar.storage.drivers.base.BaseDriver
         """
-        self._driver = driver
+        self._driver = driver or get_driver(self.__class__)
 
     def create(self, contents):
         """Given the contents create a new file in this store and return a
@@ -74,7 +81,7 @@ class _BaseStore(object):
         :return: StoredFile instance containing the file metadata and contents
         :rtype:  tuskar.storage.models.StoredFile
         """
-        return self._driver.update(self, uuid, None, contents)
+        return self._driver.update(self, uuid, contents)
 
     def delete(self, uuid):
         """Delete the file in this store with the matching uuid.
@@ -118,24 +125,6 @@ class _NamedStore(_BaseStore):
         """
         return self._driver.create(self, name, contents)
 
-    def update(self, uuid, name, contents):
-        """Given the uuid, name and contents update the existing stored file
-        and return an instance of StoredFile that reflects the updates.
-
-        :param uuid: UUID of the object to update.
-        :type  uuid: str
-
-        :param name: name of the object to store (optional)
-        :type  name: str
-
-        :param contents: String containing the file contents
-        :type  contents: str
-
-        :return: StoredFile instance containing the file metadata and contents
-        :rtype:  tuskar.storage.models.StoredFile
-        """
-        return self._driver.update(self, uuid, name, contents)
-
     def retrieve_by_name(self, name):
         """Returns the stored file for a given store that matches the provided
         name.
@@ -150,6 +139,9 @@ class _NamedStore(_BaseStore):
 
 
 class _VersionedStore(_NamedStore):
+
+    #: Flag to designate if the objects should be versioned by the driver.
+    versioned = True
 
     def retrieve_by_name(self, name, version=None):
         """Returns the stored file for a given store that matches the provided
@@ -208,8 +200,8 @@ class DeploymentPlanStore(_NamedStore):
                  **kwargs):
         super(DeploymentPlanStore, self).__init__(*args, **kwargs)
 
-        self.template_store = template_store or TemplateStore()
-        self.env_file_store = environment_store or EnvironmentFileStore()
+        self._template_store = template_store or TemplateStore()
+        self._env_file_store = environment_store or EnvironmentFileStore()
 
     def _serialise(self, master_template, environment_file):
         """Given the master_template and environment_file UUID's create a
@@ -245,8 +237,9 @@ class DeploymentPlanStore(_NamedStore):
 
         metadata = jsonutils.loads(plan_stored_file.contents)
 
-        master = self.template_store.retrieve(metadata['master_template_uuid'])
-        env = self.env_file_store.retrieve(metadata['environment_file_uuid'])
+        master = self._template_store.retrieve(
+            metadata['master_template_uuid'])
+        env = self._env_file_store.retrieve(metadata['environment_file_uuid'])
 
         return DeploymentPlan.from_stored_file(plan_stored_file,
                                                master_template=master,
@@ -254,15 +247,28 @@ class DeploymentPlanStore(_NamedStore):
 
     def _create_empty_template(self, name):
         empty_file = ""
-        master_template = self.template_store.create(name, empty_file)
+        master_template = self._template_store.create(name, empty_file)
         return master_template
 
     def _create_empty_environment(self):
         empty_file = ""
-        environment_file = self.env_file_store.create(empty_file)
+        environment_file = self._env_file_store.create(empty_file)
         return environment_file
 
     def create(self, name, master_template_uuid=None, environment_uuid=None):
+        """Given the UUID's for a template and environment, create the Plan
+        relationship between the two. If one or either are not provided then
+        a new, empty template or environment will be created for them.
+
+        :param master_template_uuid: Template UUID
+        :type  master_template_uuid: str or None
+
+        :param environment_uuid: environment UUID
+        :type  environment_uuid: str or None
+
+        :return: DeploymentPlan instance containing the relationship
+        :rtype:  tuskar.storage.models.DeploymentPlan
+        """
 
         if master_template_uuid is None:
             master_template = self._create_empty_template(name)
@@ -277,21 +283,47 @@ class DeploymentPlanStore(_NamedStore):
         return self._deserialise(plan_file)
 
     def retrieve(self, uuid):
+        """Returns the deployment plan relationship for the given UUID.
+
+        :param uuid: Deployment Plan UUID
+        :type  uuid: str
+
+        :return: DeploymentPlan instance containing the relationship
+        :rtype:  tuskar.storage.models.DeploymentPlan
+        """
         plan_file = super(DeploymentPlanStore, self).retrieve(uuid)
         return self._deserialise(plan_file)
 
-    def update(self, uuid, name=None, master_template_uuid=None,
-               environment_uuid=None):
+    def update(self, uuid, master_template_uuid=None, environment_uuid=None):
+        """Given the UUID's for a template and environment, update the Plan
+        relationship. If they are not provided, then the UUID will not be
+        updated.
+
+        :param uuid: Deployment Plan UUID
+        :type  uuid: str
+
+        :param master_template_uuid: Template UUID
+        :type  master_template_uuid: str or None
+
+        :param environment_uuid: environment UUID
+        :type  environment_uuid: str or None
+
+        :return: DeploymentPlan instance containing the relationship
+        :rtype:  tuskar.storage.models.DeploymentPlan
+        """
+
+        plan = self.retrieve(uuid)
+
+        if master_template_uuid is None and environment_uuid is None:
+            raise ValueError("Either the master_template_uuid and/or "
+                             "environment_uuid must be provided for an update")
 
         if master_template_uuid is None:
-            master_template = self._create_empty_template(name)
-            master_template_uuid = master_template.uuid
+            master_template_uuid = plan.master_template.uuid
 
         if environment_uuid is None:
-            environment = self._create_empty_environment()
-            environment_uuid = environment.uuid
+            environment_uuid = plan.environment_file.uuid
 
         contents = self._serialise(master_template_uuid, environment_uuid)
-        plan_file = super(DeploymentPlanStore, self).update(
-            uuid, name, contents)
+        plan_file = super(DeploymentPlanStore, self).update(uuid, contents)
         return self._deserialise(plan_file)
