@@ -415,6 +415,14 @@
 #matchmaker_heartbeat_ttl=600
 
 
+#
+# Options defined in tuskar.storage.drivers.sqlalchemy
+#
+
+# MySQL engine (string value)
+#mysql_engine=InnoDB
+
+
 [database]
 
 #
@@ -712,5 +720,16 @@
 
 # AMQP topic(s) used for openstack notifications (list value)
 #topics=notifications
+
+
+[storage]
+
+#
+# Options defined in tuskar.storage
+#
+
+# Storage driver to store Deployment Plans and Heat
+# Orchestration Templates (string value)
+#driver=tuskar.storage.drivers.sqlalchemy.SQLAlchemyDriver
 
 

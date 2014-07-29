@@ -13,6 +13,7 @@
 # under the License.
 
 from datetime import datetime
+from functools import partial
 
 from mock import Mock
 
@@ -43,8 +44,7 @@ class BaseStoreTests(TestCase):
         uuid = "d131dd02c5e6eec4"
         contents = "Stored contents"
         self.store.update(uuid, contents)
-        self.driver.update.assert_called_once_with(
-            self.store, uuid, None, contents)
+        self.driver.update.assert_called_once_with(self.store, uuid, contents)
 
     def test_retrieve(self):
         uuid = "d131dd02c5e6eec5"
@@ -76,12 +76,10 @@ class NamedStoreTests(TestCase):
             self.store, name, "My contents")
 
     def test_update(self):
-        name = "Object name"
         uuid = "d131dd02c5e6eec4"
         contents = "Stored contents"
-        self.store.update(uuid, name, contents)
-        self.driver.update.assert_called_once_with(
-            self.store, uuid, name, contents)
+        self.store.update(uuid, contents)
+        self.driver.update.assert_called_once_with(self.store, uuid, contents)
 
     def test_retrieve(self):
         uuid = "d131dd02c5e6eec5"
@@ -118,12 +116,10 @@ class VersionedStoreTests(TestCase):
             self.store, name, "My contents")
 
     def test_update(self):
-        name = "Object name"
         uuid = "d131dd02c5e6eec4"
         contents = "Stored contents"
-        self.store.update(uuid, name, contents)
-        self.driver.update.assert_called_once_with(
-            self.store, uuid, name, contents)
+        self.store.update(uuid, contents)
+        self.driver.update.assert_called_once_with(self.store, uuid, contents)
 
     def test_retrieve(self):
         uuid = "d131dd02c5e6eec5"
@@ -187,14 +183,17 @@ class DeploymentPlanTests(TestCase):
         super(DeploymentPlanTests, self).setUp()
 
         self.driver = Mock()
+
         self.template_store = Mock()
         self.environment_store = Mock()
 
-        self.store = DeploymentPlanStore(
+        self.mocked_store = DeploymentPlanStore(
             driver=self.driver,
             template_store=self.template_store,
             environment_store=self.environment_store
         )
+
+        self.store = DeploymentPlanStore()
 
     def _stored_file(self, name, contents):
 
@@ -218,8 +217,10 @@ class DeploymentPlanTests(TestCase):
 
         self.driver.create.return_value = self._stored_file(name, contents)
 
-        result = self.store.create(name, 'Template UUID', 'Environment UUID')
-        self.driver.create.assert_called_once_with(self.store, name, contents)
+        result = self.mocked_store.create(
+            name, 'Template UUID', 'Environment UUID')
+        self.driver.create.assert_called_once_with(
+            self.mocked_store, name, contents)
 
         self.assertEqual(result.name, name)
 
@@ -236,13 +237,15 @@ class DeploymentPlanTests(TestCase):
         self.driver.create.return_value = self._stored_file(name, contents)
         self.template_store.create.return_value = Mock(uuid="UUID1")
 
-        result = self.store.create(name, environment_uuid='Environment UUID')
+        result = self.mocked_store.create(
+            name, environment_uuid='Environment UUID')
 
         self.template_store.create.assert_called_once_with(
             'deployment_plan name', '')
         self.assertItemsEqual(self.environment_store.create.call_args_list, [])
 
-        self.driver.create.assert_called_once_with(self.store, name, contents)
+        self.driver.create.assert_called_once_with(
+            self.mocked_store, name, contents)
 
         self.assertEqual(result.name, name)
         self.template_store.retrieve.assert_called_once_with('UUID1')
@@ -258,14 +261,72 @@ class DeploymentPlanTests(TestCase):
         self.driver.create.return_value = self._stored_file(name, contents)
         self.environment_store.create.return_value = Mock(uuid="UUID2")
 
-        result = self.store.create(name, master_template_uuid='Template UUID')
+        result = self.mocked_store.create(
+            name, master_template_uuid='Template UUID')
 
         self.environment_store.create.assert_called_once_with('')
         self.assertItemsEqual(self.template_store.create.call_args_list, [])
 
-        self.driver.create.assert_called_once_with(self.store, name, contents)
+        self.driver.create.assert_called_once_with(
+            self.mocked_store, name, contents)
 
         self.assertEqual(result.name, name)
         self.template_store.retrieve.assert_called_once_with('Template UUID')
         self.environment_store.retrieve.assert_called_once_with(
             'UUID2')
+
+    def test_retrieve(self):
+
+        # setup
+        plan = self.store.create("plan")
+
+        # test
+        retrieved = self.store.retrieve(plan.uuid)
+
+        # verify
+        self.assertEqual(plan.uuid, retrieved.uuid)
+
+    def test_update_template(self):
+
+        # setup
+        plan = self.store.create("plan")
+
+        new_template = self.store._template_store.update(
+            plan.master_template.uuid, "NEW CONTENT")
+
+        # test
+        updated = self.store.update(
+            plan.uuid, master_template_uuid=new_template.uuid)
+
+        # verify
+        retrieved = self.store.retrieve(plan.uuid)
+        self.assertEqual(plan.uuid, retrieved.uuid)
+        self.assertEqual(updated.master_template.uuid, new_template.uuid)
+
+    def test_update_environment(self):
+
+        # setup
+        plan = self.store.create("plan")
+
+        new_env = self.store._env_file_store.update(
+            plan.environment_file.uuid, "NEW CONTENT")
+
+        # test
+        updated = self.store.update(
+            plan.uuid, environment_uuid=new_env.uuid)
+
+        # verify
+        retrieved = self.store.retrieve(plan.uuid)
+        self.assertEqual(plan.uuid, retrieved.uuid)
+        self.assertEqual(updated.environment_file.uuid, new_env.uuid)
+
+    def test_update_nothing(self):
+
+        # setup
+        plan = self.store.create("plan")
+
+        # test
+        update_call = partial(self.store.update, plan.uuid)
+
+        # verify
+        self.assertRaises(ValueError, update_call)
