@@ -74,7 +74,7 @@ class BaseDriver(object):
         """
 
     @abstractmethod
-    def update(self, store, uuid, name, contents):
+    def update(self, store, uuid, contents):
         """Given the store, uuid, name and contents update the existing stored
         file and return an instance of StoredFile that reflects the updates.
         Either name and/or contents can be provided. If they are not then they
@@ -86,9 +86,6 @@ class BaseDriver(object):
         :param uuid: UUID of the object to update.
         :type  uuid: str
 
-        :param name: name of the object to store (optional)
-        :type  name: str
-
         :param contents: String containing the file contents (optional)
         :type  contents: str
 
@@ -97,6 +94,7 @@ class BaseDriver(object):
 
         :raises: tuskar.storage.exceptions.UnknownUUID if the UUID can't be
                  found
+        :raises: ValueError if neither name or contents are provided.
         """
 
     @abstractmethod
@@ -108,6 +106,9 @@ class BaseDriver(object):
 
         :param uuid: UUID of the object to update.
         :type  uuid: str
+
+        :return: Returns nothing on success. Exceptions are expected for errors
+        :rtype: None
 
         :raises: tuskar.storage.exceptions.UnknownUUID if the UUID can't be
                  found

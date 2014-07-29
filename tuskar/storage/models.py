@@ -55,7 +55,7 @@ class StoredFile(object):
         self.name = name
         self.created_at = created_at
         self.updated_at = updated_at
-        self.version = None
+        self.version = version
 
     def __str__(self):
 
