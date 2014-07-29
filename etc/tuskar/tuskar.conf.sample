@@ -714,3 +714,14 @@
 #topics=notifications
 
 
+[storage]
+
+#
+# Options defined in tuskar.storage
+#
+
+# Storage driver to store Deployment Plans and Heat
+# Orchestration Templates (string value)
+#driver=mock.Mock
+
+
