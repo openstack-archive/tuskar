@@ -246,7 +246,7 @@ class DeploymentPlanStore(_NamedStore):
         :type  content: str
 
         :return: 2-tuple of Template and Environment StoredFile instances
-        :rtype: tupe(tuskar.storage.models.StoredFile, )
+        :rtype: tulpe(tuskar.storage.models.StoredFile, )
         """
 
         plan = jsonutils.loads(content)

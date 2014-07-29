@@ -12,8 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from unittest import TestCase
-
 from mock import Mock
 
 from tuskar.storage.stores import _BaseStore
@@ -23,11 +21,13 @@ from tuskar.storage.stores import DeploymentPlanStore
 from tuskar.storage.stores import EnvironmentFileStore
 from tuskar.storage.stores import RoleStore
 from tuskar.storage.stores import TemplateStore
+from tuskar.tests.base import TestCase
 
 
 class BaseStoreTests(TestCase):
 
     def setUp(self):
+        super(BaseStoreTests, self).setUp()
 
         self.driver = Mock()
         self.store = _BaseStore(self.driver)
@@ -62,6 +62,7 @@ class BaseStoreTests(TestCase):
 class NamedStoreTests(TestCase):
 
     def setUp(self):
+        super(NamedStoreTests, self).setUp()
 
         self.driver = Mock()
         self.store = _NamedStore(self.driver)
@@ -103,6 +104,7 @@ class NamedStoreTests(TestCase):
 class VersionedStoreTests(TestCase):
 
     def setUp(self):
+        super(VersionedStoreTests, self).setUp()
 
         self.driver = Mock()
         self.store = _VersionedStore(self.driver)
@@ -151,6 +153,7 @@ class VersionedStoreTests(TestCase):
 class TemplateStoreTests(TestCase):
 
     def setUp(self):
+        super(TemplateStoreTests, self).setUp()
 
         self.driver = Mock()
         self.store = TemplateStore(self.driver)
@@ -165,6 +168,7 @@ class TemplateStoreTests(TestCase):
 class RoleStoreTests(TestCase):
 
     def setUp(self):
+        super(RoleStoreTests, self).setUp()
 
         self.driver = Mock()
         self.store = RoleStore(self.driver)
@@ -179,6 +183,7 @@ class RoleStoreTests(TestCase):
 class EnvironmentFileTests(TestCase):
 
     def setUp(self):
+        super(EnvironmentFileTests, self).setUp()
 
         self.driver = Mock()
         self.store = EnvironmentFileStore(self.driver)
@@ -192,6 +197,7 @@ class EnvironmentFileTests(TestCase):
 class DeploymentPlanTests(TestCase):
 
     def setUp(self):
+        super(DeploymentPlanTests, self).setUp()
 
         self.driver = Mock()
         self.store = DeploymentPlanStore(self.driver)

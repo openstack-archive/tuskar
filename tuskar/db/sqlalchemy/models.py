@@ -208,3 +208,14 @@ class Overcloud(Base):
         d['counts'] = count_dicts
 
         return d
+
+
+class StoredFile(Base):
+
+    __tablename__ = "stored_file"
+
+    uuid = Column(String(length=36), primary_key=True)
+    contents = Column(String(), nullable=False)
+    object_type = Column(String(length=20), nullable=False)
+    name = Column(String(length=20), nullable=True)
+    version = Column(Integer(), nullable=True)
