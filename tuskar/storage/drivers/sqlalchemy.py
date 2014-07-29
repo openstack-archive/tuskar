@@ -12,28 +12,93 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from __future__ import absolute_import
 
-from abc import ABCMeta
-from abc import abstractmethod
+from uuid import uuid4
 
-from six import add_metaclass
+from oslo.config import cfg
+from sqlalchemy import func
+from sqlalchemy.orm.exc import NoResultFound
+
+from tuskar.db.sqlalchemy.models import StoredFile
+from tuskar.openstack.common.db.sqlalchemy import session as db_session
+from tuskar.storage.drivers.base import BaseDriver
+from tuskar.storage.exceptions import UnknownUUID
+from tuskar.storage.models import StoredFile as StorageModel
+
+sql_opts = [
+    cfg.StrOpt('mysql_engine',
+               default='InnoDB',
+               help='MySQL engine')
+]
+
+cfg.CONF.register_opts(sql_opts)
 
 
-@add_metaclass(ABCMeta)
-class BaseDriver(object):
-    """Base Storage Drivers
+def get_session():
+    return db_session.get_session(sqlite_fk=True)
 
-    The BaseDriver provides the abstract interface for storage drivers. It is
-    intended that a driver will be used by multiple stores (which are defined)
-    in tuskar.storages.stores).
 
-    Each method is passed an instance of the store that is using it, this
-    allows the driver to direct operations. For example, a database backend
-    may use different tables for different stores (templates and environments)
-    or a swift backend implementation could use different containers.
-    """
+class SQLAlchemyDriver(BaseDriver):
 
-    @abstractmethod
+    def _generate_uuid(self):
+        return str(uuid4())
+
+    def _to_storage_model(self, store, result):
+        """Convert a result from SQLAlchemy into an instance of the common
+        model used in the tuskar.storage.
+
+        :param store: Instance of the storage store
+        :type  store: tuskat.storage.stores._BaseStore
+
+        :param result: Instance of the SQLAlchemy model as returned by a query.
+        :type  result: tuskar.db.sqlalchemy.models.StoredFile
+
+        :return: Instance of the StoredFile class.
+        :rtype: tuskar.storage.models.StoredFile
+        """
+        file_dict = result.as_dict()
+        file_dict.pop('object_type')
+        file_dict['store'] = store
+        return StorageModel(**file_dict)
+
+    def _upsert(self, store, stored_file):
+
+        session = get_session()
+        session.begin()
+
+        try:
+            session.add(stored_file)
+            session.commit()
+            return self._to_storage_model(store, stored_file)
+        finally:
+            session.close()
+
+    def _get_latest_version(self, store, name):
+
+        session = get_session()
+
+        try:
+            return session.query(
+                func.max(StoredFile.version)
+            ).filter_by(
+                object_type=store.object_type, name=name
+            ).one()[0]
+        finally:
+            session.close()
+
+    def _create(self, store, name, contents, version):
+
+        stored_file = StoredFile(
+            uuid=self._generate_uuid(),
+            contents=contents,
+            object_type=store.object_type,
+            name=name,
+            version=version
+        )
+
+        return self._upsert(store, stored_file)
+
     def create(self, store, name, contents):
         """Given the store, name and contents create a new file and return a
         `StoredFile` instance representing it.
@@ -55,7 +120,27 @@ class BaseDriver(object):
         :rtype:  tuskar.storage.models.StoredFile
         """
 
-    @abstractmethod
+        if store.versioned:
+            version = 1
+        else:
+            version = None
+
+        return self._create(store, name, contents, version)
+
+    def _retrieve(self, object_type, uuid):
+
+        session = get_session()
+        try:
+            return session.query(StoredFile).filter_by(
+                uuid=uuid,
+                object_type=object_type
+            ).one()
+        except NoResultFound:
+            msg = "No results found for the UUID: {0}".format(uuid)
+            raise UnknownUUID(msg)
+        finally:
+            session.close()
+
     def retrieve(self, store, uuid):
         """Returns the stored file for a given store that matches the provided
         UUID.
@@ -73,7 +158,9 @@ class BaseDriver(object):
                  found
         """
 
-    @abstractmethod
+        stored_file = self._retrieve(store.object_type, uuid)
+        return self._to_storage_model(store, stored_file)
+
     def update(self, store, uuid, contents):
         """Given the store, uuid, name and contents update the existing stored
         file and return an instance of StoredFile that reflects the updates.
@@ -86,6 +173,9 @@ class BaseDriver(object):
         :param uuid: UUID of the object to update.
         :type  uuid: str
 
+        :param name: name of the object to store (optional)
+        :type  name: str
+
         :param contents: String containing the file contents (optional)
         :type  contents: str
 
@@ -97,7 +187,17 @@ class BaseDriver(object):
         :raises: ValueError if neither name or contents are provided.
         """
 
-    @abstractmethod
+        stored_file = self._retrieve(store.object_type, uuid)
+
+        stored_file.contents = contents
+
+        if store.versioned:
+            version = self._get_latest_version(store, stored_file.name) + 1
+            return self._create(
+                store, stored_file.name, stored_file.contents, version)
+
+        return self._upsert(store, stored_file)
+
     def delete(self, store, uuid):
         """Delete the stored file with the UUID under the given store.
 
@@ -114,7 +214,17 @@ class BaseDriver(object):
                  found
         """
 
-    @abstractmethod
+        session = get_session()
+        session.begin()
+
+        stored_file = self._retrieve(store.object_type, uuid)
+
+        try:
+            session.delete(stored_file)
+            session.commit()
+        finally:
+            session.close()
+
     def list(self, store, only_latest=False):
         """Return a list of all the stored objects for a given store.
         Optionally only_latest can be set to True to return only the most
@@ -131,7 +241,13 @@ class BaseDriver(object):
         :rtype:  [tuskar.storage.models.StoredFile]
         """
 
-    @abstractmethod
+        object_type = store.object_type
+
+        session = get_session()
+        roles = session.query(StoredFile).filter_by(object_type=object_type)
+        session.close()
+        return [self._to_storage_model(store, role) for role in roles]
+
     def retrieve_by_name(self, store, name, version=None):
         """Returns the stored file for a given store that matches the provided
         name and optionally version.
@@ -154,3 +270,24 @@ class BaseDriver(object):
         :raises: tuskar.storage.exceptions.UnknownVersion if the version can't
                  be found
         """
+
+        object_type = store.object_type
+
+        session = get_session()
+
+        try:
+            query = session.query(StoredFile).filter_by(
+                name=name,
+                object_type=object_type,
+            )
+            if version is not None:
+                query = query.filter_by(version=version)
+            else:
+                query = query.filter_by(
+                    version=self._get_latest_version(store, name)
+                )
+
+            stored_file = query.one()
+            return self._to_storage_model(store, stored_file)
+        finally:
+            session.close()
