@@ -114,3 +114,23 @@ class PlansController(rest.RestController):
     @pecan.expose()
     def templates(self, plan_uuid):
         return plan_uuid
+
+    #@wsme.validate(models.Plan)
+    @wsme_pecan.wsexpose(models.Plan,
+                         str,
+                         body=models.Plan,
+                         status_code=201)
+    def patch(self, plan_uuid, transfer_plan):
+        """Patches existing plan.
+
+        :param transfer_plan: data submitted by the user
+        :type  transfer_plan:
+            tuskar.api.controllers.v1.models.Plan
+
+        :return: patched plan
+        :rtype:  tuskar.api.controllers.v1.models.Plan
+        """
+        LOG.debug('Patching plan: %s' % transfer_plan)
+
+        # Package for transfer back to the user
+        return transfer_plan
