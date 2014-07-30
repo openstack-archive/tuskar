@@ -30,6 +30,7 @@ class DeploymentPlanTests(unittest.TestCase):
         self.assertTrue(isinstance(p.master_template, heat.Template))
         self.assertTrue(isinstance(p.environment, heat.Environment))
         self.assertEqual('test-desc', p.master_template.description)
+        self.assertEqual(p.add_scaling, True)
 
     def test_existing_pieces(self):
         # Test
@@ -41,9 +42,9 @@ class DeploymentPlanTests(unittest.TestCase):
         self.assertTrue(p.master_template is t)
         self.assertTrue(p.environment is e)
 
-    def test_add_template(self):
+    def test_add_template_no_scaling(self):
         # Test
-        p = plan.DeploymentPlan()
+        p = plan.DeploymentPlan(add_scaling=False)
         t = self._generate_template()
         p.add_template('ns1', t, 'template-1.yaml')
 
@@ -87,9 +88,52 @@ class DeploymentPlanTests(unittest.TestCase):
         self.assertEqual(added.alias, expected_alias)
         self.assertEqual(added.filename, 'template-1.yaml')
 
+    def test_add_scaling_with_scaling(self):
+        # Test
+        p = plan.DeploymentPlan(add_scaling=True)
+        t = self._generate_template()
+        p.add_template('ns1', t, 'template-1.yaml')
+
+        # Verify Master Template Count Parameters
+        self.assertEqual(3, len(p.master_template.parameters))
+        count_param = p.master_template.parameters[2]
+        expected_count_name = plan._generate_count_property_name('ns1')
+        self.assertEqual(count_param.name, expected_count_name)
+        self.assertEqual(count_param.param_type, 'number')
+
+        self.assertEqual(1, len(count_param.constraints))
+        const = count_param.constraints[0]
+        self.assertTrue(isinstance(const, heat.ParameterConstraint))
+        self.assertEqual(const.constraint_type, 'range')
+        self.assertEqual(const.definition, {'min': 1})
+
+        # Verify Resource Group Wrapper
+        self.assertEqual(1, len(p.master_template.resources))
+        group_res = p.master_template.resources[0]
+        group_id = plan._generate_group_id(plan._generate_resource_id('ns1'))
+        self.assertEqual(group_res.resource_id, group_id)
+        self.assertEqual(group_res.resource_type,
+                         plan.HEAT_TYPE_RESOURCE_GROUP)
+
+        self.assertEqual(2, len(group_res.properties))
+        count_prop = group_res.properties[0]
+        self.assertEqual(count_prop.name, plan.PROPERTY_SCALING_COUNT)
+        self.assertEqual(count_prop.value,
+                         {'get_param': [expected_count_name]})
+
+        def_prop = group_res.properties[1]
+        self.assertEqual(def_prop.name, plan.PROPERTY_RESOURCE_DEFINITION)
+        self.assertTrue(isinstance(def_prop.value, heat.Resource))
+
+        # Verify Environment Parameters
+        self.assertEqual(3, len(p.environment.parameters))
+        count_param = p.environment.parameters[2]
+        self.assertEqual(count_param.name, expected_count_name)
+        self.assertEqual(count_param.value, 1)
+
     def test_remove_template(self):
         # Setup & Sanity Check
-        p = plan.DeploymentPlan()
+        p = plan.DeploymentPlan(add_scaling=False)
         t = self._generate_template()
         p.add_template('ns1', t, 'template-1.yaml')
         p.add_template('ns2', t, 'template-2.yaml')

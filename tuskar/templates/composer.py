@@ -22,6 +22,8 @@ http://docs.openstack.org/developer/heat/template_guide/hot_spec.html
 
 import yaml
 
+from tuskar.templates.heat import Resource
+
 
 def compose_template(template):
     """Converts a template object into its HOT template format.
@@ -102,8 +104,13 @@ def _compose_parameters(template):
 
 def _compose_resources(template):
     resources = {}
-    for r in template.resources:
-        details = {
+
+    def _generate_details(r):
+        """Converts a resource into its HOT dictionary version. This method
+        will recursively call itself in the event a resource is nested within
+        another as a resource definition.
+        """
+        d = {
             'type': r.resource_type,
             'metadata': r.metadata,
             'depends_on': r.depends_on,
@@ -111,15 +118,23 @@ def _compose_resources(template):
             'deletion_policy': r.deletion_policy,
         }
 
-        details = _strip_missing(details)
+        d = _strip_missing(d)
 
         # Properties
         if len(r.properties) > 0:
-            details['properties'] = {}
+            d['properties'] = {}
             for p in r.properties:
-                details['properties'][p.name] = p.value
+                if isinstance(p.value, Resource):
+                    v = _generate_details(p.value)
+                else:
+                    v = p.value
+                d['properties'][p.name] = v
 
-        resources[r.resource_id] = details
+        return d
+
+    for resource in template.resources:
+        details = _generate_details(resource)
+        resources[resource.resource_id] = details
 
     return resources
 
