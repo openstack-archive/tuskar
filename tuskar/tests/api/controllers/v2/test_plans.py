@@ -86,3 +86,16 @@ class PlansTests(base.TestCase):
         # Verify
         self.assertEqual(response.status_int, 200)
         self.assertEqual(result, 'foo')
+
+    def test_patch(self):
+        # Setup
+        plan_data = {'name': 'new'}
+
+        # Test
+        url = URL_PLANS + '/' + 'qwert12345'
+        response = self.app.patch_json(url, plan_data)
+        result = response.json
+
+        # Verify
+        self.assertEqual(response.status_int, 201)
+        self.assertEqual(result['name'], plan_data['name'])
