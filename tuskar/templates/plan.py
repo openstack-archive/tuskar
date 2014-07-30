@@ -22,6 +22,8 @@ import copy
 from tuskar.templates.heat import Environment
 from tuskar.templates.heat import EnvironmentParameter
 from tuskar.templates.heat import Output
+from tuskar.templates.heat import Parameter
+from tuskar.templates.heat import ParameterConstraint
 from tuskar.templates.heat import RegistryEntry
 from tuskar.templates.heat import Resource
 from tuskar.templates.heat import ResourceProperty
@@ -29,14 +31,48 @@ from tuskar.templates.heat import Template
 import tuskar.templates.namespace as ns_utils
 
 
+# Type string for a Heat resource group
+HEAT_TYPE_RESOURCE_GROUP = 'OS::Heat::ResourceGroup'
+
+# Name of the propety added to a resource group to control its scaling
+PROPERTY_SCALING_COUNT = 'count'
+
+# Name of the property added to a resource group to define the resources
+# in the group
+PROPERTY_RESOURCE_DEFINITION = 'resource_def'
+
+
 class DeploymentPlan(object):
 
     def __init__(self, master_template=None, environment=None,
-                 description=None):
+                 description=None, add_scaling=True):
+        """Creates a new deployment plan. The plan can be initialized from
+        an existing plan's components by passing in the master template
+        and environment. Keep in mind that there are relationships between
+        the master template and the environment and they should either both
+        be specified or neither. If they are unspecified, empty versions of
+        both files will be created.
+
+        The add_scaling flag controls whether or not the plan will
+        automatically add in Heat constructs to support scaling when a
+        template is added.
+
+        :param master_template: template instance to use for the plan
+        :type  master_template: tuskar.templates.heat.Template
+        :param environment: environment to use for the plan
+        :type  environment: tuskar.templates.heat.Environment
+        :param description: optional description for the plan's master
+               template; only used if a master template is not specified
+        :type  description: str
+        :param add_scaling: flag controlling if the plan will automatically
+               include scaling components to the master template
+        :type  add_scaling: bool
+        """
         super(DeploymentPlan, self).__init__()
         self.master_template = (
             master_template or Template(description=description))
         self.environment = environment or Environment()
+        self.add_scaling = add_scaling
 
     def add_template(self, namespace, template, filename):
         """Adds a new template to the plan. The pieces of the template will
@@ -80,16 +116,12 @@ class DeploymentPlan(object):
         p.value = value
 
     def _add_to_master_template(self, namespace, template, resource_alias):
-        # Add Parameters
-        for add_me in template.parameters:
-            cloned = copy.deepcopy(add_me)
-            cloned.name = ns_utils.apply_template_namespace(namespace,
-                                                            add_me.name)
-            self.master_template.add_parameter(cloned)
+        resource = self._add_resource(namespace, template, resource_alias)
+        self._add_parameters(namespace, template)
+        self._add_outputs(namespace, template, resource)
 
-        # Create Resource
+    def _add_resource(self, namespace, template, resource_alias):
         resource = Resource(_generate_resource_id(namespace), resource_alias)
-        self.master_template.add_resource(resource)
 
         for map_me in template.parameters:
             name = map_me.name
@@ -99,7 +131,46 @@ class DeploymentPlan(object):
             resource_property = ResourceProperty(name, value)
             resource.add_property(resource_property)
 
-        # Add Outputs
+        # If scaling features are being automatically added in, wrap the
+        # resource in a resource group. The _add_parameters call will add
+        # a corresponding parameter for the count of this resource.
+        if self.add_scaling:
+            group_resource_id = _generate_group_id(resource.resource_id)
+            heat_group = Resource(group_resource_id, HEAT_TYPE_RESOURCE_GROUP)
+
+            count_prop = ResourceProperty(
+                PROPERTY_SCALING_COUNT,
+                {'get_param': [_generate_count_property_name(namespace)]})
+            heat_group.add_property(count_prop)
+
+            def_prop = ResourceProperty(PROPERTY_RESOURCE_DEFINITION, resource)
+            heat_group.add_property(def_prop)
+
+            outer_resource = heat_group
+        else:
+            outer_resource = resource
+
+        self.master_template.add_resource(outer_resource)
+        return outer_resource
+
+    def _add_parameters(self, namespace, template):
+        for add_me in template.parameters:
+            cloned = copy.deepcopy(add_me)
+            cloned.name = ns_utils.apply_template_namespace(namespace,
+                                                            add_me.name)
+            self.master_template.add_parameter(cloned)
+
+        # If scaling features are being automatically added in, create the
+        # template parameter for accepting the count for the resource with
+        # this namespace
+        if self.add_scaling:
+            count_param = Parameter(_generate_count_property_name(namespace),
+                                    'number')
+            constraint = ParameterConstraint('range', {'min': 1})
+            count_param.add_constraint(constraint)
+            self.master_template.add_parameter(count_param)
+
+    def _add_outputs(self, namespace, template, resource):
         for add_me in template.outputs:
             # The output creation is a bit trickier than simply copying the
             # original. The master output is namespaced like the other pieces,
@@ -119,6 +190,11 @@ class DeploymentPlan(object):
             name = ns_utils.apply_template_namespace(namespace, add_me.name)
             env_parameter = EnvironmentParameter(name, add_me.default or '')
             self.environment.add_parameter(env_parameter)
+
+        if self.add_scaling:
+            count_param_name = _generate_count_property_name(namespace)
+            count_param = EnvironmentParameter(count_param_name, 1)
+            self.environment.add_parameter(count_param)
 
         # Add Resource Registry Entry
         registry_entry = RegistryEntry(resource_alias, filename)
@@ -152,3 +228,25 @@ def _generate_resource_id(namespace):
     :rtype: str
     """
     return namespace + '-resource'
+
+
+def _generate_group_id(resource_id):
+    """Generates the ID for a resource group wrapper resource around the
+    given resource.
+
+    :type resource_id: str
+    :rtype: str
+    """
+    return resource_id + '-servers'
+
+
+def _generate_count_property_name(namespace):
+    """Generates the name of the property to hold the count of a particular
+    resource as identified by its namespace. The count property will be
+    prefixed by the namespace in the same way as other parameters for the
+    resource.
+
+    :type namespace: str
+    :rtype: str
+    """
+    return ns_utils.apply_template_namespace(namespace, 'count')

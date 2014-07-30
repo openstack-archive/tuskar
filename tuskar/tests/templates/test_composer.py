@@ -16,6 +16,8 @@ import yaml
 
 from tuskar.templates import composer
 from tuskar.templates import heat
+from tuskar.templates import namespace as ns_utils
+from tuskar.templates import plan
 
 
 class ComposerTests(unittest.TestCase):
@@ -103,6 +105,35 @@ class ComposerTests(unittest.TestCase):
         self.assertTrue('n2' in template['outputs'])
         self.assertEqual('v2', template['outputs']['n2']['value'])
         self.assertTrue('description' not in template['outputs']['n2'])
+
+    def test_compose_nested_resource(self):
+        # Setup
+        t = heat.Template()
+        t.add_resource(heat.Resource('r1', 't1'))
+
+        # With add_scaling enabled, the plan will automatically wrap the
+        # added template in a grouping resource, so we can use that as the
+        # test data.
+        p = plan.DeploymentPlan(add_scaling=True)
+        p.add_template('ns1', t, 't.yaml')
+
+        # Test
+        composed = composer.compose_template(p.master_template)
+
+        # Verify
+        template = yaml.safe_load(composed)
+
+        self.assertEqual(1, len(template['resources']))
+        wrapper_resource_name = plan._generate_group_id(
+            plan._generate_resource_id('ns1'))
+        group_resource = template['resources'][wrapper_resource_name]
+        self.assertEqual(p.master_template.resources[0].resource_type,
+                         group_resource['type'])
+
+        self.assertTrue('resource_def' in group_resource['properties'])
+        nested_resource_details = group_resource['properties']['resource_def']
+        self.assertEqual(ns_utils.apply_resource_alias_namespace('ns1'),
+                         nested_resource_details['type'])
 
     def test_compose_environment(self):
         # Test
