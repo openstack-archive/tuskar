@@ -87,6 +87,25 @@ class DeploymentPlanTests(unittest.TestCase):
         self.assertEqual(added.alias, expected_alias)
         self.assertEqual(added.filename, 'template-1.yaml')
 
+    def test_add_template_with_default_parameter_value(self):
+        # Test
+        p = plan.DeploymentPlan()
+        t = heat.Template()
+        t.add_parameter(heat.Parameter('param-1', 'type-1', default='d1'))
+        t.add_parameter(heat.Parameter('param-2', 'type-2'))
+        p.add_template('ns1', t, 'template-1.yaml')
+
+        # Verify
+        p1 = p.environment.parameters[0]
+        self.assertEqual(ns_utils.apply_template_namespace('ns1', 'param-1'),
+                         p1.name)
+        self.assertEqual('d1', p1.value)
+
+        p2 = p.environment.parameters[1]
+        self.assertEqual(ns_utils.apply_template_namespace('ns1', 'param-2'),
+                         p2.name)
+        self.assertEqual('', p2.value)
+
     def test_remove_template(self):
         # Setup & Sanity Check
         p = plan.DeploymentPlan()
