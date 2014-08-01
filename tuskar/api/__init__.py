@@ -13,12 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import flask.helpers
 from oslo.config import cfg
-
-from tuskar.openstack.common import jsonutils
-
-flask.helpers.json = jsonutils
 
 API_SERVICE_OPTS = [
     cfg.StrOpt(
