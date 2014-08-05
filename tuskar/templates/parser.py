@@ -74,13 +74,13 @@ def parse_environment(content):
 
 
 def _parse_version(template, yaml_parsed):
-    template.version = \
-        yaml_parsed.get('heat_template_version', None) or template.version
+    template.version = (
+        yaml_parsed.get('heat_template_version', None) or template.version)
 
 
 def _parse_description(template, yaml_parsed):
-    template.description = \
-        yaml_parsed.get('description', None) or template.description
+    template.description = (
+        yaml_parsed.get('description', None) or template.description)
 
 
 def _parse_template_parameters(template, yaml_parsed):

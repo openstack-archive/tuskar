@@ -52,8 +52,7 @@ class OvercloudRolesController(rest.RestController):
         result = pecan.request.dbapi.create_overcloud_role(db_role)
 
         # Package for transfer back to the user
-        saved_role =\
-            models.OvercloudRole.from_db_model(result)
+        saved_role = models.OvercloudRole.from_db_model(result)
 
         return saved_role
 

@@ -75,8 +75,8 @@ class DeploymentPlanTests(unittest.TestCase):
         self.assertEqual(2, len(p.environment.parameters))
         for env_param, template_param in zip(p.environment.parameters,
                                              t.parameters):
-            expected_name =\
-                ns_utils.apply_template_namespace('ns1', template_param.name)
+            expected_name = (
+                ns_utils.apply_template_namespace('ns1', template_param.name))
             self.assertEqual(env_param.name, expected_name)
             self.assertEqual(env_param.value, '')
 

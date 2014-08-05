@@ -107,8 +107,8 @@ class Overcloud(Base):
     def from_db_model(cls, db_overcloud, skip_fields=None,
                       mask_passwords=True):
         # General Data
-        transfer_overcloud = super(Overcloud, cls)\
-            .from_db_model(db_overcloud, skip_fields=['attributes', 'counts'])
+        transfer_overcloud = super(Overcloud, cls).from_db_model(
+            db_overcloud, skip_fields=['attributes', 'counts'])
 
         # Attributes
         translated = {}

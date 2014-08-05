@@ -262,8 +262,7 @@ class OvercloudsController(rest.RestController):
         result = pecan.request.dbapi.create_overcloud(db_overcloud)
 
         # Package for transfer back to the user
-        saved_overcloud =\
-            models.Overcloud.from_db_model(result)
+        saved_overcloud = models.Overcloud.from_db_model(result)
 
         return saved_overcloud
 

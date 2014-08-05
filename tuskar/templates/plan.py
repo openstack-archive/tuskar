@@ -36,8 +36,8 @@ class DeploymentPlan(object):
     def __init__(self, master_template=None, environment=None,
                  description=None):
         super(DeploymentPlan, self).__init__()
-        self.master_template = \
-            master_template or Template(description=description)
+        self.master_template = (
+            master_template or Template(description=description))
         self.environment = environment or Environment()
 
     def add_template(self, namespace, template, filename):
