@@ -119,7 +119,7 @@ class DeploymentPlan(object):
         # Add Parameters
         for add_me in template.parameters:
             name = ns_utils.apply_template_namespace(namespace, add_me.name)
-            env_parameter = EnvironmentParameter(name, '')
+            env_parameter = EnvironmentParameter(name, add_me.default or '')
             self.environment.add_parameter(env_parameter)
 
         # Add Resource Registry Entry
