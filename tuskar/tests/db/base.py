@@ -15,7 +15,7 @@
 
 """Tuskar DB test base class."""
 
-from tuskar.common import context as tuskar_context
+from tuskar.openstack.common import context as tuskar_context
 from tuskar.tests import base
 
 
