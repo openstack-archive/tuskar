@@ -91,24 +91,3 @@ def read_cached_file(filename, cache_info, reload_func=None):
         if reload_func:
             reload_func(cache_info['data'])
     return cache_info['data']
-
-
-def diff_items(old, new, key=None):
-    """Calculates a difference between two collections of items.
-
-    Returns a tuple of two lists, the first contains all the items from
-    the ``new`` collection that are not in the ``old`` collection, the
-    second all the items from the ``old`` collection that are not in the
-    ``new`` collection. The order of items is preserved.
-
-    If an optional ``key`` function is specified, it is used to compare
-    the items, instead of comparing them directly. That function may be
-    called multiple times, so it should have no side effects.
-    """
-    if key is None:
-        key = lambda item: item
-    old_keys = set(key(item) for item in old)
-    new_keys = set(key(item) for item in new)
-    added = [item for item in new if key(item) not in old_keys]
-    removed = [item for item in old if key(item) not in new_keys]
-    return added, removed
