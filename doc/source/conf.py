@@ -50,9 +50,9 @@ copyright = u'OpenStack Foundation'
 from tuskar import version as tuskar_version
 
 # The full version, including alpha/beta/rc tags.
-release = tuskar_version.version_string_with_vcs()
+release = tuskar_version.version_info.release_string()
 # The short X.Y version.
-version = tuskar_version.canonical_version_string()
+version = tuskar_version.version_info.version_string()
 
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['tuskar.']
