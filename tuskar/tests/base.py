@@ -26,12 +26,9 @@ eventlet.monkey_patch(os=False)
 
 import os
 import shutil
-import sys
 
 import fixtures
-import mox
 from oslo.config import cfg
-import stubout
 import testtools
 import unittest2
 
@@ -105,38 +102,6 @@ class Database(fixtures.Fixture):
         """Any addition steps that are needed outside of the migrations."""
 
 
-class ReplaceModule(fixtures.Fixture):
-    """Replace a module with a fake module."""
-
-    def __init__(self, name, new_value):
-        self.name = name
-        self.new_value = new_value
-
-    def _restore(self, old_value):
-        sys.modules[self.name] = old_value
-
-    def setUp(self):
-        super(ReplaceModule, self).setUp()
-        old_value = sys.modules.get(self.name)
-        sys.modules[self.name] = self.new_value
-        self.addCleanup(self._restore, old_value)
-
-
-class MoxStubout(fixtures.Fixture):
-    """Deal with code around mox and stubout as a fixture."""
-
-    def setUp(self):
-        super(MoxStubout, self).setUp()
-        # emulate some of the mox stuff, we can't use the metaclass
-        # because it screws with our generators
-        self.mox = mox.Mox()
-        self.stubs = stubout.StubOutForTesting()
-        self.addCleanup(self.mox.UnsetStubs)
-        self.addCleanup(self.stubs.UnsetAll)
-        self.addCleanup(self.stubs.SmartUnsetAll)
-        self.addCleanup(self.mox.VerifyAll)
-
-
 class TestingException(Exception):
     pass
 
@@ -182,9 +147,6 @@ class TestCase(testtools.TestCase, unittest2.TestCase):
             )
         self.useFixture(_DB_CACHE)
 
-        mox_fixture = self.useFixture(MoxStubout())
-        self.mox = mox_fixture.mox
-        self.stubs = mox_fixture.stubs
         self.addCleanup(self._clear_attrs)
         self.useFixture(fixtures.EnvironmentVariable('http_proxy'))
         self.policy = self.useFixture(policy_fixture.PolicyFixture())
