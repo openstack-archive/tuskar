@@ -37,7 +37,6 @@ from tuskar.db import migration
 from tuskar.openstack.common.db.sqlalchemy import session
 from tuskar.openstack.common import log as logging
 from tuskar.tests import conf_fixture
-from tuskar.tests import policy_fixture
 
 
 test_opts = [
@@ -149,7 +148,6 @@ class TestCase(testtools.TestCase, unittest2.TestCase):
 
         self.addCleanup(self._clear_attrs)
         self.useFixture(fixtures.EnvironmentVariable('http_proxy'))
-        self.policy = self.useFixture(policy_fixture.PolicyFixture())
         CONF.set_override('fatal_exception_format_errors', True)
 
     def _clear_attrs(self):

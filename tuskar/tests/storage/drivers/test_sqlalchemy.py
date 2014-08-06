@@ -18,7 +18,7 @@ from mock import Mock
 from mock import patch
 from sqlalchemy.orm.exc import NoResultFound
 
-from tuskar.common import context as tuskar_context
+from tuskar.openstack.common import context as tuskar_context
 from tuskar.storage.drivers.sqlalchemy import SQLAlchemyDriver
 from tuskar.storage.exceptions import UnknownName
 from tuskar.storage.exceptions import UnknownUUID
