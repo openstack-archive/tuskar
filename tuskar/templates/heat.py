@@ -35,8 +35,8 @@ class Template(object):
         self._outputs = []  # list of Output
 
     def __str__(self):
-        msg = 'Template: version=%(ver)s, description=%(desc)s, ' \
-              'parameter_count=%(param)s, output_count=%(out)s'
+        msg = ('Template: version=%(ver)s, description=%(desc)s, '
+               'parameter_count=%(param)s, output_count=%(out)s')
         data = {
             'ver': self.version,
             'desc': _safe_strip(self.description),
@@ -82,9 +82,9 @@ class Template(object):
 
         :type namespace: str
         """
-        self._parameters = \
-            [p for p in self.parameters
-             if not ns_utils.matches_template_namespace(namespace, p.name)]
+        self._parameters = [
+            p for p in self.parameters
+            if not ns_utils.matches_template_namespace(namespace, p.name)]
 
     def add_parameter_group(self, parameter_group):
         """Adds a parameter group to the template.
@@ -144,9 +144,9 @@ class Template(object):
 
         :type namespace: str
         """
-        self._outputs =\
-            [o for o in self.outputs
-             if not ns_utils.matches_template_namespace(namespace, o.name)]
+        self._outputs = [
+            o for o in self.outputs
+            if not ns_utils.matches_template_namespace(namespace, o.name)]
 
 
 class ParameterGroup(object):
@@ -158,8 +158,8 @@ class ParameterGroup(object):
         self._parameter_names = set()
 
     def __str__(self):
-        msg = 'ParameterGroup: label=%(label)s, description=%(desc)s ' \
-              'parameter_names=%(names)s'
+        msg = ('ParameterGroup: label=%(label)s, description=%(desc)s '
+               'parameter_names=%(names)s')
         data = {
             'label': self.label,
             'desc': self.description,
@@ -200,9 +200,9 @@ class Parameter(object):
         self._constraints = []
 
     def __str__(self):
-        msg = 'Parameter: name=%(name)s, type=%(type)s, ' \
-              'description=%(desc)s, label=%(label)s, ' \
-              'default=%(def)s, hidden=%(hidden)s'
+        msg = ('Parameter: name=%(name)s, type=%(type)s, '
+               'description=%(desc)s, label=%(label)s, '
+               'default=%(def)s, hidden=%(hidden)s')
         data = {
             'name': self.name,
             'type': self.param_type,
@@ -242,8 +242,8 @@ class ParameterConstraint(object):
         self.description = description
 
     def __str__(self):
-        msg = 'Constraint: type=%(type)s, definition=%(def)s, ' \
-              'description=%(desc)s'
+        msg = ('Constraint: type=%(type)s, definition=%(def)s, '
+               'description=%(desc)s')
         data = {
             'type': self.constraint_type,
             'def': self.definition,
@@ -336,8 +336,8 @@ class Environment(object):
         self._registry_entries = []
 
     def __str__(self):
-        msg = 'Environment: parameter_count=%(p_count)s, ' \
-              'registry_count=%(r_count)s'
+        msg = ('Environment: parameter_count=%(p_count)s, '
+               'registry_count=%(r_count)s')
         data = {
             'p_count': len(self.parameters),
             'r_count': len(self.registry_entries),
@@ -372,9 +372,9 @@ class Environment(object):
 
         :type namespace: str
         """
-        self._parameters =\
-            [p for p in self._parameters
-             if not ns_utils.matches_template_namespace(namespace, p.name)]
+        self._parameters = [
+            p for p in self._parameters
+            if not ns_utils.matches_template_namespace(namespace, p.name)]
 
     def find_parameter_by_name(self, name):
         """Returns the parameter instance with the given name.

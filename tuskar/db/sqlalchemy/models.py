@@ -113,16 +113,18 @@ class OvercloudRoleCount(Base):
     id = Column(Integer, primary_key=True)
 
     # Role being configured
-    overcloud_role_id = \
-        Column(Integer,
-               ForeignKey('%s.id' % TABLE_OVERCLOUD_ROLE),
-               nullable=False)
+    overcloud_role_id = Column(
+        Integer,
+        ForeignKey('%s.id' % TABLE_OVERCLOUD_ROLE),
+        nullable=False
+    )
 
     # Overcloud in which the role is being deployed
-    overcloud_id = \
-        Column(Integer,
-               ForeignKey('%s.id' % TABLE_OVERCLOUD, ondelete='CASCADE'),
-               nullable=False)
+    overcloud_id = Column(
+        Integer,
+        ForeignKey('%s.id' % TABLE_OVERCLOUD, ondelete='CASCADE'),
+        nullable=False
+    )
 
     # Number of nodes of this configuration that should be deployed
     num_nodes = Column(Integer, nullable=False)

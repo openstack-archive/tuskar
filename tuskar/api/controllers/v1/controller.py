@@ -14,8 +14,7 @@
 import pecan
 
 from tuskar.api.controllers.v1.overcloud import OvercloudsController
-from tuskar.api.controllers.v1.overcloud_roles \
-    import OvercloudRolesController
+from tuskar.api.controllers.v1.overcloud_roles import OvercloudRolesController
 
 
 class Controller(object):

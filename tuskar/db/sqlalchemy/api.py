@@ -185,10 +185,12 @@ class Connection(api.Connection):
         """
 
         session = get_session()
-        overclouds = session.query(models.Overcloud).\
-            options(subqueryload(models.Overcloud.attributes)).\
-            options(subqueryload(models.Overcloud.counts)).\
+        overclouds = (
+            session.query(models.Overcloud).
+            options(subqueryload(models.Overcloud.attributes)).
+            options(subqueryload(models.Overcloud.counts)).
             all()
+        )
         session.close()
         return overclouds
 
@@ -204,11 +206,13 @@ class Connection(api.Connection):
 
         session = get_session()
         try:
-            query = session.query(models.Overcloud).\
-                options(subqueryload(models.Overcloud.attributes)).\
-                options(subqueryload(models.Overcloud.counts)).\
-                options(subqueryload('counts.overcloud_role')).\
+            query = (
+                session.query(models.Overcloud).
+                options(subqueryload(models.Overcloud.attributes)).
+                options(subqueryload(models.Overcloud.counts)).
+                options(subqueryload('counts.overcloud_role')).
                 filter_by(id=overcloud_id)
+            )
             result = query.one()
 
         except NoResultFound:
@@ -308,8 +312,8 @@ class Connection(api.Connection):
     def _update_overcloud_attributes(existing, session, updated):
         if updated.attributes is not None:
             existing_keys = [a.key for a in existing.attributes]
-            existing_attributes_by_key = \
-                dict((a.key, a) for a in existing.attributes)
+            existing_attributes_by_key = (
+                dict((a.key, a) for a in existing.attributes))
 
             delete_keys = []
             for a in updated.attributes:
@@ -345,8 +349,8 @@ class Connection(api.Connection):
         if updated.counts is not None:
             existing_count_role_ids = [c.overcloud_role_id
                                        for c in existing.counts]
-            existing_counts_by_role_id = \
-                dict((c.overcloud_role_id, c) for c in existing.counts)
+            existing_counts_by_role_id = (
+                dict((c.overcloud_role_id, c) for c in existing.counts))
 
             delete_role_ids = []
             for c in updated.counts:
@@ -358,8 +362,7 @@ class Connection(api.Connection):
 
                 # Updated
                 if c.overcloud_role_id in existing_count_role_ids:
-                    updating = \
-                        existing_counts_by_role_id[c.overcloud_role_id]
+                    updating = existing_counts_by_role_id[c.overcloud_role_id]
                     updating.num_nodes = c.num_nodes
                     session.add(updating)
                     continue
