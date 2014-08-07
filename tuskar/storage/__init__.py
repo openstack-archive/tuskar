@@ -17,7 +17,7 @@ from oslo.config import cfg
 from tuskar.openstack.common import log as logging
 
 # TODO(dmatthew): Switch this to the default driver when it is added.
-heat_opts = [
+tuskar_opts = [
     cfg.StrOpt(
         'driver',
         default='mock.Mock',
@@ -27,7 +27,7 @@ heat_opts = [
 ]
 
 CONF = cfg.CONF
-CONF.register_opts(heat_opts, group='storage')
+CONF.register_opts(tuskar_opts, group='storage')
 LOG = logging.getLogger(__name__)
 
 
