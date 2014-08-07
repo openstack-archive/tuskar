@@ -19,12 +19,7 @@ from mock import Mock
 
 from tuskar.storage.exceptions import NameAlreadyUsed
 from tuskar.storage.models import StoredFile
-from tuskar.storage.stores import _BaseStore
-from tuskar.storage.stores import _NamedStore
-from tuskar.storage.stores import _VersionedStore
-from tuskar.storage.stores import DeploymentPlanStore
-from tuskar.storage.stores import EnvironmentFileStore
-from tuskar.storage.stores import TemplateStore
+from tuskar.storage import stores
 from tuskar.tests.base import TestCase
 
 
@@ -34,7 +29,7 @@ class BaseStoreTests(TestCase):
         super(BaseStoreTests, self).setUp()
 
         self.driver = Mock()
-        self.store = _BaseStore(self.driver)
+        self.store = stores._BaseStore(self.driver)
 
     def test_create(self):
         self.store.create("My contents")
@@ -68,7 +63,7 @@ class NamedStoreTests(TestCase):
         super(NamedStoreTests, self).setUp()
 
         self.driver = Mock()
-        self.store = _NamedStore(self.driver)
+        self.store = stores._NamedStore(self.driver)
 
     def test_create(self):
         name = "Object name"
@@ -108,7 +103,7 @@ class VersionedStoreTests(TestCase):
         super(VersionedStoreTests, self).setUp()
 
         self.driver = Mock()
-        self.store = _VersionedStore(self.driver)
+        self.store = stores._VersionedStore(self.driver)
 
     def test_create(self):
         name = "Object name"
@@ -155,7 +150,7 @@ class TemplateStoreTests(TestCase):
         super(TemplateStoreTests, self).setUp()
 
         self.driver = Mock()
-        self.store = TemplateStore(self.driver)
+        self.store = stores.TemplateStore(self.driver)
 
     def test_create(self):
         name = "template name"
@@ -170,7 +165,7 @@ class EnvironmentFileTests(TestCase):
         super(EnvironmentFileTests, self).setUp()
 
         self.driver = Mock()
-        self.store = EnvironmentFileStore(self.driver)
+        self.store = stores.EnvironmentFileStore(self.driver)
 
     def test_create(self):
         contents = "environment contents"
@@ -185,12 +180,12 @@ class DeploymentPlanMockedTests(TestCase):
 
         self.driver = Mock()
 
-        self.template_store = Mock()
+        self.master_template_store = Mock()
         self.environment_store = Mock()
 
-        self.store = DeploymentPlanStore(
+        self.store = stores.DeploymentPlanStore(
             driver=self.driver,
-            template_store=self.template_store,
+            master_template_store=self.master_template_store,
             environment_store=self.environment_store
         )
 
@@ -216,7 +211,7 @@ class DeploymentPlanMockedTests(TestCase):
             uuid="Plan UUID",
             contents=contents
         )
-        self.template_store.retrieve.return_value = Mock(
+        self.master_template_store.retrieve.return_value = Mock(
             uuid="Template UUID"
         )
         self.environment_store.retrieve.return_value = Mock(
@@ -236,7 +231,8 @@ class DeploymentPlanMockedTests(TestCase):
 
         self.assertEqual(result.name, name)
 
-        self.template_store.retrieve.assert_called_once_with('Template UUID')
+        self.master_template_store.retrieve.assert_called_once_with(
+            'Template UUID')
         self.environment_store.retrieve.assert_called_once_with(
             'Environment UUID')
 
@@ -247,18 +243,18 @@ class DeploymentPlanMockedTests(TestCase):
                     '"environment_file_uuid": "Environment UUID"}')
 
         self.driver.create.return_value = self._stored_file(name, contents)
-        self.template_store.create.return_value = Mock(uuid="UUID1")
+        self.master_template_store.create.return_value = Mock(uuid="UUID1")
 
         result = self.store.create(name, environment_uuid='Environment UUID')
 
-        self.template_store.create.assert_called_once_with(
+        self.master_template_store.create.assert_called_once_with(
             'deployment_plan name', '')
         self.assertItemsEqual(self.environment_store.create.call_args_list, [])
 
         self.driver.create.assert_called_once_with(self.store, name, contents)
 
         self.assertEqual(result.name, name)
-        self.template_store.retrieve.assert_called_once_with('UUID1')
+        self.master_template_store.retrieve.assert_called_once_with('UUID1')
         self.environment_store.retrieve.assert_called_once_with(
             'Environment UUID')
 
@@ -274,12 +270,14 @@ class DeploymentPlanMockedTests(TestCase):
         result = self.store.create(name, master_template_uuid='Template UUID')
 
         self.environment_store.create.assert_called_once_with('')
-        self.assertItemsEqual(self.template_store.create.call_args_list, [])
+        self.assertItemsEqual(
+            self.master_template_store.create.call_args_list, [])
 
         self.driver.create.assert_called_once_with(self.store, name, contents)
 
         self.assertEqual(result.name, name)
-        self.template_store.retrieve.assert_called_once_with('Template UUID')
+        self.master_template_store.retrieve.assert_called_once_with(
+            'Template UUID')
         self.environment_store.retrieve.assert_called_once_with(
             'UUID2')
 
@@ -314,10 +312,10 @@ class DeploymentPlanTests(TestCase):
     def setUp(self):
         super(DeploymentPlanTests, self).setUp()
 
-        self.template_store = TemplateStore()
-        self.environment_store = EnvironmentFileStore()
-        self.store = DeploymentPlanStore(
-            template_store=self.template_store,
+        self.master_template_store = stores.MasterTemplateStore()
+        self.environment_store = stores.EnvironmentFileStore()
+        self.store = stores.DeploymentPlanStore(
+            master_template_store=self.master_template_store,
             environment_store=self.environment_store
         )
 
@@ -326,7 +324,7 @@ class DeploymentPlanTests(TestCase):
     def _create_plan(self):
 
         contents = "Template Contents"
-        self.template = self.template_store.create("Template", contents)
+        self.template = self.master_template_store.create("Template", contents)
         self.env = self.environment_store.create("Environment Contents")
 
         self.plan = self.store.create(
@@ -373,7 +371,7 @@ class DeploymentPlanTests(TestCase):
         self.assertEqual(self.template.uuid, retrieved.master_template.uuid)
         self.assertEqual(self.env.uuid, retrieved.environment_file.uuid)
 
-    def test_update_template(self):
+    def test_update_template_manual(self):
 
         # setup
         plan = self.store.create("plan")
@@ -390,7 +388,7 @@ class DeploymentPlanTests(TestCase):
         self.assertEqual(plan.uuid, retrieved.uuid)
         self.assertEqual(updated.master_template.uuid, new_template.uuid)
 
-    def test_update_environment(self):
+    def test_update_environment_manual(self):
 
         # setup
         plan = self.store.create("plan")
@@ -414,6 +412,49 @@ class DeploymentPlanTests(TestCase):
 
         # test & verify
         self.assertRaises(ValueError, update_call)
+
+    def test_update_master_template(self):
+
+        # setup
+        new_contents = "New Template Contents."
+        self.assertEqual("Template Contents", self.template.contents)
+
+        # test
+        updated = self.store.update_master_template(
+            self.plan.uuid, new_contents)
+
+        # verify
+        updated_template = updated.master_template
+        updated_env = updated.environment_file
+
+        self.assertEqual(self.plan.uuid, updated.uuid)
+        self.assertEqual(self.plan.master_template.uuid, updated_template.uuid)
+        self.assertEqual(self.plan.environment_file.uuid, updated_env.uuid)
+
+        self.assertEqual(updated.master_template.contents, new_contents)
+        self.assertEqual(updated.environment_file.contents, self.env.contents)
+
+    def test_update_environment(self):
+
+        # setup
+        new_contents = "New Environment Contents."
+        self.assertEqual("Environment Contents", self.env.contents)
+
+        # test
+        updated = self.store.update_environment(
+            self.plan.uuid, new_contents)
+
+        # verify
+        updated_template = updated.master_template
+        updated_env = updated.environment_file
+
+        self.assertEqual(self.plan.uuid, updated.uuid)
+        self.assertEqual(self.plan.master_template.uuid, updated_template.uuid)
+        self.assertEqual(self.plan.environment_file.uuid, updated_env.uuid)
+
+        self.assertEqual(
+            updated.master_template.contents, self.template.contents)
+        self.assertEqual(updated.environment_file.contents, new_contents)
 
     def test_list(self):
 
