@@ -16,11 +16,10 @@ from oslo.config import cfg
 
 from tuskar.openstack.common import log as logging
 
-# TODO(dmatthew): Switch this to the default driver when it is added.
 heat_opts = [
     cfg.StrOpt(
         'driver',
-        default='mock.Mock',
+        default='tuskar.storage.drivers.sqlalchemy.SQLAlchemyDriver',
         help=('Storage driver to store Deployment Plans and Heat '
               'Orchestration Templates')
     )
