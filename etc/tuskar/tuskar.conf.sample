@@ -722,6 +722,6 @@
 
 # Storage driver to store Deployment Plans and Heat
 # Orchestration Templates (string value)
-#driver=mock.Mock
+#driver=tuskar.storage.drivers.sqlalchemy.SQLAlchemyDriver
 
 
