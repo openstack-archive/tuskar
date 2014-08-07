@@ -201,6 +201,14 @@ class TemplateStore(_VersionedStore):
     object_type = "template"
 
 
+class MasterTemplateStore(_NamedStore):
+    """Template Store for Heat Orchestration TemplateStore
+
+    Master Templates are named and but not versioned.
+    """
+    object_type = "master_template"
+
+
 class EnvironmentFileStore(_BaseStore):
     """Environment File for Heat environment files.
 
@@ -216,11 +224,11 @@ class DeploymentPlanStore(_NamedStore):
     """
     object_type = "deployment_plan"
 
-    def __init__(self, template_store=None, environment_store=None, *args,
-                 **kwargs):
+    def __init__(self, master_template_store=None, environment_store=None,
+                 *args, **kwargs):
         super(DeploymentPlanStore, self).__init__(*args, **kwargs)
 
-        self._template_store = template_store or TemplateStore()
+        self._template_store = master_template_store or MasterTemplateStore()
         self._env_file_store = environment_store or EnvironmentFileStore()
 
     def _serialise(self, master_template, environment_file):
@@ -357,6 +365,70 @@ class DeploymentPlanStore(_NamedStore):
         contents = self._serialise(master_template_uuid, environment_uuid)
         plan_file = super(DeploymentPlanStore, self).update(uuid, contents)
         return self._deserialise(plan_file)
+
+    def update_master_template(self, plan_uuid, master_template_contents):
+        """Given the plan UUID and the master template contents, update the
+        template and return the updated DeploymentPlan.
+
+        :param plan_uuid: Deployment Plan UUID
+        :type  plan_uuid: str
+
+        :param master_template_contents: Master Template contents
+        :type  master_template_contents: str
+
+        :return: DeploymentPlan instance containing the relationship
+        :rtype:  tuskar.storage.models.DeploymentPlan
+
+        :raises: tuskar.storage.exceptions.UnknownUUID if the UUID can't be
+            found
+        :raises: ValueError if neither name or contents are provided.
+        """
+
+        # Fetch the plan, this is primarily to get the master template UUID.
+        plan = self.retrieve(plan_uuid)
+        template_uuid = plan.master_template.uuid
+
+        # Update the template contents
+        updated_template = self._template_store.update(
+            template_uuid, master_template_contents)
+
+        # Manually update the plan, to avoid having to refetch it from the
+        # store as we know nothing else has changed.
+        plan.master_template = updated_template
+
+        return plan
+
+    def update_environment(self, plan_uuid, environment_contents):
+        """Given the plan UUID and the environment contents, update the
+        environment and return the updated Deployment Plan.
+
+        :param plan_uuid: Deployment Plan UUID
+        :type  plan_uuid: str
+
+        :param environment_contents: Environment contents
+        :type  environment_contents: str
+
+        :return: DeploymentPlan instance containing the relationship
+        :rtype:  tuskar.storage.models.DeploymentPlan
+
+        :raises: tuskar.storage.exceptions.UnknownUUID if the UUID can't be
+            found
+        :raises: ValueError if neither name or contents are provided.
+        """
+
+        # Fetch the plan, this is primarily to get the environment UUID.
+        plan = self.retrieve(plan_uuid)
+        environment_uuid = plan.environment_file.uuid
+
+        # Update the environment contents
+        updated_env = self._env_file_store.update(
+            environment_uuid, environment_contents)
+
+        # Manually update the plan, to avoid having to refetch it from the
+        # store as we know nothing else has changed.
+        plan.environment_file = updated_env
+
+        return plan
 
     def list(self):
         """Return a list of all the deployment plans in this store.
