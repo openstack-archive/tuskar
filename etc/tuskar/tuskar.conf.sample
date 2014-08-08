@@ -188,31 +188,6 @@
 
 
 #
-# Options defined in tuskar.openstack.common.notifier.api
-#
-
-# Driver or drivers to handle sending notifications (multi
-# valued)
-#notification_driver=
-
-# Default notification level for outgoing notifications
-# (string value)
-#default_notification_level=INFO
-
-# Default publisher_id for outgoing notifications (string
-# value)
-#default_publisher_id=$host
-
-
-#
-# Options defined in tuskar.openstack.common.notifier.rpc_notifier
-#
-
-# AMQP topic used for openstack notifications (list value)
-#notification_topics=notifications
-
-
-#
 # Options defined in tuskar.openstack.common.policy
 #
 
@@ -701,16 +676,6 @@
 # Matchmaker ring file (JSON) (string value)
 # Deprecated group/name - [DEFAULT]/matchmaker_ringfile
 #ringfile=/etc/oslo/matchmaker_ring.json
-
-
-[rpc_notifier2]
-
-#
-# Options defined in tuskar.openstack.common.notifier.rpc_notifier2
-#
-
-# AMQP topic(s) used for openstack notifications (list value)
-#topics=notifications
 
 
 [storage]
