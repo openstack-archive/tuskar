@@ -61,4 +61,4 @@ def remove_resource_alias_namespace(alias):
 
     :rtype: str
     """
-    return alias[len(ALIAS_PREFIX) + 1:]
+    return alias[len(ALIAS_PREFIX):]
