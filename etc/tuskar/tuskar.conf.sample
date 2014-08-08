@@ -213,15 +213,6 @@
 
 
 #
-# Options defined in tuskar.openstack.common.periodic_task
-#
-
-# Some periodic tasks can be run in a separate process. Should
-# we run them here? (boolean value)
-#run_external_periodic_tasks=true
-
-
-#
 # Options defined in tuskar.openstack.common.policy
 #
 
