@@ -18,7 +18,6 @@ from mock import Mock
 from mock import patch
 from sqlalchemy.orm.exc import NoResultFound
 
-from tuskar.openstack.common import context as tuskar_context
 from tuskar.storage.drivers.sqlalchemy import SQLAlchemyDriver
 from tuskar.storage.exceptions import UnknownName
 from tuskar.storage.exceptions import UnknownUUID
@@ -33,7 +32,6 @@ class SQLAlchemyDriverTestCase(base.TestCase):
     def setUp(self):
         super(SQLAlchemyDriverTestCase, self).setUp()
 
-        self.context = tuskar_context.get_admin_context()
         self.driver = SQLAlchemyDriver()
         self.store = TemplateStore(self.driver)
 
