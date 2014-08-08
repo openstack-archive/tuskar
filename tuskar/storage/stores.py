@@ -250,7 +250,7 @@ class DeploymentPlanStore(_NamedStore):
             "environment_file_uuid": environment_file
         }
 
-        return jsonutils.dumps(plan)
+        return jsonutils.dumps(plan, sort_keys=True)
 
     def _deserialise(self, plan_stored_file):
         """Load the Plan from a JSON string containing the master template

@@ -205,8 +205,8 @@ class DeploymentPlanMockedTests(TestCase):
 
     def _create_mock_plan(self):
 
-        contents = ('{"master_template_uuid": "Template UUID", '
-                    '"environment_file_uuid": "Environment UUID"}')
+        contents = ('{"environment_file_uuid": "Environment UUID", '
+                    '"master_template_uuid": "Template UUID"}')
         self.driver.retrieve.return_value = Mock(
             uuid="Plan UUID",
             contents=contents
@@ -221,8 +221,8 @@ class DeploymentPlanMockedTests(TestCase):
     def test_create(self):
 
         name = "deployment_plan name"
-        contents = ('{"master_template_uuid": "Template UUID", '
-                    '"environment_file_uuid": "Environment UUID"}')
+        contents = ('{"environment_file_uuid": "Environment UUID", '
+                    '"master_template_uuid": "Template UUID"}')
 
         self.driver.create.return_value = self._stored_file(name, contents)
 
@@ -239,8 +239,8 @@ class DeploymentPlanMockedTests(TestCase):
     def test_create_no_template(self):
 
         name = "deployment_plan name"
-        contents = ('{"master_template_uuid": "UUID1", '
-                    '"environment_file_uuid": "Environment UUID"}')
+        contents = ('{"environment_file_uuid": "Environment UUID", '
+                    '"master_template_uuid": "UUID1"}')
 
         self.driver.create.return_value = self._stored_file(name, contents)
         self.master_template_store.create.return_value = Mock(uuid="UUID1")
@@ -261,8 +261,8 @@ class DeploymentPlanMockedTests(TestCase):
     def test_create_no_environment(self):
 
         name = "deployment_plan name"
-        contents = ('{"master_template_uuid": "Template UUID", '
-                    '"environment_file_uuid": "UUID2"}')
+        contents = ('{"environment_file_uuid": "UUID2", '
+                    '"master_template_uuid": "Template UUID"}')
 
         self.driver.create.return_value = self._stored_file(name, contents)
         self.environment_store.create.return_value = Mock(uuid="UUID2")
