@@ -77,14 +77,6 @@
 
 
 #
-# Options defined in tuskar.openstack.common.eventlet_backdoor
-#
-
-# port for eventlet backdoor to listen (integer value)
-#backdoor_port=<None>
-
-
-#
 # Options defined in tuskar.openstack.common.lockutils
 #
 
