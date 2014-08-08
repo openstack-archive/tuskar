@@ -43,6 +43,19 @@ parameters:
     description: ID of the image to use
     default: 3e6270da-fbf7-4aef-bc78-6d0cfc3ad11b
 
+parameter_groups:
+
+  - label: group-1
+    description: first group
+    parameters:
+      - key_name
+      - instance_type
+
+  - label: group-2
+    description: second group
+    parameters:
+      - image_id
+
 resources:
   foo_instance:
     type: OS::Nova::Server
@@ -116,6 +129,19 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(True, ordered_params[2].hidden)
         self.assertEqual('Key', ordered_params[2].label)
         self.assertEqual(0, len(ordered_params[2].constraints))
+
+        # Parameter Groups
+        self.assertEqual(2, len(t.parameter_groups))
+        self.assertEqual('group-1', t.parameter_groups[0].label)
+        self.assertEqual('first group',
+                         t.parameter_groups[0].description)
+        self.assertEqual(('key_name', 'instance_type'),
+                         t.parameter_groups[0].parameter_names)
+        self.assertEqual('group-2', t.parameter_groups[1].label)
+        self.assertEqual('second group',
+                         t.parameter_groups[1].description)
+        self.assertEqual(('image_id',),
+                         t.parameter_groups[1].parameter_names)
 
         # Resources
         self.assertEqual(1, len(t.resources))

@@ -151,7 +151,7 @@ class Template(object):
 
 class ParameterGroup(object):
 
-    def __init__(self, label, description):
+    def __init__(self, label, description=None):
         super(ParameterGroup, self).__init__()
         self.label = label
         self.description = description
@@ -171,12 +171,13 @@ class ParameterGroup(object):
     def parameter_names(self):
         return tuple(self._parameter_names)
 
-    def add_parameter_name(self, name):
-        """Adds a parameter to the group.
+    def add_parameter_name(self, *names):
+        """Adds one or more parameters to the group.
 
-        :type name: str
+        :type names: str
         """
-        self._parameter_names.add(name)
+        for n in names:
+            self._parameter_names.add(n)
 
     def remove_parameter_name(self, name):
         """Removes a parameter from the group if it is present.

@@ -33,10 +33,11 @@ class ComposerTests(unittest.TestCase):
         template = yaml.safe_load(composed)
 
         # Verify Overall Structure
-        self.assertEqual(5, len(template))
+        self.assertEqual(6, len(template))
         self.assertTrue('heat_template_version' in template)
         self.assertTrue('description' in template)
         self.assertTrue('parameters' in template)
+        self.assertTrue('parameter_groups' in template)
         self.assertTrue('resources' in template)
         self.assertTrue('outputs' in template)
 
@@ -60,6 +61,18 @@ class ComposerTests(unittest.TestCase):
         self.assertTrue('label' not in template['parameters']['p2'])
         self.assertTrue('default' not in template['parameters']['p2'])
         self.assertTrue('hidden' not in template['parameters']['p2'])
+
+        # Verify Parameter Groups
+        self.assertEqual(2, len(template['parameter_groups']))
+
+        self.assertEqual('l1', template['parameter_groups'][0]['label'])
+        self.assertTrue('description' not in template['parameter_groups'][0])
+        self.assertTrue('parameters' not in template['parameter_groups'][0])
+
+        self.assertEqual('l2', template['parameter_groups'][1]['label'])
+        self.assertEqual('d2', template['parameter_groups'][1]['description'])
+        self.assertEqual(['bar', 'baz', 'foo'],
+                         sorted(template['parameter_groups'][1]['parameters']))
 
         # Verify Resources
         self.assertEqual(2, len(template['resources']))
@@ -138,6 +151,14 @@ class ComposerTests(unittest.TestCase):
 
         # Simple Parameter
         t.add_parameter(heat.Parameter('p2', 't2'))
+
+        # Simple Parameter Group
+        t.add_parameter_group(heat.ParameterGroup('l1'))
+
+        # Complex Parameter Group
+        group = heat.ParameterGroup('l2', description='d2')
+        group.add_parameter_name('foo', 'bar', 'baz')
+        t.add_parameter_group(group)
 
         # Complex Resource
         resource = heat.Resource('r1', 't1', metadata='m1', depends_on='r2',

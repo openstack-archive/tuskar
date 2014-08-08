@@ -25,6 +25,7 @@ from tuskar.templates.heat import EnvironmentParameter
 from tuskar.templates.heat import Output
 from tuskar.templates.heat import Parameter
 from tuskar.templates.heat import ParameterConstraint
+from tuskar.templates.heat import ParameterGroup
 from tuskar.templates.heat import RegistryEntry
 from tuskar.templates.heat import Resource
 from tuskar.templates.heat import ResourceProperty
@@ -116,9 +117,16 @@ def _parse_template_parameters(template, yaml_parsed):
 
 
 def _parse_parameter_group(template, yaml_parsed):
-    # There are no plans in Tuskar to use the role template groups, so
-    # we can hold off implementing this until they will be present.
-    pass
+    yaml_groups = yaml_parsed.get('parameter_groups', [])
+
+    for details in yaml_groups:
+        label = details['label']
+        description = details.get('description', None)
+        param_names = details['parameters']
+
+        group = ParameterGroup(label, description)
+        group.add_parameter_name(*param_names)
+        template.add_parameter_group(group)
 
 
 def _parse_resources(template, yaml_parsed):
