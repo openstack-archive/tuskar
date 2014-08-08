@@ -208,8 +208,15 @@ class DeploymentPlan(object):
         self.master_template.remove_outputs_by_namespace(namespace)
 
         # Remove Resource
+
+        # If scaling features are being automatically added in, the resource
+        # is wrapped in a scaling group, so remove that instead
         resource_id = _generate_resource_id(namespace)
-        self.master_template.remove_resource_by_id(resource_id)
+        if self.add_scaling:
+            group_resource_id = _generate_group_id(resource_id)
+            self.master_template.remove_resource_by_id(group_resource_id)
+        else:
+            self.master_template.remove_resource_by_id(resource_id)
 
     def _remove_from_environment(self, namespace):
         # Remove Parameters
