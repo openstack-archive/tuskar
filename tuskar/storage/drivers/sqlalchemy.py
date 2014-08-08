@@ -214,7 +214,7 @@ class SQLAlchemyDriver(BaseDriver):
         :param store: The store class, used for routing the storage.
         :type  store: tuskar.storage.stores._BaseStore
 
-        :param uuid: UUID of the object to update.
+        :param uuid: UUID of the object to delete.
         :type  uuid: str
 
         :return: Returns nothing on success. Exceptions are expected for errors
