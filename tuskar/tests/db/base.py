@@ -15,7 +15,6 @@
 
 """Tuskar DB test base class."""
 
-from tuskar.openstack.common import context as tuskar_context
 from tuskar.tests import base
 
 
@@ -23,4 +22,3 @@ class DbTestCase(base.TestCase):
 
     def setUp(self):
         super(DbTestCase, self).setUp()
-        self.context = tuskar_context.get_admin_context()
