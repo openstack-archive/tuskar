@@ -135,8 +135,8 @@ class ParserTests(unittest.TestCase):
         self.assertEqual('group-1', t.parameter_groups[0].label)
         self.assertEqual('first group',
                          t.parameter_groups[0].description)
-        self.assertEqual(('key_name', 'instance_type'),
-                         t.parameter_groups[0].parameter_names)
+        self.assertEqual(sorted(('key_name', 'instance_type')),
+                         sorted(t.parameter_groups[0].parameter_names))
         self.assertEqual('group-2', t.parameter_groups[1].label)
         self.assertEqual('second group',
                          t.parameter_groups[1].description)
