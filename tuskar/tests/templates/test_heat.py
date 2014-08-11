@@ -383,6 +383,15 @@ class EnvironmentTests(unittest.TestCase):
         # Test
         self.assertRaises(ValueError, e.find_parameter_by_name, 'missing')
 
+    def test_has_parameter_in_namespace(self):
+        # Setup
+        e = heat.Environment()
+        e.add_parameter(heat.EnvironmentParameter('ns1::p1', 'v1'))
+
+        # Test
+        self.assertTrue(e.has_parameter_in_namespace('ns1'))
+        self.assertFalse(e.has_parameter_in_namespace('ns2'))
+
 
 class EnvironmentParameterTests(unittest.TestCase):
 

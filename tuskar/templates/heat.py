@@ -389,6 +389,16 @@ class Environment(object):
             raise ValueError('No parameter named %s found' % name)
         return matching[0]
 
+    def has_parameter_in_namespace(self, namespace):
+        """Returns true if the environment has at least one parameter
+        in given namespace, false otherwise.
+
+        :type namespace: str
+        """
+        matching = [p for p in self._parameters
+                    if ns_utils.matches_template_namespace(namespace, p.name)]
+        return len(matching) != 0
+
     def add_registry_entry(self, entry):
         """Adds a registry entry to the environment.
 

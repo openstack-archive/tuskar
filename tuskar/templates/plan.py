@@ -51,6 +51,11 @@ class DeploymentPlan(object):
                          when mapping the template in the environment
         :type  filename: str
         """
+        if self.environment.has_parameter_in_namespace(namespace):
+            raise ValueError(
+                "Cannot add template to plan - namespace '%s' is taken."
+                % namespace)
+
         resource_alias = ns_utils.apply_resource_alias_namespace(namespace)
 
         self._add_to_master_template(namespace, template, resource_alias)
