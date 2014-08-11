@@ -86,7 +86,13 @@ class DeploymentPlan(object):
         :param filename: name of the file where the template is stored, used
                          when mapping the template in the environment
         :type  filename: str
+        :raise ValueError: if given namespace is already taken
         """
+        if self.environment.has_parameter_in_namespace(namespace):
+            raise ValueError(
+                "Cannot add template to plan - namespace '%s' is taken."
+                % namespace)
+
         resource_alias = ns_utils.apply_resource_alias_namespace(namespace)
 
         self._add_to_master_template(namespace, template, resource_alias)
