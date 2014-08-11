@@ -21,7 +21,6 @@ from tuskar.common import config
 
 CONF = cfg.CONF
 CONF.import_opt('use_ipv6', 'tuskar.netconf')
-CONF.import_opt('host', 'tuskar.common.service')
 
 
 class ConfFixture(fixtures.Fixture):
@@ -33,11 +32,6 @@ class ConfFixture(fixtures.Fixture):
     def setUp(self):
         super(ConfFixture, self).setUp()
 
-        self.conf.set_default('host', 'fake-mini')
-        self.conf.set_default('rpc_backend',
-                              'tuskar.openstack.common.rpc.impl_fake')
-        self.conf.set_default('rpc_cast_timeout', 5)
-        self.conf.set_default('rpc_response_timeout', 5)
         self.conf.set_default('connection', "sqlite://", group='database')
         self.conf.set_default('sqlite_synchronous', False)
         self.conf.set_default('use_ipv6', True)
