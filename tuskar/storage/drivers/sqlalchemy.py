@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from uuid import uuid4
 
 from oslo.config import cfg
+from sqlalchemy import and_
 from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -260,14 +261,27 @@ class SQLAlchemyDriver(BaseDriver):
             )
 
             if only_latest:
+                # When only_latest is provided, then we want to select only the
+                # stored files with the latest version. To do this we use a
+                # subquery to get a set of names and latest versions for the
+                # object type. After we have that, we join in the name and
+                # version to make sure we match it.
                 stmt = session.query(
-                    StoredFile.uuid,
+                    StoredFile.name,
                     func.max(StoredFile.version).label("version")
+                ).filter_by(
+                    object_type=object_type
+                ).group_by(
+                    StoredFile.name
                 ).subquery()
 
-                files = files.filter(
-                    StoredFile.version == stmt.c.version,
-                    StoredFile.uuid == stmt.c.uuid
+                # join our existing query on the subquery.
+                files = files.join(
+                    stmt,
+                    and_(
+                        StoredFile.name == stmt.c.name,
+                        StoredFile.version == stmt.c.version,
+                    )
                 )
 
             return [self._to_storage_model(store, file_) for file_ in files]
