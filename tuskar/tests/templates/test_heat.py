@@ -304,6 +304,15 @@ class EnvironmentTests(unittest.TestCase):
         e.remove_parameter(p)
         self.assertEqual(0, len(e.parameters))
 
+    def test_add_existing_parameter(self):
+        e = heat.Environment()
+        p = heat.EnvironmentParameter('n', 'v')
+        e.add_parameter(p)
+
+        # Test
+        p2 = heat.EnvironmentParameter('n', 'v')
+        self.assertRaises(ValueError, e.add_parameter, p2)
+
     def test_remove_parameter_not_found(self):
         e = heat.Environment()
         self.assertRaises(ValueError, e.remove_parameter,
@@ -382,6 +391,14 @@ class EnvironmentTests(unittest.TestCase):
 
         # Test
         self.assertRaises(ValueError, e.find_parameter_by_name, 'missing')
+
+    def test_find_parameter_by_name_allow_missing(self):
+        # Setup
+        e = heat.Environment()
+
+        # Test
+        self.assertFalse(e.find_parameter_by_name('missing',
+                                                  allow_missing=True))
 
 
 class EnvironmentParameterTests(unittest.TestCase):
