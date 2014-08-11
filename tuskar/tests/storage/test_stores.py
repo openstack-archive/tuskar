@@ -18,6 +18,7 @@ from functools import partial
 from mock import Mock
 
 from tuskar.storage.exceptions import NameAlreadyUsed
+from tuskar.storage.exceptions import UnknownUUID
 from tuskar.storage.models import StoredFile
 from tuskar.storage import stores
 from tuskar.tests.base import TestCase
@@ -471,3 +472,51 @@ class DeploymentPlanTests(TestCase):
         plan = self.store.retrieve_by_name("Plan Name")
 
         self.assertEqual(plan.uuid, self.plan.uuid)
+
+    def test_delete(self):
+
+        # test
+        self.store.delete(self.plan.uuid)
+
+        # verify
+        plan_retrieve = partial(self.store.retrieve, self.plan.uuid)
+        template_retrieve = partial(self.master_template_store.retrieve,
+                                    self.template.uuid)
+        env_retrieve = partial(self.environment_store.retrieve, self.env.uuid)
+
+        for call in [plan_retrieve, template_retrieve, env_retrieve]:
+            self.assertRaises(UnknownUUID, call)
+
+    def test_delete_no_template(self):
+
+        # setup
+        self.master_template_store.delete(self.template.uuid)
+
+        # test
+        self.store.delete(self.plan.uuid)
+
+        # verify
+        plan_retrieve = partial(self.store.retrieve, self.plan.uuid)
+        template_retrieve = partial(self.master_template_store.retrieve,
+                                    self.template.uuid)
+        env_retrieve = partial(self.environment_store.retrieve, self.env.uuid)
+
+        for call in [plan_retrieve, template_retrieve, env_retrieve]:
+            self.assertRaises(UnknownUUID, call)
+
+    def test_delete_no_environment(self):
+
+        # setup
+        self.environment_store.delete(self.env.uuid)
+
+        # test
+        self.store.delete(self.plan.uuid)
+
+        # verify
+        plan_retrieve = partial(self.store.retrieve, self.plan.uuid)
+        template_retrieve = partial(self.master_template_store.retrieve,
+                                    self.template.uuid)
+        env_retrieve = partial(self.environment_store.retrieve, self.env.uuid)
+
+        for call in [plan_retrieve, template_retrieve, env_retrieve]:
+            self.assertRaises(UnknownUUID, call)

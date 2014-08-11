@@ -13,8 +13,12 @@
 # under the License.
 
 from tuskar.openstack.common import jsonutils
+from tuskar.openstack.common import log
+from tuskar.storage.exceptions import UnknownUUID
 from tuskar.storage import get_driver
 from tuskar.storage.models import DeploymentPlan
+
+LOG = log.getLogger(__name__)
 
 
 class _BaseStore(object):
@@ -92,7 +96,7 @@ class _BaseStore(object):
     def delete(self, uuid):
         """Delete the file in this store with the matching uuid.
 
-        :param uuid: UUID of the object to update.
+        :param uuid: UUID of the object to delete.
         :type  uuid: str
 
         :raises: tuskar.storage.exceptions.UnknownUUID if the UUID can't be
@@ -265,9 +269,23 @@ class DeploymentPlanStore(_NamedStore):
 
         metadata = jsonutils.loads(plan_stored_file.contents)
 
-        master = self._template_store.retrieve(
-            metadata['master_template_uuid'])
-        env = self._env_file_store.retrieve(metadata['environment_file_uuid'])
+        plan_uuid = plan_stored_file.uuid
+        template_uuid = metadata['master_template_uuid']
+        env_uuid = metadata['environment_file_uuid']
+
+        try:
+            master = self._template_store.retrieve(template_uuid)
+        except UnknownUUID:
+            LOG.warn("Deployment Plan {0} had a relation to Template {1} "
+                     "which doesn't exist.".format(plan_uuid, template_uuid))
+            master = None
+
+        try:
+            env = self._env_file_store.retrieve(env_uuid)
+        except UnknownUUID:
+            LOG.warn("Deployment Plan {0} had a relation to Environment {1} "
+                     "which doesn't exist.".format(plan_uuid, env_uuid))
+            env = None
 
         return DeploymentPlan.from_stored_file(plan_stored_file,
                                                master_template=master,
@@ -453,3 +471,26 @@ class DeploymentPlanStore(_NamedStore):
         """
         stored_file = super(DeploymentPlanStore, self).retrieve_by_name(name)
         return self._deserialise(stored_file)
+
+    def delete(self, uuid):
+        """Delete the DeploymentPlan and it's related MasterTemplate end
+        EnvironmentFile. If the MasterTemplate or EnvironmentFile can't be
+        found, the exceptions will be ignored and the DeploymentPlan will still
+        be deleted.
+
+        :param uuid: UUID of the DeploymentPlan to delete.
+        :type  uuid: str
+
+        :raises: tuskar.storage.exceptions.UnknownUUID if the UUID can't be
+            found for the DeploymentPlan.
+        """
+
+        plan = self.retrieve(uuid)
+
+        if plan.master_template:
+            self._template_store.delete(plan.master_template.uuid)
+
+        if plan.environment_file:
+            self._env_file_store.delete(plan.environment_file.uuid)
+
+        return self._driver.delete(self, uuid)
