@@ -19,12 +19,8 @@
 Run storage database migration.
 """
 
-import sys
-
-from tuskar.common import service
 from tuskar.db import migration
 
 
 def main():
-    service.prepare_service(sys.argv)
     migration.db_sync()
