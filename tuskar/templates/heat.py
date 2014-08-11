@@ -357,7 +357,12 @@ class Environment(object):
         """Adds a property to the environment.
 
         :type parameter: tuskar.templates.heat.EnvironmentParameter
+        :raise ValueError: if the parameter is already in the environment
         """
+        if self.find_parameter_by_name(parameter.name, allow_missing=True):
+            raise ValueError("Cannot add parameter named %s - already present"
+                             % parameter.name)
+
         self._parameters.append(parameter)
 
     def remove_parameter(self, parameter):
@@ -377,16 +382,23 @@ class Environment(object):
             p for p in self._parameters
             if not ns_utils.matches_template_namespace(namespace, p.name)]
 
-    def find_parameter_by_name(self, name):
+    def find_parameter_by_name(self, name, allow_missing=False):
         """Returns the parameter instance with the given name.
 
         :type name: str
+        :param allow_missing: return None instead of raising an error
+            if parameter was not found
+        :type allow_missing: bool
         :rtype: tuskar.templates.heat.EnvironmentParameter
         :raise ValueError: if there is no parameter with the given name
+            and allow_missing is False
         """
         matching = [p for p in self._parameters if p.name == name]
         if len(matching) == 0:
-            raise ValueError('No parameter named %s found' % name)
+            if allow_missing:
+                return None
+            else:
+                raise ValueError('No parameter named %s found' % name)
         return matching[0]
 
     def add_registry_entry(self, entry):
