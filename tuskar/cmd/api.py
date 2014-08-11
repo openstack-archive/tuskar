@@ -19,21 +19,17 @@
 
 import logging
 import os
-import sys
 from wsgiref import simple_server
 
 from oslo.config import cfg
 
 from tuskar.api import app
-from tuskar.common import service as tuskar_service
 from tuskar.openstack.common import log
 
 CONF = cfg.CONF
 
 
 def main():
-    # Parse config file and command line options, then start logging
-    tuskar_service.prepare_service(sys.argv)
 
     # Build and start the WSGI app
     host = CONF.tuskar_api_bind_ip
