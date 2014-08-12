@@ -19,6 +19,10 @@ from wsmeext import pecan as wsme_pecan
 
 from tuskar.api.controllers.v2 import models
 from tuskar.api.controllers.v2 import roles
+from tuskar.common.exception import PlanNotFound
+from tuskar.manager.plan import PlansManager
+from tuskar.storage.exceptions import UnknownUUID
+
 
 LOG = logging.getLogger(__name__)
 
@@ -40,13 +44,13 @@ class PlansController(rest.RestController):
         :rtype:  list of tuskar.api.controllers.v2.models.Plan
         """
         LOG.debug('Retrieving all plans')
-        plans = [
-            models.Plan(**{
-                'uuid': '42',
-                'name': 'foo',
-            }),
-        ]
-        return plans
+        manager = PlansManager()
+        all_plans = manager.list_plans()
+        if len(all_plans) > 0:
+            transfer_plans = [models.Plan.from_tuskar_model(p) for p in all_plans]
+        else:
+            transfer_plans = []
+        return transfer_plans
 
     @wsme_pecan.wsexpose(models.Plan, str)
     def get_one(self, plan_uuid):
@@ -64,13 +68,15 @@ class PlansController(rest.RestController):
         :raises: tuskar.common.exception.PlanNotFound if there
                  is no plan with the given UUID
         """
-
         LOG.debug('Retrieving plan with UUID: %s' % plan_uuid)
-        plan = models.Plan(**{
-            'uuid': '42',
-            'name': 'foo',
-        })
-        return plan
+        manager = PlansManager()
+        try:
+            found = manager.retrieve_plan(plan_uuid)
+        except UnknownUUID:
+            LOG.exception('Could not retrieve plan: %s' % plan_uuid)
+            raise PlanNotFound()
+        transfer = models.Plan.from_tuskar_model(found)
+        return transfer
 
     @wsme_pecan.wsexpose(None, str, status_code=204)
     def delete(self, plan_uuid):
@@ -84,10 +90,13 @@ class PlansController(rest.RestController):
         """
 
         LOG.debug('Deleting plan with UUID: %s' % plan_uuid)
+        manager = PlansManager()
+        try:
+            manager.delete_plan(plan_uuid)
+        except UnknownUUID:
+            LOG.exception('Could not delete plan: %s' % plan_uuid)
+            raise PlanNotFound()
 
-        # delete plan here
-
-    @wsme.validate(models.Plan)
     @wsme_pecan.wsexpose(models.Plan,
                          body=models.Plan,
                          status_code=201)
@@ -106,10 +115,11 @@ class PlansController(rest.RestController):
         """
         LOG.debug('Creating plan: %s' % transfer_plan)
 
-        # Persist
-
-        # Package for transfer back to the user
-        return transfer_plan
+        manager = PlansManager()
+        created = manager.create_plan(transfer_plan.name,
+                                      transfer_plan.description)
+        transfer = models.Plan.from_tuskar_model(created)
+        return transfer
 
     @pecan.expose()
     def templates(self, plan_uuid):

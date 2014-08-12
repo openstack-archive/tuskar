@@ -167,7 +167,9 @@ class PlansManager(object):
         deployment_plan = models.DeploymentPlan(
             plan_uuid,
             db_plan.name,
-            master_template.description
+            master_template.description,
+            created_at=db_plan.created_at,
+            updated_at=db_plan.updated_at,
         )
 
         roles = self._find_roles(environment)

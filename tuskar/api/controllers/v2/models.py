@@ -17,9 +17,11 @@ module also contain the translations between the REST transfer objects and
 the internal Tuskar domain model.
 """
 
+import datetime
 import logging
 
 from wsme import types as wtypes
+
 
 LOG = logging.getLogger(__name__)
 
@@ -44,13 +46,75 @@ class Base(wtypes.Base):
 class Role(Base):
     """Transfer object for roles."""
 
-    uuid = str
+    uuid = wtypes.text
     name = wtypes.text
+    version = int
+    description = wtypes.text
+
+    @classmethod
+    def from_tuskar_model(cls, role):
+        """
+        :type role: tuskar.manager.models.Role
+        """
+        r = cls(**{
+            'uuid': role.uuid,
+            'name': role.name,
+            'version': role.version,
+            'description': role.description
+        })
+        return r
+
+
+class PlanParameter(Base):
+
+    name = wtypes.text
+    label = wtypes.text
+    default = wtypes.text
+    description = wtypes.text
+    hidden = bool
+    value = wtypes.text
+
+    @classmethod
+    def from_tuskar_model(cls, param):
+        """
+        :type param: tuskar.manager.models.PlanParameter
+        """
+        p = cls(**{
+            'name': param.name,
+            'label': param.label,
+            'default': param.default,
+            'description': param.description,
+            'hidden': param.hidden,
+            'value': param.value,
+        })
+        return p
 
 
 class Plan(Base):
-    """Transfer object for plans."""
 
-    uuid = str
+    uuid = wtypes.text
     name = wtypes.text
-    roles = wtypes.ArrayType(Role)
+    description = wtypes.text
+    created_at = datetime.datetime
+    updated_at = datetime.datetime
+    roles = [Role]
+    parameters = [PlanParameter]
+
+    @classmethod
+    def from_tuskar_model(cls, plan):
+        """
+        :type plan: tuskar.manager.models.DeploymentPlan
+        """
+        roles = [Role.from_tuskar_model(r) for r in plan.roles]
+        params = [PlanParameter.from_tuskar_model(p) for p in plan.parameters]
+
+        p = cls(**{
+            'uuid': plan.uuid,
+            'name': plan.name,
+            'description': plan.description,
+            'created_at': plan.created_at,
+            'updated_at': plan.updated_at,
+            'roles': roles,
+            'parameters': params,
+        })
+        return p
