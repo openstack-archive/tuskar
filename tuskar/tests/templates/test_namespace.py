@@ -37,5 +37,6 @@ class NamespaceTests(unittest.TestCase):
         self.assertEqual(namespaced, 'Tuskar::compute')
 
     def test_remove_resource_alias_namespace(self):
-        stripped = namespace.remove_template_namespace('Tuskar::controller')
+        stripped = namespace.remove_resource_alias_namespace(
+            'Tuskar::controller')
         self.assertEqual(stripped, 'controller')
