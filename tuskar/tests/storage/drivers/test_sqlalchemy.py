@@ -16,9 +16,9 @@ from functools import partial
 
 from mock import Mock
 from mock import patch
+from oslo.db.sqlalchemy import test_base as oslo_test_base
 from sqlalchemy.orm.exc import NoResultFound
 
-from tuskar.openstack.common import context as tuskar_context
 from tuskar.storage.drivers.sqlalchemy import SQLAlchemyDriver
 from tuskar.storage.exceptions import UnknownName
 from tuskar.storage.exceptions import UnknownUUID
@@ -28,14 +28,7 @@ from tuskar.storage.stores import TemplateStore
 from tuskar.tests import base
 
 
-class SQLAlchemyDriverTestCase(base.TestCase):
-
-    def setUp(self):
-        super(SQLAlchemyDriverTestCase, self).setUp()
-
-        self.context = tuskar_context.get_admin_context()
-        self.driver = SQLAlchemyDriver()
-        self.store = TemplateStore(self.driver)
+class SQLAlchemyDriverTestsMixin(object):
 
     @patch('tuskar.storage.drivers.sqlalchemy.SQLAlchemyDriver._generate_uuid')
     def test_create(self, mock_uuid):
@@ -277,3 +270,30 @@ class SQLAlchemyDriverTestCase(base.TestCase):
             )
 
             self.assertRaises(NoResultFound, retrieve_by_name_call)
+
+
+class SQLAlchemyDriverTestCase(base.TestCase, SQLAlchemyDriverTestsMixin):
+
+    def setUp(self):
+        super(SQLAlchemyDriverTestCase, self).setUp()
+
+        self.driver = SQLAlchemyDriver()
+        self.store = TemplateStore(self.driver)
+
+
+class MySQLTestCase(oslo_test_base.MySQLOpportunisticTestCase):
+
+    def setUp(self):
+        super(MySQLTestCase, self).setUp()
+
+        self.driver = SQLAlchemyDriver()
+        self.store = TemplateStore(self.driver)
+
+
+class PostgreSQLTestCase(oslo_test_base.PostgreSQLOpportunisticTestCase):
+
+    def setUp(self):
+        super(MySQLTestCase, self).setUp()
+
+        self.driver = SQLAlchemyDriver()
+        self.store = TemplateStore(self.driver)
