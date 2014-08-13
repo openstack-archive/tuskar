@@ -16,6 +16,7 @@ from functools import partial
 
 from mock import Mock
 from mock import patch
+from oslo.db.sqlalchemy import test_base as oslo_test_base
 from sqlalchemy.orm.exc import NoResultFound
 
 from tuskar.storage.drivers.sqlalchemy import SQLAlchemyDriver
@@ -297,3 +298,30 @@ class SQLAlchemyDriverTestCase(base.TestCase):
             )
 
             self.assertRaises(NoResultFound, retrieve_by_name_call)
+
+
+class SQLAlchemyDriverTestCase(base.TestCase, SQLAlchemyDriverTestsMixin):
+
+    def setUp(self):
+        super(SQLAlchemyDriverTestCase, self).setUp()
+
+        self.driver = SQLAlchemyDriver()
+        self.store = TemplateStore(self.driver)
+
+
+class MySQLTestCase(oslo_test_base.MySQLOpportunisticTestCase):
+
+    def setUp(self):
+        super(MySQLTestCase, self).setUp()
+
+        self.driver = SQLAlchemyDriver()
+        self.store = TemplateStore(self.driver)
+
+
+class PostgreSQLTestCase(oslo_test_base.PostgreSQLOpportunisticTestCase):
+
+    def setUp(self):
+        super(MySQLTestCase, self).setUp()
+
+        self.driver = SQLAlchemyDriver()
+        self.store = TemplateStore(self.driver)
