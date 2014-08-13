@@ -13,8 +13,10 @@
 
 import os
 
+import mock
 from pecan.testing import load_test_app
 
+from tuskar.manager import models as manager_models
 from tuskar.tests import base
 
 
@@ -30,21 +32,46 @@ class PlansTests(base.TestCase):
                                    '..', '..', '..', '..', 'api', 'config.py')
         self.app = load_test_app(config_file)
 
-    def test_get_all(self):
+    @mock.patch('tuskar.manager.plan.PlansManager.list_plans')
+    def test_get_all(self, mock_list):
         # Setup
+        mock_list.return_value = [
+            manager_models.DeploymentPlan('a', 'n1', 'd1'),
+            manager_models.DeploymentPlan('b', 'n2', 'd2'),
+        ]
 
         # Test
         response = self.app.get(URL_PLANS)
         result = response.json
 
         # Verify
+        mock_list.assert_called_once()
         self.assertEqual(response.status_int, 200)
         self.assertTrue(isinstance(result, list))
-        self.assertEqual(1, len(result))
-        self.assertEqual(result[0]['name'], 'foo')
+        self.assertEqual(2, len(result))
+        self.assertEqual(result[0]['name'], 'n1')
+        self.assertEqual(result[1]['name'], 'n2')
 
-    def test_get_one(self):
+    @mock.patch('tuskar.manager.plan.PlansManager.list_plans')
+    def test_get_all_empty(self, mock_list):
         # Setup
+        mock_list.return_value = []
+
+        # Test
+        response = self.app.get(URL_PLANS)
+        result = response.json
+
+        # Verify
+        mock_list.assert_called_once()
+        self.assertEqual(response.status_int, 200)
+        self.assertTrue(isinstance(result, list))
+        self.assertEqual(0, len(result))
+
+    @mock.patch('tuskar.manager.plan.PlansManager.retrieve_plan')
+    def test_get_one(self, mock_retrieve):
+        # Setup
+        p = manager_models.DeploymentPlan('a', 'n', 'd')
+        mock_retrieve.return_value = p
 
         # Test
         url = URL_PLANS + '/' + 'qwerty12345'
@@ -52,28 +79,55 @@ class PlansTests(base.TestCase):
         result = response.json
 
         # Verify
+        mock_retrieve.assert_called_once_with('qwerty12345')
         self.assertEqual(response.status_int, 200)
-        self.assertEqual(result['name'], 'foo')
+        self.assertEqual(result['name'], 'n')
 
-    def test_delete(self):
+    @mock.patch('tuskar.manager.plan.PlansManager.delete_plan')
+    def test_delete(self, mock_delete):
         # Test
         url = URL_PLANS + '/' + 'qwerty12345'
         response = self.app.delete(url)
 
         # Verify
+        mock_delete.assert_called_once_with('qwerty12345')
         self.assertEqual(response.status_int, 204)
 
-    def test_post(self):
+    @mock.patch('tuskar.manager.plan.PlansManager.create_plan')
+    def test_post_no_description(self, mock_create):
         # Setup
-        plan_data = {'name': 'new'}
+        p = manager_models.DeploymentPlan('a', 'n', 'd')
+        mock_create.return_value = p
 
         # Test
+        plan_data = {'name': 'new'}
         response = self.app.post_json(URL_PLANS, params=plan_data)
         result = response.json
 
         # Verify
+        mock_create.assert_called_once_with('new', None)
         self.assertEqual(response.status_int, 201)
-        self.assertEqual(result['name'], plan_data['name'])
+        self.assertEqual(result['uuid'], p.uuid)
+        self.assertEqual(result['name'], p.name)
+        self.assertEqual(result['description'], p.description)
+
+    @mock.patch('tuskar.manager.plan.PlansManager.create_plan')
+    def test_post(self, mock_create):
+        # Setup
+        p = manager_models.DeploymentPlan('a', 'n', 'd')
+        mock_create.return_value = p
+
+        # Test
+        plan_data = {'name': 'new', 'description': 'desc'}
+        response = self.app.post_json(URL_PLANS, params=plan_data)
+        result = response.json
+
+        # Verify
+        mock_create.assert_called_once_with('new', 'desc')
+        self.assertEqual(response.status_int, 201)
+        self.assertEqual(result['uuid'], p.uuid)
+        self.assertEqual(result['name'], p.name)
+        self.assertEqual(result['description'], p.description)
 
     def test_templates(self):
         # Setup
@@ -87,15 +141,22 @@ class PlansTests(base.TestCase):
         self.assertEqual(response.status_int, 200)
         self.assertEqual(result, 'foo')
 
-    def test_patch(self):
+    @mock.patch('tuskar.manager.plan.PlansManager.set_parameter_values')
+    def test_patch(self, mock_set):
         # Setup
-        plan_data = {'name': 'new'}
+        p = manager_models.DeploymentPlan('a', 'n', 'd')
+        mock_set.return_value = p
 
         # Test
-        url = URL_PLANS + '/' + 'qwert12345'
-        response = self.app.patch_json(url, plan_data)
+        values = [{'name': 'foo', 'value': 'bar'}]
+        url = URL_PLANS + '/' + 'qwerty12345'
+        response = self.app.patch_json(url, values)
         result = response.json
 
         # Verify
+        mock_set.assert_called_once()
+        self.assertEqual(mock_set.call_args[0][0], 'qwerty12345')
+        self.assertEqual(mock_set.call_args[0][1][0].name, 'foo')
+        self.assertEqual(mock_set.call_args[0][1][0].value, 'bar')
         self.assertEqual(response.status_int, 201)
-        self.assertEqual(result['name'], plan_data['name'])
+        self.assertEqual(result['name'], p.name)

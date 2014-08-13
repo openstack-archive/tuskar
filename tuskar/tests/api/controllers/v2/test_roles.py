@@ -13,8 +13,10 @@
 
 import os
 
+import mock
 from pecan.testing import load_test_app
 
+from tuskar.manager import models as manager_models
 from tuskar.tests import base
 
 
@@ -31,41 +33,59 @@ class RolesTests(base.TestCase):
                                    '..', '..', '..', '..', 'api', 'config.py')
         self.app = load_test_app(config_file)
 
-    def test_get_all(self):
+    @mock.patch('tuskar.manager.role.RoleManager.list_roles')
+    def test_get_all(self, mock_list):
         # Setup
+        mock_list.return_value = [
+            manager_models.Role('a', 'n1', 1, 'd1', 't1'),
+            manager_models.Role('b', 'n2', 2, 'd2', 't2'),
+        ]
 
         # Test
         response = self.app.get(URL_ROLES)
         result = response.json
 
         # Verify
+        mock_list.assert_called_once_with(only_latest=False)
         self.assertEqual(response.status_int, 200)
         self.assertTrue(isinstance(result, list))
-        self.assertEqual(1, len(result))
-        self.assertEqual(result[0]['name'], 'foo')
+        self.assertEqual(2, len(result))
+        self.assertEqual(result[0]['uuid'], 'a')
+        self.assertEqual(result[0]['name'], 'n1')
+        self.assertEqual(result[0]['description'], 'd1')
+        self.assertEqual(result[1]['uuid'], 'b')
+        self.assertEqual(result[1]['name'], 'n2')
+        self.assertEqual(result[1]['description'], 'd2')
 
-    def test_post(self):
+    @mock.patch('tuskar.manager.plan.PlansManager.add_role_to_plan')
+    def test_post(self, mock_add):
         # Setup
-        role_data = {'uuid': 'qwert12345'}
+        p = manager_models.DeploymentPlan('a', 'n', 'd')
+        mock_add.return_value = p
 
         # Test
+        role_data = {'uuid': 'qwerty12345'}
         response = self.app.post_json(URL_PLAN_ROLES, params=role_data)
         result = response.json
 
         # Verify
+        mock_add.assert_called_once_with('plan_uuid', 'qwerty12345')
         self.assertEqual(response.status_int, 201)
-        self.assertEqual(result['uuid'], '42')
-        self.assertEqual(result['name'], 'foo')
-        self.assertEqual(result['roles'][0]['uuid'], 'qwert12345')
+        self.assertEqual(result['uuid'], 'a')
+        self.assertEqual(result['name'], 'n')
 
-    def test_delete(self):
+    @mock.patch('tuskar.manager.plan.PlansManager.remove_role_from_plan')
+    def test_delete(self, mock_remove):
         # Setup
+        p = manager_models.DeploymentPlan('a', 'n', 'd')
+        mock_remove.return_value = p
 
         # Test
-        response = self.app.delete_json(URL_PLAN_ROLES + '/role_name/role_ver')
+        response = self.app.delete_json(URL_PLAN_ROLES + '/role_uuid')
         result = response.json
 
         # Verify
+        mock_remove.assert_called_once_with('plan_uuid', 'role_uuid')
         self.assertEqual(response.status_int, 200)
-        self.assertEqual(result['uuid'], '42')
-        self.assertEqual(result['name'], 'foo')
+        self.assertEqual(result['uuid'], 'a')
+        self.assertEqual(result['name'], 'n')

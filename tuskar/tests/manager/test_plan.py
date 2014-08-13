@@ -77,7 +77,7 @@ class PlansManagerTestCase(TestCase):
         self.template_store = TemplateStore()
 
     def test_create_plan(self):
-        # Test
+        # Tests
         created = self.plans_manager.create_plan('p1', 'desc-1')
 
         # Verify
