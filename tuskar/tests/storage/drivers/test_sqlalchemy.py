@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from datetime import datetime
 from functools import partial
 
 from mock import Mock
@@ -50,6 +51,8 @@ class SQLAlchemyDriverTestCase(base.TestCase):
         # Verify
         self.assertEqual(result.uuid, expected_uuid)
         self.assertEqual(result.version, 1)
+        self.assertEqual(type(result.created_at), datetime)
+        self.assertEqual(result.updated_at, None)
 
     @patch('tuskar.storage.drivers.sqlalchemy.SQLAlchemyDriver._generate_uuid')
     def test_create_no_versioning(self, mock_uuid):
@@ -111,6 +114,8 @@ class SQLAlchemyDriverTestCase(base.TestCase):
         retrieved = self.driver.retrieve(self.store, created.uuid)
         self.assertEqual(retrieved.uuid, created.uuid)
         self.assertEqual(retrieved.name, expected_name)
+        self.assertEqual(type(created.created_at), datetime)
+        self.assertEqual(created.updated_at, None)
 
         # Original and retrieved have not been updated
         self.assertEqual(retrieved.contents, original_contents)
@@ -120,6 +125,8 @@ class SQLAlchemyDriverTestCase(base.TestCase):
         # Updated has a new version, and new contents
         self.assertEqual(updated.contents, new_contents)
         self.assertEqual(updated.version, 2)
+        self.assertEqual(type(updated.created_at), datetime)
+        self.assertEqual(updated.updated_at, None)
 
     def test_update_no_versioning(self):
 
@@ -138,6 +145,11 @@ class SQLAlchemyDriverTestCase(base.TestCase):
         self.assertEqual(updated.name, expected_name)
         self.assertEqual("YAML2", updated.contents)
         self.assertEqual(updated.version, None)
+
+        self.assertEqual(type(created.created_at), datetime)
+        self.assertEqual(created.updated_at, None)
+        self.assertEqual(type(updated.created_at), datetime)
+        self.assertEqual(type(updated.updated_at), datetime)
 
     def test_update_invalid_uuid(self):
 
