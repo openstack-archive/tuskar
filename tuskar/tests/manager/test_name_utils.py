@@ -26,6 +26,11 @@ class NameUtilsTestCases(unittest.TestCase):
         self.assertEqual('r1', name)
         self.assertEqual('v1', version)
 
+    def test_parse_role_namespace_multiple_dash(self):
+        name, version = name_utils.parse_role_namespace('all-in-one-v1')
+        self.assertEqual('all-in-one', name)
+        self.assertEqual('v1', version)
+
     def test_role_template_filename(self):
         filename = name_utils.role_template_filename('r1', 'v1')
         self.assertEqual('provider-r1-v1.yaml', filename)

@@ -41,7 +41,7 @@ def parse_role_namespace(role_namespace):
     :return: tuple of role name and version
     :rtype: (str, str)
     """
-    return role_namespace.split('-')
+    return role_namespace.rsplit('-', 1)
 
 
 def role_template_filename(role_name, role_version):
