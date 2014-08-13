@@ -11,14 +11,17 @@
 # under the License.
 
 from tuskar.manager.models import DeploymentPlan
+from tuskar.manager.models import ParameterValue
 from tuskar.manager.models import PlanParameter
 from tuskar.manager.models import Role
+from tuskar.manager import name_utils
 from tuskar.manager.plan import PlansManager
 from tuskar.storage.exceptions import UnknownUUID
 from tuskar.storage.stores import DeploymentPlanStore
 from tuskar.storage.stores import EnvironmentFileStore
 from tuskar.storage.stores import MasterTemplateStore
 from tuskar.storage.stores import TemplateStore
+from tuskar.templates import namespace as ns_utils
 from tuskar.templates import parser
 from tuskar.tests.base import TestCase
 
@@ -171,6 +174,37 @@ class PlansManagerTestCase(TestCase):
         all_plans.sort(key=lambda x: x.name)
         self.assertEqual('p1', all_plans[0].name)
         self.assertEqual('p2', all_plans[1].name)
+
+    def test_set_parameter_values(self):
+        # Setup
+        test_role = self._add_test_role()
+        test_plan = self.plans_manager.create_plan('p1', 'd1')
+        self.plans_manager.add_role_to_plan(test_plan.uuid, test_role.uuid)
+
+        # Test
+        ns = name_utils.generate_role_namespace(test_role.name,
+                                                test_role.version)
+        update_us = [
+            ParameterValue(ns_utils.apply_template_namespace(ns, 'key_name'),
+                           'test-key'),
+            ParameterValue(ns_utils.apply_template_namespace(ns, 'image_id'),
+                           'test-image'),
+        ]
+        updated_plan = self.plans_manager.set_parameter_values(test_plan.uuid,
+                                                               update_us)
+
+        # Verify
+        self.assertTrue(updated_plan is not None)
+        self.assertTrue(isinstance(updated_plan, DeploymentPlan))
+
+        # Pull it from the database again to make sure it was saved
+        found = self.plans_manager.retrieve_plan(test_plan.uuid)
+        found_params = sorted(found.parameters, key=lambda x: x.name)
+        self.assertEqual(4, len(found_params))  # 3 + 1 for scaling
+        self.assertEqual(found_params[0].value, 1)
+        self.assertEqual(found_params[1].value, 'test-image')
+        self.assertEqual(found_params[2].value, 'm1.small')
+        self.assertEqual(found_params[3].value, 'test-key')
 
     def _add_test_role(self):
         return self.template_store.create('r1', TEST_TEMPLATE)

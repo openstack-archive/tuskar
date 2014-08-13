@@ -25,12 +25,15 @@ class Role(object):
 
 class DeploymentPlan(object):
 
-    def __init__(self, uuid, name, description):
+    def __init__(self, uuid, name, description,
+                 created_at=None, updated_at=None):
         super(DeploymentPlan, self).__init__()
 
         self.uuid = uuid
         self.name = name
         self.description = description
+        self.created_at = created_at
+        self.updated_at = updated_at
 
         self._roles = []  # list of Role
         self._parameters = []  # list of PlanParameter
@@ -72,3 +75,11 @@ class PlanParameter(object):
         self.label = label
         self.default = default
         self.hidden = hidden
+
+
+class ParameterValue(object):
+
+    def __init__(self, name, value):
+        super(ParameterValue, self).__init__()
+        self.name = name
+        self.value = value
