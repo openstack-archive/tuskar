@@ -167,7 +167,9 @@ class PlansManager(object):
         deployment_plan = models.DeploymentPlan(
             plan_uuid,
             db_plan.name,
-            master_template.description
+            master_template.description,
+            created_at=db_plan.created_at,
+            updated_at=db_plan.updated_at,
         )
 
         roles = self._find_roles(environment)
@@ -194,6 +196,35 @@ class PlansManager(object):
         plans = [self.retrieve_plan(p) for p in plan_uuids]
 
         return plans
+
+    def set_parameter_values(self, plan_uuid, params):
+        """Sets the values for a plan's parameters.
+
+        :type plan_uuid: str
+        :type params: [tuskar.manager.models.ParameterValue]
+
+        :return: plan instance with the updated values
+        :rtype:  tuskar.manager.models.DeploymentPlan
+        """
+
+        # Load the plan from the database.
+        db_plan = self.plan_store.retrieve(plan_uuid)
+
+        # Save the values to the parsed environment.
+        environment = parser.parse_environment(
+            db_plan.environment_file.contents
+        )
+
+        for param_value in params:
+            p = environment.find_parameter_by_name(param_value.name)
+            p.value = param_value.value
+
+        # Save the updated environment.
+        env_contents = composer.compose_environment(environment)
+        self.plan_store.update_environment(plan_uuid, env_contents)
+
+        updated_plan = self.retrieve_plan(plan_uuid)
+        return updated_plan
 
     def _find_roles(self, environment):
         """Returns a list of roles for a plan (identified by the given
