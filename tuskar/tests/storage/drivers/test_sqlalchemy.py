@@ -185,13 +185,35 @@ class SQLAlchemyDriverTestCase(base.TestCase):
 
     def test_list_only_latest(self):
 
+        # setup
         name = "swift.yaml"
         template = self.driver.create(self.store, name, "YAML1")
-        self.driver.update(self.store, template.uuid, "YAML2")
+        updated = self.driver.update(self.store, template.uuid, "YAML2")
 
+        # test
         listed = self.driver.list(self.store, only_latest=True)
 
+        # verify
         self.assertEqual(1, len(listed))
+        self.assertEqual([updated.uuid, ], [t.uuid for t in listed])
+
+    def test_list_only_latest_multi(self):
+
+        # setup
+        name = "swift.yaml"
+        template1 = self.driver.create(self.store, name, "YAML1")
+        template1 = self.driver.update(self.store, template1.uuid, "YAML2")
+        template2 = self.driver.create(self.store, "other", "YAML1")
+
+        # test
+        listed = self.driver.list(self.store, only_latest=True)
+
+        # verify
+        self.assertEqual(2, len(listed))
+        self.assertEqual(
+            set([template1.uuid, template2.uuid]),
+            set(t.uuid for t in listed)
+        )
 
     def test_retrieve_by_name(self):
 
