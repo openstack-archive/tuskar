@@ -16,6 +16,9 @@ from pecan import rest
 from wsmeext import pecan as wsme_pecan
 
 from tuskar.api.controllers.v2 import models
+from tuskar.manager.plan import PlansManager
+from tuskar.manager.role import RoleManager
+
 
 LOG = logging.getLogger(__name__)
 
@@ -33,13 +36,10 @@ class RolesController(rest.RestController):
         :rtype:  list of tuskar.api.controllers.v2.models.Role
         """
         LOG.debug('Retrieving all roles')
-        roles = [
-            models.Role(**{
-                'uuid': '42',
-                'name': 'foo',
-            }),
-        ]
-        return roles
+        manager = RoleManager()
+        all_roles = manager.list_roles(only_latest=False)
+        transfer_roles = [models.Role.from_tuskar_model(r) for r in all_roles]
+        return transfer_roles
 
     @wsme_pecan.wsexpose(models.Plan,
                          str,
@@ -51,43 +51,31 @@ class RolesController(rest.RestController):
         :param plan_uuid: identifies the plan
         :type  plan_uuid: str
 
-        :param role: the role to be added to plan
+        :param role: identifies the role to add
         :type  role: tuskar.api.controllers.v2.models.Role
 
         :return: modified plan
         :rtype:  tuskar.api.controllers.v2.models.Plan
         """
         LOG.debug('Adding role: %s' % role.uuid)
-
-        # Persist
-
-        # Package for transfer back to the user
-        plan = models.Plan(**{
-            'uuid': '42',
-            'name': 'foo',
-            'roles': [role]
-        })
-        return plan
+        manager = PlansManager()
+        updated_plan = manager.add_role_to_plan(plan_uuid, role.uuid)
+        transfer_plan = models.Plan.from_tuskar_model(updated_plan)
+        return transfer_plan
 
     @wsme_pecan.wsexpose(models.Plan,
                          str,
-                         str,
                          str)
-    def delete(self, plan_uuid, role_name, role_version):
+    def delete(self, plan_uuid, role_uuid):
         """Removes a role from given plan.
 
         :param plan_uuid: identifies the plan
         :type  plan_uuid: str
 
-        :param role_name: identifies the role to be deleted from plan
-        :type  role_name: str
-
-        :param role_version: identifies the version of role to be deleted
-        :type  role_version: str
-       """
-
-        plan = models.Plan(**{
-            'uuid': '42',
-            'name': 'foo',
-        })
-        return plan
+        :param role_uuid: identifies the role to be deleted from plan
+        :type  role_uuid: str
+        """
+        manager = PlansManager()
+        updated_plan = manager.remove_role_from_plan(plan_uuid, role_uuid)
+        transfer_plan = models.Plan.from_tuskar_model(updated_plan)
+        return transfer_plan
