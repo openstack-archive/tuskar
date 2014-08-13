@@ -122,7 +122,7 @@ class DeploymentPlanTests(unittest.TestCase):
         const = count_param.constraints[0]
         self.assertTrue(isinstance(const, heat.ParameterConstraint))
         self.assertEqual(const.constraint_type, 'range')
-        self.assertEqual(const.definition, {'min': 1})
+        self.assertEqual(const.definition, {'min': '1'})
 
         # Verify Resource Group Wrapper
         self.assertEqual(1, len(p.master_template.resources))
@@ -146,7 +146,7 @@ class DeploymentPlanTests(unittest.TestCase):
         self.assertEqual(3, len(p.environment.parameters))
         count_param = p.environment.parameters[2]
         self.assertEqual(count_param.name, expected_count_name)
-        self.assertEqual(count_param.value, 1)
+        self.assertEqual(count_param.value, '1')
 
     def test_remove_template(self):
         # Setup & Sanity Check

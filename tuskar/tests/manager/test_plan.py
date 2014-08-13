@@ -201,7 +201,7 @@ class PlansManagerTestCase(TestCase):
         found = self.plans_manager.retrieve_plan(test_plan.uuid)
         found_params = sorted(found.parameters, key=lambda x: x.name)
         self.assertEqual(4, len(found_params))  # 3 + 1 for scaling
-        self.assertEqual(found_params[0].value, 1)
+        self.assertEqual(found_params[0].value, '1')
         self.assertEqual(found_params[1].value, 'test-image')
         self.assertEqual(found_params[2].value, 'm1.small')
         self.assertEqual(found_params[3].value, 'test-key')
