@@ -71,19 +71,15 @@ class RolesController(rest.RestController):
 
     @wsme_pecan.wsexpose(models.Plan,
                          str,
-                         str,
                          str)
-    def delete(self, plan_uuid, role_name, role_version):
+    def delete(self, plan_uuid, role_uuid):
         """Removes a role from given plan.
 
         :param plan_uuid: identifies the plan
         :type  plan_uuid: str
 
-        :param role_name: identifies the role to be deleted from plan
-        :type  role_name: str
-
-        :param role_version: identifies the version of role to be deleted
-        :type  role_version: str
+        :param role_uuid: identifies the role to be deleted from plan
+        :type  role_uuid: str
        """
 
         plan = models.Plan(**{

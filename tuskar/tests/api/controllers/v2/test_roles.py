@@ -62,7 +62,7 @@ class RolesTests(base.TestCase):
         # Setup
 
         # Test
-        response = self.app.delete_json(URL_PLAN_ROLES + '/role_name/role_ver')
+        response = self.app.delete_json(URL_PLAN_ROLES + '/qwert12345')
         result = response.json
 
         # Verify
