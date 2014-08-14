@@ -57,6 +57,10 @@ class StoredFile(object):
         self.updated_at = updated_at
         self.version = version
 
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__)
+                and self.__dict__ == other.__dict__)
+
     def __str__(self):
 
         name = " and name {0}".format(self.name) if self.name else ''
