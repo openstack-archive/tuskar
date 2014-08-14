@@ -64,10 +64,9 @@ def generate_scaling_params(overcloud_roles):
         if overcloud_role in ROLES:
             scale_str = "%s=%s" % (
                         ROLES[overcloud_role]['template_param'], count)
-            scaling = dict(
-                scaling.items() +
-                merge.parse_scaling([scale_str]).items()
-            )
+            parsed_scaling = merge.parse_scaling([scale_str])
+            for name, scaling_value in parsed_scaling.items():
+                scaling[name] = scaling_value[0]
     return scaling
 
 
