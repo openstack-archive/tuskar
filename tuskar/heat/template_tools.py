@@ -57,17 +57,17 @@ def generate_scaling_params(overcloud_roles):
     """
 
     # Default values, merge.py needs also the 0 counts.
-    scaling = {'NovaCompute0': 0, 'SwiftStorage0': 0, 'BlockStorage0': 0, }
+    scaling_defaults = ['NovaCompute=0', 'SwiftStorage=0', 'BlockStorage=0']
+
+    scaling = merge.parse_scaling(scaling_defaults)
 
     for overcloud_role, count in overcloud_roles.items():
         overcloud_role = overcloud_role.lower()
         if overcloud_role in ROLES:
             scale_str = "%s=%s" % (
                         ROLES[overcloud_role]['template_param'], count)
-            scaling = dict(
-                scaling.items() +
-                merge.parse_scaling([scale_str]).items()
-            )
+            scaling.update(merge.parse_scaling([scale_str]))
+
     return scaling
 
 

@@ -29,7 +29,9 @@ class TemplateToolsTests(unittest.TestCase):
         template_tools.generate_scaling_params(overcloud_roles)
 
         # Verify
-        mock_parse_scaling.assert_called_once_with(['NovaCompute=12'])
+        # Called once internally for the defaults and once with NovaCompute=12
+        self.assertEqual(mock_parse_scaling.call_count, 2)
+        mock_parse_scaling.assert_called_with(['NovaCompute=12'])
 
     @mock.patch('tripleo_heat_merge.merge.merge')
     def test_merge_templates_compute(self, mock_merge):
@@ -53,7 +55,9 @@ class TemplateToolsTests(unittest.TestCase):
             None,
             None,
             scaling={
-                'NovaCompute0': 12, 'SwiftStorage0': 0, 'BlockStorage0': 0,
+                'NovaCompute0': (12, frozenset()),
+                'SwiftStorage0': (0, frozenset()),
+                'BlockStorage0': (0, frozenset()),
             },
             included_template_dir='/etc/tuskar/tripleo-heat-templates/'
         )
@@ -80,7 +84,9 @@ class TemplateToolsTests(unittest.TestCase):
             None,
             None,
             scaling={
-                'NovaCompute0': 0, 'SwiftStorage0': 0, 'BlockStorage0': 12,
+                'NovaCompute0': (0, frozenset()),
+                'SwiftStorage0': (0, frozenset()),
+                'BlockStorage0': (12, frozenset()),
             },
             included_template_dir='/etc/tuskar/tripleo-heat-templates/'
         )
@@ -107,7 +113,9 @@ class TemplateToolsTests(unittest.TestCase):
             None,
             None,
             scaling={
-                'NovaCompute0': 0, 'SwiftStorage0': 12, 'BlockStorage0': 0,
+                'NovaCompute0': (0, frozenset()),
+                'SwiftStorage0': (12, frozenset()),
+                'BlockStorage0': (0, frozenset()),
             },
             included_template_dir='/etc/tuskar/tripleo-heat-templates/'
         )
