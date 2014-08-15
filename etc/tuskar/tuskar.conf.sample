@@ -169,18 +169,6 @@
 
 
 #
-# Options defined in tuskar.openstack.common.policy
-#
-
-# The JSON file that defines policies. (string value)
-#policy_file=policy.json
-
-# Default rule. Enforced when a requested rule is not found.
-# (string value)
-#policy_default_rule=default
-
-
-#
 # Options defined in tuskar.storage.drivers.sqlalchemy
 #
 
