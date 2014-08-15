@@ -384,10 +384,10 @@ class Environment(object):
         :rtype: tuskar.templates.heat.EnvironmentParameter
         :raise ValueError: if there is no parameter with the given name
         """
-        matching = [p for p in self._parameters if p.name == name]
-        if len(matching) == 0:
-            raise ValueError('No parameter named %s found' % name)
-        return matching[0]
+        for p in self._parameters:
+            if p.name == name:
+                return p
+        raise ValueError('No parameter named %s found' % name)
 
     def has_parameter_in_namespace(self, namespace):
         """Returns true if the environment has at least one parameter
