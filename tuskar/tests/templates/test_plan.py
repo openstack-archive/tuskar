@@ -105,6 +105,18 @@ class DeploymentPlanTests(unittest.TestCase):
                          p2.name)
         self.assertEqual('', p2.value)
 
+    def test_add_template_with_colliding_namespace(self):
+        # Test
+        p = plan.DeploymentPlan()
+        p.environment.add_parameter(
+            heat.EnvironmentParameter('ns1::param-1', 'value-1'))
+        t = heat.Template()
+        t.add_parameter(heat.Parameter('param-2', 'type-1'))
+
+        # Verify
+        self.assertRaises(ValueError,
+                          p.add_template, 'ns1', t, 'template-1.yaml')
+
     def test_add_scaling_with_scaling(self):
         # Test
         p = plan.DeploymentPlan(add_scaling=True)
