@@ -24,12 +24,15 @@ from wsgiref import simple_server
 from oslo.config import cfg
 
 from tuskar.api import app
+from tuskar.common import config
 from tuskar.openstack.common import log
 
 CONF = cfg.CONF
 
 
-def main():
+def main(args=None):
+
+    config.parse_args(args)
 
     # Build and start the WSGI app
     host = CONF.tuskar_api_bind_ip
@@ -53,7 +56,6 @@ def main():
         LOG.info(
             "Cannot proceed - missing tripleo heat templates "
             "See INSTALL documentation for more info")
-        raise
     LOG.info("Using tripleo-heat-templates at %s" % (heat_template_path))
 
     try:
