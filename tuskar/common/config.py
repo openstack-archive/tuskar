@@ -15,6 +15,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import sys
+
 from oslo.config import cfg
 
 from tuskar.common import paths
@@ -27,7 +29,11 @@ _DEFAULT_SQL_CONNECTION = 'sqlite:///' + paths.state_path_def('$sqlite_db')
 def parse_args(argv, default_config_files=None):
     db_session.set_defaults(sql_connection=_DEFAULT_SQL_CONNECTION,
                             sqlite_db='tuskar.sqlite')
-    cfg.CONF(argv[1:],
+
+    if argv is None:
+        argv = sys.argv
+
+    cfg.CONF(argv,
              project='tuskar',
              version=version.version_info.release_string(),
              default_config_files=default_config_files)
