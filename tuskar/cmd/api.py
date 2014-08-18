@@ -19,21 +19,26 @@
 
 import logging
 import os
+import sys
 from wsgiref import simple_server
 
 from oslo.config import cfg
 
 from tuskar.api import app
+from tuskar.common import config
 from tuskar.openstack.common import log
 
-CONF = cfg.CONF
 
+def main(argv=None):
 
-def main():
+    if argv is None:
+        argv = sys.argv
+
+    config.parse_args(argv)
 
     # Build and start the WSGI app
-    host = CONF.tuskar_api_bind_ip
-    port = CONF.tuskar_api_port
+    host = cfg.CONF.tuskar_api_bind_ip
+    port = cfg.CONF.tuskar_api_port
     wsgi = simple_server.make_server(
         host, port,
         app.VersionSelectorApplication())
@@ -41,9 +46,9 @@ def main():
     LOG = log.getLogger(__name__)
     LOG.info("Serving on http://%s:%s" % (host, port))
     LOG.info("Configuration:")
-    CONF.log_opt_values(LOG, logging.INFO)
+    cfg.CONF.log_opt_values(LOG, logging.INFO)
     # make sure we have tripleo-heat-templates:
-    heat_template_path = CONF.tht_local_dir
+    heat_template_path = cfg.CONF.tht_local_dir
     try:
         os.listdir(heat_template_path)
     except OSError:
@@ -53,7 +58,6 @@ def main():
         LOG.info(
             "Cannot proceed - missing tripleo heat templates "
             "See INSTALL documentation for more info")
-        raise
     LOG.info("Using tripleo-heat-templates at %s" % (heat_template_path))
 
     try:
