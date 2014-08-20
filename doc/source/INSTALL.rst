@@ -78,6 +78,18 @@ tuskar.conf doesn't exist startup will fail. You can clone the templates::
 
     (sudo) git clone https://git.openstack.org/openstack/tripleo-heat-templates /etc/tuskar/tripleo-heat-templates/
 
+We need to tell tuskar where to connect to database. Edit the config file in ``database`` section and change
+
+::
+
+    #connection=<None>
+
+to
+
+::
+
+    connection=sqlite:///tuskar/tuskar.sqlite
+
 We need to initialise the database schema::
 
     # activate the virtualenv

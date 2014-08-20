@@ -12,6 +12,7 @@ iso8601>=0.1.8
 kombu>=2.4.8
 lxml>=2.3
 oslo.config>=1.2.0
+oslo.db>=0.3.0
 pecan>=0.2.0
 posix_ipc
 python-heatclient>=0.2.3

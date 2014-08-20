@@ -25,7 +25,7 @@ from wsgiref import simple_server
 from oslo.config import cfg
 
 from tuskar.api import app
-from tuskar.common import config
+from tuskar.common import service as tuskar_service
 from tuskar.openstack.common import log
 
 
@@ -34,7 +34,7 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
 
-    config.parse_args(argv)
+    tuskar_service.prepare_service(argv)
 
     # Build and start the WSGI app
     host = cfg.CONF.tuskar_api_bind_ip
