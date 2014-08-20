@@ -2,7 +2,7 @@
 Installation Guide
 ==================
 
-Tuskar source code should be pulled directly from git::
+The Tuskar source code should be pulled directly from git::
 
     git clone https://git.openstack.org/openstack/tuskar
 
@@ -22,13 +22,9 @@ Setting up a local environment for development can be done with tox::
 
     $ sudo pip install virtualenv setuptools-git flake8 tox
 
-You may need to downgrade tox, due to an issue described here: https://bugs.launchpad.net/openstack-ci/+bug/1274135::
-
-    $ sudo pip uninstall --yes tox virtualenv
-    $ sudo rm -rf /tmp/pip-build-* /usr/local/lib/python2.7/dist-packages/tox \
-          /usr/local/lib/python2.7/dist-packages/virtualenv \
-          /usr/local/bin/tox /usr/local/bin/virtualenv
-    $ sudo pip install -U tox==1.6.1 virtualenv==1.10.1
+.. note::
+    An `issue with tox <https://bugs.launchpad.net/openstack-ci/+bug/1274135>`
+    requires that you use a version <1.70 or >= 1.7.2.
 
 Now create your virtualenv::
 
@@ -36,9 +32,11 @@ Now create your virtualenv::
     $ tox -e py27
 
 .. note::
-  If ``pip install`` fails due to an outdated setuptools, you can try to update it first::
 
-    $ sudo pip install --upgrade setuptools
+    If ``pip install`` fails due to an outdated setuptools, you can try to
+    update it first::
+
+        $ sudo pip install --upgrade setuptools
 
 
 Configuration
@@ -50,35 +48,8 @@ Copy the sample configuration file:
 
     $ cp etc/tuskar/tuskar.conf.sample etc/tuskar/tuskar.conf
 
-Edit the config file and uncomment the ``heat_keystone`` section at the bottom:
-
-::
-
-    [heat_keystone]
-
-    username = heat
-    password = heat
-    tenant_name = admin
-    auth_url = http://localhost:35357/v2.0
-    insecure = True
-
-.. note::
-  Replace these values with credentials for our undercloud OpenStack. If
-  you're using `Devstack <http://devstack.org/>`_, the username and password are
-  printed out when ``stack.sh`` finishes its job.
-
-You will need a local checkout of the tripleo-heat-templates. Uncomment the
-configuration entry that is defined for this purpose: tht_local_dir should point
-to your local copy of the tripleo-heat-templates::
-
-    tht_local_dir = /etc/tuskar/tripleo-heat-templates/
-
-At tuskar startup, if the directory specified by tht_local_dir in your
-tuskar.conf doesn't exist startup will fail. You can clone the templates::
-
-    (sudo) git clone https://git.openstack.org/openstack/tripleo-heat-templates /etc/tuskar/tripleo-heat-templates/
-
-We need to tell tuskar where to connect to database. Edit the config file in ``database`` section and change
+We need to tell tuskar where to connect to database. Edit the config file in
+``database`` section and change
 
 ::
 
@@ -100,34 +71,28 @@ We need to initialise the database schema::
     # file
     $ tuskar-dbsync --config-file etc/tuskar/tuskar.conf
 
-You can verify this was successful (in addition to seeing no error
-output) with::
+You can verify this was successful (in addition to seeing no error output)
+with::
 
-    $ sqlite3 tuskar/openstack/common/db/tuskar.sqlite .schema
+    $ sqlite3 tuskar/tuskar.sqlite .schema
 
 Then, launch the app::
 
     $ tuskar-api --config-file etc/tuskar/tuskar.conf
 
-Assuming this is your first time running with a new database, you should
-populate the DB with some initial data::
+You can then verify that everything worked by running.::
 
-    $ python tools/initial_data.py
+    $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:8585/v2/plans/ | python -mjson.tool
 
-This will create four Overcloud Roles.  You can then verify that everything
-worked by running::
-
-    $ curl -v -X GET -H 'Accept: application/json' http://0.0.0.0:8585/v1/overcloud_roles/ | python -mjson.tool
-
-This command should return JSON for four Overcloud Roles.
+This command should return JSON with an empty result set.
 
 Keystone Configuration
 ^^^^^^^^^^^^^^^^^^^^^^
 
 By default, Tuskar is configured to skip authentication for REST API calls.
-Keystone authentication can be enabled by making the appropriate changes to
-the ``tuskar.conf`` file as described here:
-http://docs.openstack.org/developer/keystone/configuringservices.html
+Keystone authentication can be enabled by making the appropriate changes to the
+``tuskar.conf`` file as described in the `keystone documentation
+<http://docs.openstack.org/developer/keystone/configuringservices.html>`
 
 Running Tuskar API
 ------------------
@@ -144,7 +109,5 @@ Whenever you want to run the API again, just switch to the virtualenv and run
 Contributing
 ------------
 
-For additional developer information, take a look at
-`CONTRIBUTING.rst <docs/CONTRIBUTING.rst>`_
-and the
-`developer documentation <docs/index.rst>`_.
+For additional developer information, take a look at `CONTRIBUTING.rst
+<docs/CONTRIBUTING.rst>`_ and the `developer documentation <docs/index.rst>`_.
