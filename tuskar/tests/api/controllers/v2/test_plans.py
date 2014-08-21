@@ -108,6 +108,19 @@ class PlansTests(base.TestCase):
         mock_delete.assert_called_once_with('qwerty12345')
         self.assertEqual(response.status_int, 204)
 
+    @mock.patch('tuskar.manager.plan.PlansManager.delete_plan')
+    def test_delete_invalid_uuid(self, mock_delete):
+        # Setup
+        mock_delete.side_effect = storage_exceptions.UnknownUUID()
+
+        # Test
+        url = URL_PLANS + '/' + 'qwerty12345'
+        response = self.app.delete(url, status=404)
+
+        # Verify
+        mock_delete.assert_called_once_with('qwerty12345')
+        self.assertEqual(response.status_int, 404)
+
     @mock.patch('tuskar.manager.plan.PlansManager.create_plan')
     def test_post_no_description(self, mock_create):
         # Setup
