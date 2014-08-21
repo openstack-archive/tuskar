@@ -98,6 +98,32 @@ class PlansTests(base.TestCase):
         mock_retrieve.assert_called_once_with('qwerty12345')
         self.assertEqual(response.status_int, 404)
 
+    def test_get_one_with_parameters(self, mock_retrieve):
+        # Setup
+        p = manager_models.DeploymentPlan('a', 'n', 'd')
+        p.add_parameters(
+            manager_models.PlanParameter(
+                name="Param 1", label="1", default=2, hidden=False,
+                description="1", value=1, param_type=int),
+            manager_models.PlanParameter(
+                name="Param 2", label="2", default=['a', ], hidden=False,
+                description="2", value=['a', 'b'], param_type=list),
+            manager_models.PlanParameter(
+                name="Param 3", label="3", default={'a': 2}, hidden=False,
+                description="3", value={'a': 1}, param_type=dict),
+        )
+        mock_retrieve.return_value = p
+
+        # Test
+        url = URL_PLANS + '/' + 'qwerty12345'
+        response = self.app.get(url)
+        result = response.json
+
+        # Verify
+        mock_retrieve.assert_called_once_with('qwerty12345')
+        self.assertEqual(response.status_int, 200)
+        self.assertEqual(result['name'], 'n')
+
     @mock.patch('tuskar.manager.plan.PlansManager.delete_plan')
     def test_delete(self, mock_delete):
         # Test
