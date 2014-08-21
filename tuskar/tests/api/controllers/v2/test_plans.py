@@ -17,6 +17,7 @@ import mock
 from pecan.testing import load_test_app
 
 from tuskar.manager import models as manager_models
+from tuskar.storage import exceptions as storage_exceptions
 from tuskar.storage.exceptions import NameAlreadyUsed
 from tuskar.tests import base
 
@@ -83,6 +84,19 @@ class PlansTests(base.TestCase):
         mock_retrieve.assert_called_once_with('qwerty12345')
         self.assertEqual(response.status_int, 200)
         self.assertEqual(result['name'], 'n')
+
+    @mock.patch('tuskar.manager.plan.PlansManager.retrieve_plan')
+    def test_get_one_invalid_uuid(self, mock_retrieve):
+        # Setup
+        mock_retrieve.side_effect = storage_exceptions.UnknownUUID()
+
+        # Test
+        url = URL_PLANS + '/' + 'qwerty12345'
+        response = self.app.get(url, status=404)
+
+        # Verify
+        mock_retrieve.assert_called_once_with('qwerty12345')
+        self.assertEqual(response.status_int, 404)
 
     @mock.patch('tuskar.manager.plan.PlansManager.delete_plan')
     def test_delete(self, mock_delete):
