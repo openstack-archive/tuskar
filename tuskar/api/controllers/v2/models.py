@@ -20,10 +20,11 @@ the internal Tuskar domain model.
 import datetime
 import logging
 
+import six
 from wsme import types as wtypes
 
+from tuskar.api.controllers.v2 import types as v2types
 from tuskar.manager import models as manager_models
-
 
 LOG = logging.getLogger(__name__)
 
@@ -72,10 +73,10 @@ class PlanParameter(Base):
 
     name = wtypes.text
     label = wtypes.text
-    default = wtypes.text
+    default = v2types.MultiType(wtypes.text, six.integer_types, list, dict)
     description = wtypes.text
     hidden = bool
-    value = wtypes.text
+    value = v2types.MultiType(wtypes.text, six.integer_types, list, dict)
 
     @classmethod
     def from_tuskar_model(cls, param):
