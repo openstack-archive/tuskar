@@ -17,6 +17,7 @@ import mock
 from pecan.testing import load_test_app
 
 from tuskar.manager import models as manager_models
+from tuskar.storage.exceptions import NameAlreadyUsed
 from tuskar.tests import base
 
 
@@ -128,6 +129,20 @@ class PlansTests(base.TestCase):
         self.assertEqual(result['uuid'], p.uuid)
         self.assertEqual(result['name'], p.name)
         self.assertEqual(result['description'], p.description)
+
+    @mock.patch('tuskar.manager.plan.PlansManager.create_plan')
+    def test_post_conflict(self, mock_create):
+        # Setup
+        mock_create.side_effect = NameAlreadyUsed(
+            "A master_template with the name 'test.yaml' already exists")
+
+        # Test
+        plan_data = {'name': 'new', 'description': 'desc'}
+        response = self.app.post_json(URL_PLANS, params=plan_data, status=409)
+
+        # Verify
+        mock_create.assert_called_once_with('new', 'desc')
+        self.assertEqual(response.status_int, 409)
 
     def test_templates(self):
         # Setup
