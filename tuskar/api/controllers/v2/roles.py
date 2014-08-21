@@ -16,6 +16,7 @@ from pecan import rest
 from wsmeext import pecan as wsme_pecan
 
 from tuskar.api.controllers.v2 import models
+from tuskar.common import exception
 from tuskar.manager.plan import PlansManager
 from tuskar.manager.role import RoleManager
 
@@ -56,10 +57,20 @@ class RolesController(rest.RestController):
 
         :return: modified plan
         :rtype:  tuskar.api.controllers.v2.models.Plan
+
+        :raises: tuskar.common.exception.PlanAlreadyHasRole if the role has
+            already been added to the plan.
         """
         LOG.debug('Adding role: %s' % role.uuid)
         manager = PlansManager()
-        updated_plan = manager.add_role_to_plan(plan_uuid, role.uuid)
+        try:
+            updated_plan = manager.add_role_to_plan(plan_uuid, role.uuid)
+        except ValueError:
+            LOG.debug('The role has already been added to the plan.')
+            raise exception.PlanAlreadyHasRole(
+                plan_uuid=plan_uuid,
+                role_uuid=role.uuid
+            )
         transfer_plan = models.Plan.from_tuskar_model(updated_plan)
         return transfer_plan
 
