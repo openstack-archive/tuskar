@@ -197,3 +197,7 @@ class PlanNotFound(NotFound):
 
 class PlanExists(DuplicateEntry):
     message = _("Plan with name %(name)s already exists.")
+
+
+class PlanAlreadyHasRole(DuplicateEntry):
+    message = _("Plan %(plan_uuid)s already has role %(role_uuid)s.")

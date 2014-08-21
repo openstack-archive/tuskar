@@ -74,6 +74,20 @@ class RolesTests(base.TestCase):
         self.assertEqual(result['uuid'], 'a')
         self.assertEqual(result['name'], 'n')
 
+    @mock.patch('tuskar.manager.plan.PlansManager.add_role_to_plan')
+    def test_post_duplicate(self, mock_add):
+        # Setup
+        mock_add.side_effect = ValueError()
+
+        # Test
+        role_data = {'uuid': 'qwerty12345'}
+        response = self.app.post_json(URL_PLAN_ROLES, params=role_data,
+                                      status=409)
+
+        # Verify
+        mock_add.assert_called_once_with('plan_uuid', 'qwerty12345')
+        self.assertEqual(response.status_int, 409)
+
     @mock.patch('tuskar.manager.plan.PlansManager.remove_role_from_plan')
     def test_delete(self, mock_remove):
         # Setup
