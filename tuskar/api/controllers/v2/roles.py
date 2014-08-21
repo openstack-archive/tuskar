@@ -19,6 +19,7 @@ from tuskar.api.controllers.v2 import models
 from tuskar.common import exception
 from tuskar.manager.plan import PlansManager
 from tuskar.manager.role import RoleManager
+from tuskar.storage import exceptions as storage_exceptions
 
 
 LOG = logging.getLogger(__name__)
@@ -71,6 +72,11 @@ class RolesController(rest.RestController):
                 plan_uuid=plan_uuid,
                 role_uuid=role.uuid
             )
+        except storage_exceptions.UnknownUUID as e:
+            LOG.debug(('Either the plan UUID {0} or role UUID {1} could not be'
+                       'found').format(plan_uuid, role.uuid))
+            raise exception.NotFound(
+                message=str(e))
         transfer_plan = models.Plan.from_tuskar_model(updated_plan)
         return transfer_plan
 

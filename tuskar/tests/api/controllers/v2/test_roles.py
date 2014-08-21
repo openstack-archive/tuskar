@@ -17,6 +17,7 @@ import mock
 from pecan.testing import load_test_app
 
 from tuskar.manager import models as manager_models
+from tuskar.storage import exceptions as storage_exceptions
 from tuskar.tests import base
 
 
@@ -87,6 +88,20 @@ class RolesTests(base.TestCase):
         # Verify
         mock_add.assert_called_once_with('plan_uuid', 'qwerty12345')
         self.assertEqual(response.status_int, 409)
+
+    @mock.patch('tuskar.manager.plan.PlansManager.add_role_to_plan')
+    def test_post_unkown_uuid(self, mock_add):
+        # Setup
+        mock_add.side_effect = storage_exceptions.UnknownUUID()
+
+        # Test
+        role_data = {'uuid': 'qwerty12345'}
+        response = self.app.post_json(URL_PLAN_ROLES, params=role_data,
+                                      status=404)
+
+        # Verify
+        mock_add.assert_called_once_with('plan_uuid', 'qwerty12345')
+        self.assertEqual(response.status_int, 404)
 
     @mock.patch('tuskar.manager.plan.PlansManager.remove_role_from_plan')
     def test_delete(self, mock_remove):
