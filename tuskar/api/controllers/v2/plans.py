@@ -20,9 +20,9 @@ from wsmeext import pecan as wsme_pecan
 
 from tuskar.api.controllers.v2 import models
 from tuskar.api.controllers.v2 import roles
-from tuskar.common.exception import PlanNotFound
+from tuskar.common import exception
 from tuskar.manager.plan import PlansManager
-from tuskar.storage.exceptions import UnknownUUID
+from tuskar.storage import exceptions as storage_exceptions
 
 
 LOG = logging.getLogger(__name__)
@@ -71,9 +71,9 @@ class PlansController(rest.RestController):
         manager = PlansManager()
         try:
             found = manager.retrieve_plan(plan_uuid)
-        except UnknownUUID:
+        except storage_exceptions.UnknownUUID:
             LOG.exception('Could not retrieve plan: %s' % plan_uuid)
-            raise PlanNotFound()
+            raise exception.PlanNotFound()
         transfer = models.Plan.from_tuskar_model(found)
         return transfer
 
@@ -92,9 +92,9 @@ class PlansController(rest.RestController):
         manager = PlansManager()
         try:
             manager.delete_plan(plan_uuid)
-        except UnknownUUID:
+        except storage_exceptions.UnknownUUID:
             LOG.exception('Could not delete plan: %s' % plan_uuid)
-            raise PlanNotFound()
+            raise exception.PlanNotFound()
 
     @wsme_pecan.wsexpose(models.Plan,
                          body=models.Plan,
@@ -121,8 +121,12 @@ class PlansController(rest.RestController):
             description = None
 
         manager = PlansManager()
-        created = manager.create_plan(transfer_plan.name,
-                                      description)
+        try:
+            created = manager.create_plan(transfer_plan.name,
+                                          description)
+        except storage_exceptions.NameAlreadyUsed:
+            LOG.exception('Plan already exists with this name')
+            raise exception.PlanExists(transfer_plan.name)
         transfer = models.Plan.from_tuskar_model(created)
         return transfer
 
