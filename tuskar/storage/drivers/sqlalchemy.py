@@ -128,7 +128,10 @@ class SQLAlchemyDriver(BaseDriver):
         if name is not None:
             try:
                 self.retrieve_by_name(store, name)
-                msg = "A file with the name '{0}' already exists".format(name)
+                msg = "A {0} with the name '{1}' already exists".format(
+                    store.object_type,
+                    name
+                )
                 raise NameAlreadyUsed(msg)
             except UnknownName:
                 pass
@@ -144,7 +147,7 @@ class SQLAlchemyDriver(BaseDriver):
                 object_type=object_type
             ).one()
         except NoResultFound:
-            msg = "No results found for the UUID: {0}".format(uuid)
+            msg = "No {0}s for the UUID: {1}".format(object_type, uuid)
             raise UnknownUUID(msg)
         finally:
             session.close()
@@ -333,10 +336,16 @@ class SQLAlchemyDriver(BaseDriver):
             )
 
             if name_query.count() == 0:
-                msg = "No results found for the Name: {0}".format(name)
+                msg = "No {0}s found for the name: {1}".format(
+                    object_type,
+                    name
+                )
                 raise UnknownName(msg)
             elif name_query.filter_by(version=version).count() == 0:
-                msg = "No results found for the Version: {0}".format(version)
+                msg = "No {0}s found for the Version: {1}".format(
+                    object_type,
+                    name
+                )
                 raise UnknownVersion(msg)
 
             raise
