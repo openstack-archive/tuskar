@@ -47,11 +47,8 @@ class PlansController(rest.RestController):
         LOG.debug('Retrieving all plans')
         manager = PlansManager()
         all_plans = manager.list_plans()
-        if len(all_plans) > 0:
-            transfer_plans = [models.Plan.from_tuskar_model(p)
-                              for p in all_plans]
-        else:
-            transfer_plans = []
+        transfer_plans = [models.Plan.from_tuskar_model(p)
+                          for p in all_plans]
         return transfer_plans
 
     @wsme_pecan.wsexpose(models.Plan, str)
