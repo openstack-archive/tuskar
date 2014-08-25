@@ -12,8 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from tuskar.common import exception
 
-class StorageException(Exception):
+
+class StorageException(exception.TuskarException):
     pass
 
 
