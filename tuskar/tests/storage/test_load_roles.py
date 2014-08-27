@@ -53,8 +53,8 @@ class LoadRoleTests(TestCase):
 
         # verify
         self.assertEqual([
-            ('role1.yaml', path.join(self.directory, "role1.yaml")),
-            ('role2.yml', path.join(self.directory, "role2.yml")),
+            ('role1', path.join(self.directory, "role1.yaml")),
+            ('role2', path.join(self.directory, "role2.yml")),
         ], roles)
 
     def test_list_roles_invalid(self):
@@ -76,7 +76,7 @@ class LoadRoleTests(TestCase):
             self.directory, dry_run=True)
 
         # verify
-        self.assertEqual(['role1.yaml', 'role2.yml'], sorted(total))
+        self.assertEqual(['role1', 'role2'], sorted(total))
         self.assertEqual([], created)
         self.assertEqual([], updated)
 
@@ -86,19 +86,19 @@ class LoadRoleTests(TestCase):
         total, created, updated = load_roles(self.directory)
 
         # verify
-        self.assertEqual(['role1.yaml', 'role2.yml'], sorted(total))
-        self.assertEqual(['role1.yaml', 'role2.yml'], sorted(created))
+        self.assertEqual(['role1', 'role2'], sorted(total))
+        self.assertEqual(['role1', 'role2'], sorted(created))
         self.assertEqual([], updated)
 
     def test_import_update(self):
 
         # setup
-        _create_or_update("role2.yml", "contents")
+        _create_or_update("role2", "contents")
 
         # test
         total, created, updated = load_roles(self.directory)
 
         # verify
-        self.assertEqual(['role1.yaml', 'role2.yml'], sorted(total))
-        self.assertEqual(['role1.yaml', ], created)
-        self.assertEqual(['role2.yml', ], updated)
+        self.assertEqual(['role1', 'role2'], sorted(total))
+        self.assertEqual(['role1', ], created)
+        self.assertEqual(['role2', ], updated)

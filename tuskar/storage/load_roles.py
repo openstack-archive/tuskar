@@ -39,7 +39,8 @@ def _list_roles(directory):
         if not filename.endswith("yaml") and not filename.endswith("yml"):
             continue
 
-        yield filename, path.join(directory, filename)
+        role_name = path.splitext(filename)[0]
+        yield role_name, path.join(directory, filename)
 
 
 def _read_role(role_path):
