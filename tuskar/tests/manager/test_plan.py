@@ -206,5 +206,31 @@ class PlansManagerTestCase(TestCase):
         self.assertEqual(found_params[2].value, 'm1.small')
         self.assertEqual(found_params[3].value, 'test-key')
 
+    def test_package_templates(self):
+        # Setup
+        test_role = self._add_test_role()
+        test_plan = self.plans_manager.create_plan('p1', 'd1')
+        self.plans_manager.add_role_to_plan(test_plan.uuid, test_role.uuid)
+
+        # Test
+        templates = self.plans_manager.package_templates(test_plan.uuid)
+
+        # Verify
+        self.assertTrue(isinstance(templates, dict))
+        self.assertEqual(3, len(templates))
+
+        self.assertTrue('plan.yaml' in templates)
+        parsed_plan = parser.parse_template(templates['plan.yaml'])
+        self.assertEqual(parsed_plan.description, 'd1')
+
+        self.assertTrue('environment.yaml' in templates)
+        parsed_env = parser.parse_environment(templates['environment.yaml'])
+        self.assertEqual(1, len(parsed_env.registry_entries))
+
+        role_filename = name_utils.role_template_filename('r1', '1')
+        self.assertTrue(role_filename in templates)
+        parsed_role = parser.parse_template(templates[role_filename])
+        self.assertEqual(parsed_role.description, 'Test provider resource foo')
+
     def _add_test_role(self):
         return self.template_store.create('r1', TEST_TEMPLATE)

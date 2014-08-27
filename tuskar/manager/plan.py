@@ -226,6 +226,49 @@ class PlansManager(object):
         updated_plan = self.retrieve_plan(plan_uuid)
         return updated_plan
 
+    def package_templates(self, plan_uuid):
+        """Packages and returns all of the templates related to the given plan.
+        The returned dictionary is keyed by filename and contains the contents
+        of that file (a template or an environment file).
+
+        :type plan_uuid: str
+
+        :return: mapping of filename to contents for each file in the plan
+        :rtype:  dict
+
+        :raises tuskar.storage.exceptions.UnknownUUID: if there is no plan
+                with the given UUID
+        """
+
+        # Load and parse the plan.
+        db_plan = self.plan_store.retrieve(plan_uuid)
+        master_template = parser.parse_template(
+            db_plan.master_template.contents
+        )
+        environment = parser.parse_environment(
+            db_plan.environment_file.contents
+        )
+
+        # Compose the plan files and all plan roles and package them into
+        # a single dictionary.
+        plan_contents = composer.compose_template(master_template)
+        env_contents = composer.compose_environment(environment)
+
+        files_dict = {
+            'plan.yaml': plan_contents,
+            'environment.yaml': env_contents,
+        }
+
+        plan_roles = self._find_roles(environment)
+
+        for role in plan_roles:
+            contents = composer.compose_template(role.template)
+            filename = name_utils.role_template_filename(role.name,
+                                                         role.version)
+            files_dict[filename] = contents
+
+        return files_dict
+
     def _find_roles(self, environment):
         """Returns a list of roles for a plan (identified by the given
         environment).

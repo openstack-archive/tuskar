@@ -12,7 +12,6 @@
 
 import logging
 
-import pecan
 from pecan import rest
 import wsme
 from wsme.types import UnsetType
@@ -130,9 +129,25 @@ class PlansController(rest.RestController):
         transfer = models.Plan.from_tuskar_model(created)
         return transfer
 
-    @pecan.expose()
+    @wsme_pecan.wsexpose({str: str}, str)
     def templates(self, plan_uuid):
-        return plan_uuid
+        """Returns the template files for a given plan.
+
+        :return: dictionary of filenames to contents for each template file
+                 involved in the plan
+        :rtype:  dict
+        """
+        LOG.debug('Retrieving templates for plan: %s' % plan_uuid)
+
+        manager = PlansManager()
+        try:
+            templates = manager.package_templates(plan_uuid)
+        except storage_exceptions.UnknownUUID:
+            LOG.exception('Could not retrieve templates for plan: %s' %
+                          plan_uuid)
+            raise exception.PlanNotFound()
+
+        return templates
 
     @wsme.validate(models.Plan)
     @wsme_pecan.wsexpose(models.Plan,
