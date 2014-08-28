@@ -198,8 +198,10 @@ class PlansTests(base.TestCase):
         mock_create.assert_called_once_with('new', 'desc')
         self.assertEqual(response.status_int, 409)
 
-    def test_templates(self):
+    @mock.patch('tuskar.manager.plan.PlansManager.package_templates')
+    def test_templates(self, mock_package):
         # Setup
+        mock_package.return_value = {}
 
         # Test
         url = URL_PLANS + '/' + 'foo' + '/' + 'templates'
@@ -208,7 +210,19 @@ class PlansTests(base.TestCase):
 
         # Verify
         self.assertEqual(response.status_int, 200)
-        self.assertEqual(result, 'foo')
+        self.assertEqual(result, '{}')
+
+    @mock.patch('tuskar.manager.plan.PlansManager.package_templates')
+    def test_templates_missing_plan(self, mock_package):
+        # Setup
+        mock_package.side_effect = storage_exceptions.UnknownUUID()
+
+        # Test
+        url = URL_PLANS + '/' + 'foo' + '/' + 'templates'
+        response = self.app.get(url, status=404)
+
+        # Verify
+        self.assertEqual(response.status_int, 404)
 
     @mock.patch('tuskar.manager.plan.PlansManager.set_parameter_values')
     def test_patch(self, mock_set):

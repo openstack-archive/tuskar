@@ -53,7 +53,7 @@ def compose_template(template):
     if template.description is not None:
         template_dict['description'] = template.description
 
-    content = yaml.dump(template_dict, default_flow_style=False)
+    content = yaml.safe_dump(template_dict, default_flow_style=False)
     return content
 
 
@@ -74,7 +74,7 @@ def compose_environment(environment):
         'resource_registry': registry
     }
 
-    content = yaml.dump(env_dict, default_flow_style=False)
+    content = yaml.safe_dump(env_dict, default_flow_style=False)
     return content
 
 
