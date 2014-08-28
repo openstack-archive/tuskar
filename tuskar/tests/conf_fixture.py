@@ -36,7 +36,5 @@ class ConfFixture(fixtures.Fixture):
         self.conf.set_default('sqlite_synchronous', False, group='database')
         self.conf.set_default('use_ipv6', True)
         self.conf.set_default('verbose', True)
-        self.conf.set_default('tht_local_dir',
-                              '/etc/tuskar/tripleo-heat-templates/')
         config.parse_args([], default_config_files=[])
         self.addCleanup(self.conf.reset)
