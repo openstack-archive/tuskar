@@ -1,0 +1,11 @@
+Verified+2: Jenkins
+Code-Review+1: Victor Sergeyev <vsergeyev@mirantis.com>
+Code-Review+2: Ladislav Smola <lsmola@redhat.com>
+Code-Review+2: Petr Blaho <pblaho@redhat.com>
+Code-Review+2: Radomir Dopieralski <openstack@sheep.art.pl>
+Workflow+1: Radomir Dopieralski <openstack@sheep.art.pl>
+Submitted-by: Jenkins
+Submitted-at: Thu, 28 Aug 2014 12:20:36 +0000
+Reviewed-on: https://review.openstack.org/116659
+Project: openstack/tuskar
+Branch: refs/heads/master
