@@ -44,7 +44,7 @@ class ComposerTests(unittest.TestCase):
         self.assertTrue('outputs' in template)
 
         # Verify Top-Level Attributes
-        self.assertEqual('2013-05-23', template['heat_template_version'])
+        self.assertEqual('2014-10-16', template['heat_template_version'])
         self.assertEqual('template-desc', template['description'])
 
         # Verify Parameters

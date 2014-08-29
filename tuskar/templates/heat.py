@@ -20,7 +20,7 @@ http://docs.openstack.org/developer/heat/template_guide/hot_spec.html
 from tuskar.templates import namespace as ns_utils
 
 
-DEFAULT_VERSION = '2013-05-23'
+DEFAULT_VERSION = '2014-10-16'
 
 
 class Template(object):

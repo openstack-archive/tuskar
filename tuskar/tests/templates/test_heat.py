@@ -19,7 +19,7 @@ from tuskar.templates import namespace as ns
 class TemplateTests(unittest.TestCase):
 
     def test_default_version(self):
-        self.assertEqual(heat.DEFAULT_VERSION, '2013-05-23')
+        self.assertEqual(heat.DEFAULT_VERSION, '2014-10-16')
 
     def test_init(self):
         # Test
