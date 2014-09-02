@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Code-Review+2: Tomas Sedovic <tomas@sedovic.cz>
+Code-Review+2: Tzu-Mainn Chen <tzumainn@redhat.com>
+Code-Review+2: Ladislav Smola <lsmola@redhat.com>
+Workflow+1: Ladislav Smola <lsmola@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 02 Sep 2014 14:09:56 +0000
+Reviewed-on: https://review.openstack.org/117316
+Project: openstack/tuskar
+Branch: refs/heads/master
