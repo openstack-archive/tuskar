@@ -62,7 +62,8 @@ class RolesController(rest.RestController):
         :raises: tuskar.common.exception.PlanAlreadyHasRole if the role has
             already been added to the plan.
         """
-        LOG.debug('Adding role: %s' % role.uuid)
+        LOG.debug('Adding role: %(role_uuid)s to plan: %(plan_uuid)s' %
+                  {'role_uuid': role.uuid, 'plan_uuid': plan_uuid})
         manager = PlansManager()
         try:
             updated_plan = manager.add_role_to_plan(plan_uuid, role.uuid)
@@ -92,6 +93,8 @@ class RolesController(rest.RestController):
         :param role_uuid: identifies the role to be deleted from plan
         :type  role_uuid: str
         """
+        LOG.debug('Removing role: %(role_uuid)s from plan: %(plan_uuid)s' %
+                  {'role_uuid': role_uuid, 'plan_uuid': plan_uuid})
         manager = PlansManager()
         updated_plan = manager.remove_role_from_plan(plan_uuid, role_uuid)
         transfer_plan = models.Plan.from_tuskar_model(updated_plan)
