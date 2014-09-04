@@ -162,6 +162,10 @@ class PlansController(rest.RestController):
         """
         manager = PlansManager()
         params = [p.to_tuskar_model() for p in param_list]
-        updated_plan = manager.set_parameter_values(plan_uuid, params)
+        try:
+            updated_plan = manager.set_parameter_values(plan_uuid, params)
+        except storage_exceptions.UnknownUUID:
+            LOG.exception('Could not patch plan: %s' % plan_uuid)
+            raise exception.PlanNotFound()
         transfer_plan = models.Plan.from_tuskar_model(updated_plan)
         return transfer_plan

@@ -243,3 +243,19 @@ class PlansTests(base.TestCase):
         self.assertEqual(mock_set.call_args[0][1][0].value, 'bar')
         self.assertEqual(response.status_int, 201)
         self.assertEqual(result['name'], p.name)
+
+    @mock.patch('tuskar.manager.plan.PlansManager.set_parameter_values')
+    def test_patch_missing_plan(self, mock_set):
+        # Setup
+        mock_set.side_effect = storage_exceptions.UnknownUUID()
+
+        # Test
+        values = [{'name': 'foo', 'value': 'bar'}]
+        url = URL_PLANS + '/' + 'qwerty12345'
+        response = self.app.patch_json(url, values, status=404)
+
+        # Verify
+        self.assertEqual(mock_set.call_args[0][0], 'qwerty12345')
+        self.assertEqual(mock_set.call_args[0][1][0].name, 'foo')
+        self.assertEqual(mock_set.call_args[0][1][0].value, 'bar')
+        self.assertEqual(response.status_int, 404)
