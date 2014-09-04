@@ -118,3 +118,16 @@ class RolesTests(base.TestCase):
         self.assertEqual(response.status_int, 200)
         self.assertEqual(result['uuid'], 'a')
         self.assertEqual(result['name'], 'n')
+
+    @mock.patch('tuskar.manager.plan.PlansManager.remove_role_from_plan')
+    def test_delete_unkown_uuid(self, mock_remove):
+        # Setup
+        mock_remove.side_effect = storage_exceptions.UnknownUUID()
+
+        # Test
+        response = self.app.delete_json(URL_PLAN_ROLES + '/qwerty12345',
+                                        status=404)
+
+        # Verify
+        mock_remove.assert_called_once_with('plan_uuid', 'qwerty12345')
+        self.assertEqual(response.status_int, 404)

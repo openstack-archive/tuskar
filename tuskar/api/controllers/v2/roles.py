@@ -96,6 +96,12 @@ class RolesController(rest.RestController):
         LOG.debug('Removing role: %(role_uuid)s from plan: %(plan_uuid)s' %
                   {'role_uuid': role_uuid, 'plan_uuid': plan_uuid})
         manager = PlansManager()
-        updated_plan = manager.remove_role_from_plan(plan_uuid, role_uuid)
+        try:
+            updated_plan = manager.remove_role_from_plan(plan_uuid, role_uuid)
+        except storage_exceptions.UnknownUUID as e:
+            LOG.debug(('Either the plan UUID {0} or role UUID {1} could not be'
+                       'found').format(plan_uuid, role_uuid))
+            raise exception.NotFound(
+                message=str(e))
         transfer_plan = models.Plan.from_tuskar_model(updated_plan)
         return transfer_plan
