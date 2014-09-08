@@ -119,6 +119,8 @@ class DeploymentPlan(object):
         :raise ValueError: if there is no parameter with the given name
         """
         p = self.environment.find_parameter_by_name(name)
+        if p is None:
+            raise ValueError('No parameter named: %s' % name)
         p.value = value
 
     def _add_to_master_template(self, namespace, template, resource_alias):

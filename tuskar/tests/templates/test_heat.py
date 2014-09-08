@@ -70,6 +70,24 @@ class TemplateTests(unittest.TestCase):
         self.assertRaises(ValueError, t.remove_parameter,
                           heat.Parameter('n', 't'))
 
+    def test_find_parameter_by_name(self):
+        # Setup
+        t = heat.Template()
+        t.add_parameter(heat.Parameter('a', 'a1'))
+        t.add_parameter(heat.Parameter('b', 'b1'))
+
+        # Test
+        found = t.find_parameter_by_name('b')
+
+        # Verify
+        self.assertTrue(found is not None)
+        self.assertEqual(found.param_type, 'b1')
+
+    def test_find_parameter_by_name_missing(self):
+        t = heat.Template()
+        found = t.find_parameter_by_name('missing')
+        self.assertEqual(found, None)
+
     def test_add_remove_parameter_group(self):
         t = heat.Template()
         pg = heat.ParameterGroup('test-label', 'test-desc')
@@ -108,6 +126,42 @@ class TemplateTests(unittest.TestCase):
         self.assertEqual(1, len(t.resources))
         self.assertEqual(t.resources[0].resource_type, 't2')
 
+    def test_find_resource_by_id(self):
+        # Setup
+        t = heat.Template()
+        t.add_resource(heat.Resource('a', 'a1'))
+        t.add_resource(heat.Resource('b', 'b1'))
+
+        # Test
+        found = t.find_resource_by_id('b')
+
+        # Verify
+        self.assertTrue(found is not None)
+        self.assertEqual(found.resource_type, 'b1')
+
+    def test_find_resource_by_id_missing(self):
+        t = heat.Template()
+        found = t.find_resource_by_id('missing')
+        self.assertEqual(found, None)
+
+    def test_find_parameter_group_by_label(self):
+        # Setup
+        t = heat.Template()
+        t.add_parameter_group(heat.ParameterGroup('a', description='a1'))
+        t.add_parameter_group(heat.ParameterGroup('b', description='b1'))
+
+        # Test
+        found = t.find_parameter_group_by_label('b')
+
+        # Verify
+        self.assertTrue(found is not None)
+        self.assertEqual(found.description, 'b1')
+
+    def test_find_parameter_group_by_label_missing(self):
+        t = heat.Template()
+        found = t.find_parameter_group_by_label('missing')
+        self.assertEqual(found, None)
+
     def test_add_remove_output(self):
         t = heat.Template()
         o = heat.Output('n', 'v')
@@ -139,6 +193,23 @@ class TemplateTests(unittest.TestCase):
     def test_remove_output_not_found(self):
         t = heat.Template()
         self.assertRaises(ValueError, t.remove_output, heat.Output('n', 'v'))
+
+    def test_find_output_by_name(self):
+        # Setup
+        t = heat.Template()
+        t.add_output(heat.Output('a', 'a1'))
+        t.add_output(heat.Output('b', 'b1'))
+
+        # Test
+        found = t.find_output_by_name('b')
+
+        # Verify
+        self.assertEqual(found.value, 'b1')
+
+    def test_find_output_by_name_missing(self):
+        t = heat.Template()
+        found = t.find_output_by_name('missing')
+        self.assertEqual(found, None)
 
 
 class ParameterGroupTests(unittest.TestCase):
@@ -257,6 +328,24 @@ class ResourceTests(unittest.TestCase):
         r = heat.Resource('i', 't')
         self.assertRaises(ValueError, r.remove_property,
                           heat.ResourceProperty('n', 'v'))
+
+    def test_find_property_by_name(self):
+        # Setup
+        r = heat.Resource('i', 't')
+        r.add_property(heat.ResourceProperty('a', 'a1'))
+        r.add_property(heat.ResourceProperty('b', 'b1'))
+
+        # Test
+        found = r.find_property_by_name('b')
+
+        # Verify
+        self.assertTrue(found is not None)
+        self.assertEqual(found.value, 'b1')
+
+    def test_find_property_by_name_missing(self):
+        r = heat.Resource('i', 't')
+        found = r.find_property_by_name('missing')
+        self.assertEqual(found, None)
 
 
 class ResourcePropertyTests(unittest.TestCase):
@@ -381,7 +470,8 @@ class EnvironmentTests(unittest.TestCase):
         e = heat.Environment()
 
         # Test
-        self.assertRaises(ValueError, e.find_parameter_by_name, 'missing')
+        found = e.find_parameter_by_name('missing')
+        self.assertEqual(found, None)
 
     def test_has_parameter_in_namespace(self):
         # Setup

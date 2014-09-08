@@ -77,6 +77,18 @@ class Template(object):
         """
         self._parameters.remove(parameter)
 
+    def find_parameter_by_name(self, name):
+        """Returns the parameter from the template with the given name or
+        None if no matching parameter is found.
+
+        :type name: str
+        :rtype: tuskar.templates.heat.Parameter or None
+        """
+        for p in self._parameters:
+            if p.name == name:
+                return p
+        return None
+
     def remove_parameters_by_namespace(self, namespace):
         """Removes all parameters in the given namespace.
 
@@ -101,6 +113,18 @@ class Template(object):
         """
         self._parameter_groups.remove(parameter_group)
 
+    def find_parameter_group_by_label(self, label):
+        """Returns the parameter group with the given label or None if no
+        matching group is found.
+
+        :type label: str
+        :rtype: tuskar.templates.heat.ParameterGroup or None
+        """
+        for pg in self._parameter_groups:
+            if pg.label == label:
+                return pg
+        return None
+
     def add_resource(self, resource):
         """Adds a resource to the template.
 
@@ -123,6 +147,18 @@ class Template(object):
         """
         self._resources = [r for r in self._resources
                            if r.resource_id != resource_id]
+
+    def find_resource_by_id(self, resource_id):
+        """Returns the resource with the given ID or None if no matching
+        resource is found.
+
+        :type resource_id: str
+        :rtype: tuskar.templates.heat.Resource or None
+        """
+        for r in self._resources:
+            if r.resource_id == resource_id:
+                return r
+        return None
 
     def add_output(self, output):
         """Adds an output to the template.
@@ -147,6 +183,18 @@ class Template(object):
         self._outputs = [
             o for o in self.outputs
             if not ns_utils.matches_template_namespace(namespace, o.name)]
+
+    def find_output_by_name(self, name):
+        """Returns the output with the given name or None if no matching
+        output is found.
+
+        :type name: str
+        :rtype: tuskar.templates.heat.Output or None
+        """
+        for o in self._outputs:
+            if o.name == name:
+                return o
+        return None
 
 
 class ParameterGroup(object):
@@ -294,6 +342,18 @@ class Resource(object):
         """
         self._properties.remove(resource_property)
 
+    def find_property_by_name(self, name):
+        """Returns the property with the given name or None if there is no
+        matching property.
+
+        :type name: str
+        :rtype: tuskar.templates.heat.ResourceProperty or None
+        """
+        for p in self._properties:
+            if p.name == name:
+                return p
+        return None
+
 
 class ResourceProperty(object):
 
@@ -378,16 +438,16 @@ class Environment(object):
             if not ns_utils.matches_template_namespace(namespace, p.name)]
 
     def find_parameter_by_name(self, name):
-        """Returns the parameter instance with the given name.
+        """Returns the parameter instance with the given name or None
+        if there is no matching parameter.
 
         :type name: str
-        :rtype: tuskar.templates.heat.EnvironmentParameter
-        :raise ValueError: if there is no parameter with the given name
+        :rtype: tuskar.templates.heat.EnvironmentParameter or None
         """
         for p in self._parameters:
             if p.name == name:
                 return p
-        raise ValueError('No parameter named %s found' % name)
+        return None
 
     def has_parameter_in_namespace(self, namespace):
         """Returns true if the environment has at least one parameter
