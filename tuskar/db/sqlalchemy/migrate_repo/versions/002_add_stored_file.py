@@ -11,7 +11,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table
+from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, Text
 
 from tuskar.openstack.common.gettextutils import _  # noqa
 from tuskar.openstack.common import log as logging
@@ -31,7 +31,7 @@ def upgrade(migrate_engine):
         'stored_file',
         meta,
         Column('uuid', String(length=36), primary_key=True, nullable=False),
-        Column('contents', String(), nullable=False),
+        Column('contents', Text(), nullable=False),
         Column('object_type', String(length=20), nullable=False),
         Column('name', String(length=64), nullable=True),
         Column('version', Integer(), nullable=True),
