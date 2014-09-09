@@ -44,6 +44,19 @@ def upgrade(migrate_engine):
         mysql_charset=CHARSET,
     )
 
+    overcloud = Table(
+        'overclouds',
+        meta,
+        Column('id', Integer, primary_key=True, nullable=False),
+        Column('name', String(length=models.LENGTH_NAME), unique=True),
+        Column('description', String(length=models.LENGTH_DESCRIPTION)),
+        Column('stack_id', String(length=36)),
+        Column('created_at', DateTime),
+        Column('updated_at', DateTime),
+        mysql_engine=ENGINE,
+        mysql_charset=CHARSET,
+    )
+
     overcloud_role_counts = Table(
         'overcloud_role_counts',
         meta,
@@ -57,19 +70,6 @@ def upgrade(migrate_engine):
                ForeignKey('overclouds.id'),
                nullable=False),
         Column('num_nodes', Integer, nullable=False),
-        Column('created_at', DateTime),
-        Column('updated_at', DateTime),
-        mysql_engine=ENGINE,
-        mysql_charset=CHARSET,
-    )
-
-    overcloud = Table(
-        'overclouds',
-        meta,
-        Column('id', Integer, primary_key=True, nullable=False),
-        Column('name', String(length=models.LENGTH_NAME), unique=True),
-        Column('description', String(length=models.LENGTH_DESCRIPTION)),
-        Column('stack_id', String(length=36)),
         Column('created_at', DateTime),
         Column('updated_at', DateTime),
         mysql_engine=ENGINE,
@@ -92,8 +92,8 @@ def upgrade(migrate_engine):
         mysql_charset=CHARSET,
     )
 
-    tables = [overcloud_roles, overcloud_role_counts,
-              overcloud, overcloud_attributes]
+    tables = [overcloud_roles, overcloud, overcloud_role_counts,
+              overcloud_attributes]
 
     for table in tables:
         try:
