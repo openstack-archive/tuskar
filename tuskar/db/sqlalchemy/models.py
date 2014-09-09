@@ -225,7 +225,7 @@ class StoredFile(Base):
     uuid = Column(String(length=36), primary_key=True)
 
     #: contents contains the full file contents as a string.
-    contents = Column(String(), nullable=False)
+    contents = Column(Text(), nullable=False)
 
     #: Object type flags the type of file that this is, i.e. template or
     #: environment file.
