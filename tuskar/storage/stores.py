@@ -213,6 +213,14 @@ class MasterTemplateStore(_NamedStore):
     object_type = "master_template"
 
 
+class MasterSeedStore(_NamedStore):
+    """Store for the master template seed file.
+
+    The seed files are named but not versioned.
+    """
+    object_type = "master_seed"
+
+
 class EnvironmentFileStore(_BaseStore):
     """Environment File for Heat environment files.
 

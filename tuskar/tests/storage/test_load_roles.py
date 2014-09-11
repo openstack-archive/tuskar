@@ -102,3 +102,17 @@ class LoadRoleTests(TestCase):
         self.assertEqual(['role1', 'role2'], sorted(total))
         self.assertEqual(['role1', ], created)
         self.assertEqual(['role2', ], updated)
+
+    def test_import_with_seed(self):
+        # Setup
+        self._create_role('seed')
+
+        # Test
+        seed_file = path.join(self.directory, 'seed')
+        total, created, updated = load_roles(self.directory,
+                                             seed_file=seed_file)
+
+        # Verify
+        self.assertEqual(['_master_seed', 'role1', 'role2'], sorted(total))
+        self.assertEqual(['_master_seed', 'role1', 'role2'], sorted(created))
+        self.assertEqual([], updated)
