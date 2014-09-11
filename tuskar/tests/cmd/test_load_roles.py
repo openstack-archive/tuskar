@@ -23,12 +23,12 @@ class LoadRoleTests(TestCase):
 
     @patch('tuskar.storage.load_roles._list_roles',
            return_value=[['role_name.yaml', '/path/role_name.yaml']])
-    @patch('tuskar.storage.load_roles._read_role', return_value="YAML")
+    @patch('tuskar.storage.load_roles._load_file', return_value="YAML")
     @patch('tuskar.cmd.load_roles._print_names')
     def test_main(self, mock_print, mock_read, mock_list):
 
         # test
-        load_roles.main("/path/".split())
+        load_roles.main(argv="--master-seed=seed.yaml path".split())
 
         # verify
         self.assertEqual([
