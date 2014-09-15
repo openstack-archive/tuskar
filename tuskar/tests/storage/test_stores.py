@@ -160,6 +160,24 @@ class TemplateStoreTests(TestCase):
         self.driver.create.assert_called_once_with(self.store, name, contents)
 
 
+class MasterSeedStoreTests(TestCase):
+
+    def setUp(self):
+        super(MasterSeedStoreTests, self).setUp()
+
+        self.driver = Mock()
+        self.store = stores.MasterSeedStore(self.driver)
+
+    def test_create(self):
+        name = "master seed"
+        contents = "seed contents"
+        self.store.create(name, contents)
+        self.driver.create.assert_called_once_with(self.store, name, contents)
+
+    def test_object_type(self):
+        self.assertEqual(stores.MasterSeedStore.object_type, "master_seed")
+
+
 class EnvironmentFileTests(TestCase):
 
     def setUp(self):
