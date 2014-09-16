@@ -31,6 +31,9 @@ parameters:
     type: string
 
   # Role Parameters
+  RoleParameterCount:
+    type: int
+
   RoleParameter1:
     type: string
 
@@ -42,15 +45,36 @@ resources:
   # Top Level Resources
   TopLevelResource1:
     type: OS::Heat::StructuredConfig
+    properties:
+      resource_def:
+        type: OS::Heat::StructuredDeployment
+        properties:
+          config-1: {get_param: TopLevelParameter1}
+          config-2: {get_attr: [RoleResource1, key-1]}
+          config-3: {get_resource: RoleResource1}
+          config-4:
+            hosts:
+              list_join:
+              - "+"
+              - - list_join:
+                  - "+"
+                  - {get_attr: [RoleResource1, hosts_entry]}
+                - list_join:
+                  - "+"
+                  - {get_attr: [Controller, hosts_entry]}
+
 
   TopLevelResource2:
     type: OS::Heat::RandomString
+    properties:
+      config-1: {get_param: TopLevelParameter1}
+      config-2: {get_attr: [RoleResourceX, key-1]}
 
   # Role Resources
   RoleResource1:
     type: OS::Heat::ResourceGroup
     properties:
-      count: {get_param: RoleParameter1}
+      count: {get_param: RoleParameterCount}
       resource_def:
         type: OS::TripleO::Controller
         properties:
@@ -82,11 +106,13 @@ class TemplateSeedTests(unittest.TestCase):
         self.seed_template = parser.parse_template(SEED_TEMPLATE)
         self.role_template = parser.parse_template(ROLE_TEMPLATE)
         self.destination_template = heat.Template()
+        self.environment = heat.Environment()
 
     def test_add_top_level_parameters(self):
         # Test
         template_seed.add_top_level_parameters(self.seed_template,
-                                               self.destination_template)
+                                               self.destination_template,
+                                               self.environment)
 
         # Verify
         self.assertEqual(2, len(self.destination_template.parameters))
@@ -95,12 +121,19 @@ class TemplateSeedTests(unittest.TestCase):
         self.assertEqual(['TopLevelParameter1', 'TopLevelParameter2'],
                          sorted(added_parameter_names))
 
+        added_parameter_names = [p.name for p
+                                 in self.environment.parameters]
+        self.assertEqual(['TopLevelParameter1', 'TopLevelParameter2'],
+                         sorted(added_parameter_names))
+
     def test_add_top_level_parameters_idempotency(self):
         # Test
         template_seed.add_top_level_parameters(self.seed_template,
-                                               self.destination_template)
+                                               self.destination_template,
+                                               self.environment)
         template_seed.add_top_level_parameters(self.seed_template,
-                                               self.destination_template)
+                                               self.destination_template,
+                                               self.environment)
 
         # Verify
         self.assertEqual(2, len(self.destination_template.parameters))
@@ -158,5 +191,51 @@ class TemplateSeedTests(unittest.TestCase):
                          {'get_attr': ['TopLevelResource2', 'value']})
 
     def test_get_property_map_for_nonexistent_role(self):
-        self.assertRaises(ValueError, template_seed.get_property_map_for_role,
-                          self.seed_template, 'missing')
+        mapping = template_seed.get_property_map_for_role(self.seed_template,
+                                                          'missing')
+        self.assertTrue(mapping is None)
+
+    def test_update_references(self):
+        # Test
+        # This will update the seed template in place. It's good enough for
+        # a test as there is data within that exercises this call.
+        template_seed.update_references(self.seed_template,
+                                        'RoleResource1', 'converted')
+
+        # Verify
+        updated = self.seed_template.find_resource_by_id('TopLevelResource1')
+        resource_def = updated.properties[0]
+        config_props = resource_def.value['properties']
+        self.assertEqual(config_props['config-1'],
+                         {'get_param': 'TopLevelParameter1'})
+        self.assertEqual(config_props['config-2'],
+                         {'get_attr': ['converted', 'key-1']})
+        self.assertEqual(config_props['config-3'],
+                         {'get_resource': 'converted'})
+
+        self.maxDiff = None
+        config_4 = {
+            'hosts': {
+                'list_join':
+                [
+                    '+',
+                    [
+                        {'list_join': [
+                            '+',
+                            {'get_attr': ['converted', 'hosts_entry']}
+                        ]},
+                        {'list_join': [
+                            '+',
+                            {'get_attr': ['Controller', 'hosts_entry']}
+                        ]}
+                    ]
+                ]
+            }
+        }
+        self.assertEqual(config_props['config-4'], config_4)
+
+        untouched = self.seed_template.find_resource_by_id('TopLevelResource2')
+        self.assertEqual(untouched.find_property_by_name('config-1').value,
+                         {'get_param': 'TopLevelParameter1'})
+        self.assertEqual(untouched.find_property_by_name('config-2').value,
+                         {'get_attr': ['RoleResourceX', 'key-1']})

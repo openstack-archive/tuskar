@@ -74,7 +74,8 @@ class DeploymentPlan(object):
         self.environment = environment or Environment()
         self.add_scaling = add_scaling
 
-    def add_template(self, namespace, template, filename):
+    def add_template(self, namespace, template, filename,
+                     override_properties=None):
         """Adds a new template to the plan. The pieces of the template will
         be prefixed with the given namespace in the plan's master template.
 
@@ -86,8 +87,13 @@ class DeploymentPlan(object):
         :param filename: name of the file where the template is stored, used
                          when mapping the template in the environment
         :type  filename: str
+        :param override_properties: mapping of property name to specific value
+               to use instead of the Tuskar-generated parameter
+        :type override_properties: {str, str}
         :raise ValueError: if given namespace is already taken
         """
+        override_properties = override_properties or {}
+
         if self.environment.has_parameter_in_namespace(namespace):
             raise ValueError(
                 "Cannot add template to plan - namespace '%s' is taken."
@@ -95,8 +101,10 @@ class DeploymentPlan(object):
 
         resource_alias = ns_utils.apply_resource_alias_namespace(namespace)
 
-        self._add_to_master_template(namespace, template, resource_alias)
-        self._add_to_environment(namespace, template, filename, resource_alias)
+        self._add_to_master_template(namespace, template, resource_alias,
+                                     override_properties)
+        self._add_to_environment(namespace, template, filename, resource_alias,
+                                 override_properties)
 
     def remove_template(self, namespace):
         """Removes all references to the template added under the given
@@ -123,19 +131,28 @@ class DeploymentPlan(object):
             raise ValueError('No parameter named: %s' % name)
         p.value = value
 
-    def _add_to_master_template(self, namespace, template, resource_alias):
-        resource = self._add_resource(namespace, template, resource_alias)
-        self._add_parameters(namespace, template)
+    def _add_to_master_template(self, namespace, template, resource_alias,
+                                override_properties):
+        resource = self._add_resource(namespace, template, resource_alias,
+                                      override_properties)
+        self._add_parameters(namespace, template, override_properties)
         self._add_outputs(namespace, template, resource)
 
-    def _add_resource(self, namespace, template, resource_alias):
-        resource = Resource(_generate_resource_id(namespace), resource_alias)
+    def _add_resource(self, namespace, template, resource_alias,
+                      override_properties):
+        resource = Resource(generate_resource_id(namespace), resource_alias)
 
         for map_me in template.parameters:
             name = map_me.name
-            master_name = ns_utils.apply_template_namespace(namespace,
-                                                            map_me.name)
-            value = {'get_param': [master_name]}
+
+            # If an explicit value is specified, use that. Otherwise, create
+            # a look up within the master template.
+            if name in override_properties:
+                value = override_properties[name]
+            else:
+                master_name = ns_utils.apply_template_namespace(namespace,
+                                                                map_me.name)
+                value = {'get_param': [master_name]}
             resource_property = ResourceProperty(name, value)
             resource.add_property(resource_property)
 
@@ -143,12 +160,12 @@ class DeploymentPlan(object):
         # resource in a resource group. The _add_parameters call will add
         # a corresponding parameter for the count of this resource.
         if self.add_scaling:
-            group_resource_id = _generate_group_id(resource.resource_id)
+            group_resource_id = generate_group_id(namespace)
             heat_group = Resource(group_resource_id, HEAT_TYPE_RESOURCE_GROUP)
 
             count_prop = ResourceProperty(
                 PROPERTY_SCALING_COUNT,
-                {'get_param': [_generate_count_property_name(namespace)]})
+                {'get_param': [generate_count_property_name(namespace)]})
             heat_group.add_property(count_prop)
 
             def_prop = ResourceProperty(PROPERTY_RESOURCE_DEFINITION, resource)
@@ -161,8 +178,11 @@ class DeploymentPlan(object):
         self.master_template.add_resource(outer_resource)
         return outer_resource
 
-    def _add_parameters(self, namespace, template):
+    def _add_parameters(self, namespace, template, override_properties):
         for add_me in template.parameters:
+            if add_me.name in override_properties:
+                continue
+
             cloned = copy.deepcopy(add_me)
             cloned.name = ns_utils.apply_template_namespace(namespace,
                                                             add_me.name)
@@ -172,7 +192,7 @@ class DeploymentPlan(object):
         # template parameter for accepting the count for the resource with
         # this namespace
         if self.add_scaling:
-            count_param = Parameter(_generate_count_property_name(namespace),
+            count_param = Parameter(generate_count_property_name(namespace),
                                     'number')
             constraint = ParameterConstraint('range', {'min': '1'})
             count_param.add_constraint(constraint)
@@ -192,15 +212,21 @@ class DeploymentPlan(object):
             self.master_template.add_output(master_out)
 
     def _add_to_environment(self, namespace, template,
-                            filename, resource_alias):
+                            filename, resource_alias, override_properties):
         # Add Parameters
         for add_me in template.parameters:
+
+            # For overridden properties, don't add a template property; the
+            # user does not need to specify a value for them.
+            if add_me.name in override_properties:
+                continue
+
             name = ns_utils.apply_template_namespace(namespace, add_me.name)
             env_parameter = EnvironmentParameter(name, add_me.default or '')
             self.environment.add_parameter(env_parameter)
 
         if self.add_scaling:
-            count_param_name = _generate_count_property_name(namespace)
+            count_param_name = generate_count_property_name(namespace)
             count_param = EnvironmentParameter(count_param_name, '1')
             self.environment.add_parameter(count_param)
 
@@ -219,9 +245,9 @@ class DeploymentPlan(object):
 
         # If scaling features are being automatically added in, the resource
         # is wrapped in a scaling group, so remove that instead
-        resource_id = _generate_resource_id(namespace)
+        resource_id = generate_resource_id(namespace)
         if self.add_scaling:
-            group_resource_id = _generate_group_id(resource_id)
+            group_resource_id = generate_group_id(namespace)
             self.master_template.remove_resource_by_id(group_resource_id)
         else:
             self.master_template.remove_resource_by_id(resource_id)
@@ -235,7 +261,7 @@ class DeploymentPlan(object):
         self.environment.remove_registry_entry_by_alias(resource_alias)
 
 
-def _generate_resource_id(namespace):
+def generate_resource_id(namespace):
     """Generates the ID of the resource to be added to the plan's master
     template when a new template is added.
 
@@ -245,17 +271,17 @@ def _generate_resource_id(namespace):
     return namespace + '-resource'
 
 
-def _generate_group_id(resource_id):
+def generate_group_id(namespace):
     """Generates the ID for a resource group wrapper resource around the
-    given resource.
+    resource with the given namespace.
 
-    :type resource_id: str
+    :type namespace: str
     :rtype: str
     """
-    return resource_id + '-servers'
+    return namespace + '-servers'
 
 
-def _generate_count_property_name(namespace):
+def generate_count_property_name(namespace):
     """Generates the name of the property to hold the count of a particular
     resource as identified by its namespace. The count property will be
     prefixed by the namespace in the same way as other parameters for the
