@@ -32,6 +32,14 @@ plan's master template file using a seed template.
 """
 
 import copy
+import logging
+
+from tuskar.templates.heat import EnvironmentParameter
+from tuskar.templates.heat import Resource
+from tuskar.templates import namespace as ns_utils
+
+
+LOG = logging.getLogger(__name__)
 
 
 def add_top_level_resources(source, destination):
@@ -50,34 +58,35 @@ def add_top_level_resources(source, destination):
             destination.add_resource(cloned)
 
 
-def add_top_level_parameters(source, destination):
+def add_top_level_parameters(source, destination, environment):
     """Adds the top-level parameters from the source template into the given
     template. If the parameter is already in the destination template, it will
     not be added again.
 
     :type source: tuskar.templates.heat.Template
     :type destination: tuskar.templates.heat.Template
+    :type environment: tuskar.templates.heat.Environment
     """
 
     # Make a list of all property key names across all role resources
     role_property_names = []
-
-    def _resource_property_keys(resource):
-        keys = []
-        resource_def = resource.find_property_by_name('resource_def')
-        for name in resource_def.value['properties']:
-            keys.append(name)
-        return keys
-
     role_resources = [r for r in source.resources if _is_role(r)]
     for r in role_resources:
         names = _resource_property_keys(r)
         role_property_names.extend(names)
 
+    top_level_property_names = []
+    top_level_resources = [r for r in source.resources if not _is_role(r)]
+    for r in top_level_resources:
+        for p in r.properties:
+            _top_level_property_keys(top_level_property_names, p.value)
+
+    role_only_names = set(role_property_names) - set(top_level_property_names)
+
     # Get the list of all source parameters and strip out any that came from
     # a role
     top_level_params = [p for p in source.parameters
-                        if p.name not in role_property_names]
+                        if p.name not in role_only_names]
 
     # Add a copy of each top-level parameter to the destination if it's not
     # already present
@@ -85,6 +94,9 @@ def add_top_level_parameters(source, destination):
         if destination.find_parameter_by_name(p.name) is None:
             cloned = copy.copy(p)
             destination.add_parameter(cloned)
+
+            ep = EnvironmentParameter(p.name, p.default or '')
+            environment.add_parameter(ep)
 
 
 def add_top_level_outputs(source, destination):
@@ -113,18 +125,25 @@ def get_property_map_for_role(source, role_name):
 
     :return: mapping of property name to top-level resource lookup (get_attr)
              for any complex property in the role; simple properties will not
-             be present in the dict
+             be present in the dict; None if the role is not found in the
+             source template
     :rtype:  dict
 
     :raises ValueError: if the role is not in the given template
     """
+    resource = _find_resource_by_case_insensitive_id(source.resources,
+                                                     role_name)
 
-    resource = source.find_resource_by_id(role_name)
     if resource is None:
-        raise ValueError('No resource found for role: %s' % role_name)
+        return None
+
+    # Heat is inconsistent with its inner resource naming, so check
+    # for both.
+    resource_def = resource.find_property_by_name('resource_def')
+    if resource_def is None:
+        resource_def = resource.find_property_by_name('resource')
 
     property_map = {}
-    resource_def = resource.find_property_by_name('resource_def')
     for name, value in resource_def.value['properties'].items():
         # If the property is a straight get_param look up, there is nothing
         # special to map. Tuskar will take care of adding these when the
@@ -137,6 +156,78 @@ def get_property_map_for_role(source, role_name):
     return property_map
 
 
+def update_role_resource_references(template, seed_role_name,
+                                    tuskar_resource_name):
+    """Updates the the given template to change references
+    inside of the top-level resources from the seed's role name to the
+    name of the resource as added by Tuskar.
+
+    For example, the overcloud.yaml definition for the compute resource is
+    given the name "Compute", however when Tuskar generates the resource it
+    includes the role and version information and is named
+    "compute-1-servers".
+
+    Many of the top-level resources will want to reference the role in its
+    properties using one of two mechanisms: get_attr or get_resource. In
+    these cases, the lookup must be changed to the Tuskar-generated role name.
+
+    :type template: tuskar.templates.heat.Template
+    :type seed_role_name: str
+    :type tuskar_resource_name: str
+    """
+    top_level_resources = [r for r in template.resources if not _is_role(r)]
+
+    def index_property(update_me):
+        if isinstance(update_me, dict):
+            return update_me.items()
+        elif isinstance(update_me, list):
+            return enumerate(update_me)
+
+    def update_property(update_me):
+        for index, value in index_property(update_me):
+            if isinstance(value, (dict, list)):
+                update_property(value)
+            elif isinstance(value, basestring):
+                if value.lower() == seed_role_name.lower():
+                    update_me[index] = tuskar_resource_name
+            else:
+                LOG.warn('Unexpected type (%s) in property value (%s)' %
+                         (value.__class__.__name__, value))
+
+    for r in top_level_resources:
+        for p in r.properties:
+            if isinstance(p.value, dict):
+                update_property(p.value)
+
+
+def update_role_property_references(source, destination, role_name, namespace):
+    """Updates top-level resource use of parameters that are also defined
+    by a role resource to use the role's namespaced name for the property.
+
+    :type source: tuskar.templates.heat.Template
+    :type destination: tuskar.templates.heat.Template
+    :type namespace: str
+    """
+    orig = _find_resource_by_case_insensitive_id(source.resources,
+                                                 role_name)
+    all_role_property_keys = _resource_property_keys(orig)
+
+    def _update_property(check_me):
+        if isinstance(check_me, dict):
+            for k, v in check_me.items():
+                if k == 'get_param' and v in all_role_property_keys:
+                    check_me[k] = ns_utils.apply_template_namespace(namespace,
+                                                                    v)
+                else:
+                    # It could be a nested dictionary, so recurse further
+                    _update_property(v)
+
+    top_level_resources = [r for r in destination.resources if not _is_role(r)]
+    for r in top_level_resources:
+        for p in r.properties:
+            _update_property(p.value)
+
+
 def _is_role(resource):
     """Returns whether or not the given resource represents a role.
 
@@ -145,7 +236,83 @@ def _is_role(resource):
     """
     scaling_groups = ('OS::Heat::ResourceGroup', 'OS::Heat::AutoScalingGroup')
     if resource.resource_type in scaling_groups:
+        # Heat is inconsistent with its inner resource naming, so check
+        # for both.
         inner_resource = resource.find_property_by_name('resource_def')
-        return 'OS::TripleO::' in inner_resource.value['type']
+        if inner_resource is None:
+            inner_resource = resource.find_property_by_name('resource')
+
+        if isinstance(inner_resource.value, Resource):
+            v = inner_resource.value.resource_type
+        else:
+            v = inner_resource.value['type']
+
+        return 'OS::TripleO::' in v
     else:
         return False
+
+
+def _find_resource_by_case_insensitive_id(resources, resource_id):
+    """Returns the resource or None if it is not found. While it is
+    technically possible that the template contains multiple resources with
+    the given ID in different cases, it's not likely. For safety, this method
+    will raise an error if that occurs.
+
+    :type resources: list of tuskar.templates.heat.Resource
+    :str resource_id: str
+    :rtype: tuskar.templates.heat.Resource
+    :raise ValueError: if the template contains more than one resource with
+                       the given ID (regardless of case)
+    """
+    resource_id = resource_id.lower()
+    matching = [r for r in resources if r.resource_id.lower() == resource_id]
+
+    if len(matching) > 1:
+        raise ValueError('Invalid template; contains multiple resources '
+                         'matching %s' % resource_id)
+    elif len(matching) == 1:
+        return matching[0]
+    else:
+        return None
+
+
+def _resource_property_keys(resource):
+    """Returns a list of all get_param lookup keys for the given resource.
+
+    :type resource: tuskar.templates.heat.Resource
+    :return: list of property names; empty list if none are found
+    :rtype: [str]
+    """
+    keys = []
+
+    for rp in resource.properties:
+        if rp.name in ('resource_def', 'resource'):
+            # For a resource definition, dig into the properties value
+            # within to get all of the inner resource properties.
+            for rpv in rp.value['properties'].values():
+                if isinstance(rpv, dict) and 'get_param' in rpv:
+                    keys.append(rpv['get_param'])
+        else:
+            # For all other resource properties, if the value is a
+            # get_param lookup, consider the value of the look up a
+            # resource property.
+            if isinstance(rp.value, dict) and 'get_param' in rp.value:
+                keys.append(rp.value['get_param'])
+    return keys
+
+
+def _top_level_property_keys(keys, check_me):
+    """Recursively checks through all values in the given check_me value and
+    updates the list of all get_param lookup keys used within.
+
+    :type keys: list
+    """
+    if isinstance(check_me, (dict, list)):
+        for pr in check_me:
+            if isinstance(pr, dict):
+                for k, v in pr.items():
+                    if k == 'get_param':
+                        keys.append(v)
+                    else:
+                        # It could be a nested dictionary, so recurse further
+                        _top_level_property_keys(keys, v)
