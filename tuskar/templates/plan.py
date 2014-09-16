@@ -133,10 +133,14 @@ class DeploymentPlan(object):
 
     def _add_to_master_template(self, namespace, template, resource_alias,
                                 override_properties):
-        resource = self._add_resource(namespace, template, resource_alias,
-                                      override_properties)
+        self._add_resource(namespace, template, resource_alias,
+                           override_properties)
         self._add_parameters(namespace, template, override_properties)
-        self._add_outputs(namespace, template, resource)
+
+        # Temporarily disable the output promotion. In the future, this should
+        # be controlled by a variable, but for the interim, this is not needed
+        # with the THT templates.
+        # self._add_outputs(namespace, template, resource)
 
     def _add_resource(self, namespace, template, resource_alias,
                       override_properties):

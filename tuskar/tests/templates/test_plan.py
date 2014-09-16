@@ -168,7 +168,7 @@ class DeploymentPlanTests(unittest.TestCase):
         p.add_template('ns2', t, 'template-2.yaml')
 
         self.assertEqual(4, len(p.master_template.parameters))
-        self.assertEqual(4, len(p.master_template.outputs))
+        self.assertEqual(0, len(p.master_template.outputs))
         self.assertEqual(2, len(p.master_template.resources))
 
         self.assertEqual(4, len(p.environment.parameters))
@@ -179,7 +179,7 @@ class DeploymentPlanTests(unittest.TestCase):
 
         # Verify
         self.assertEqual(2, len(p.master_template.parameters))
-        self.assertEqual(2, len(p.master_template.outputs))
+        self.assertEqual(0, len(p.master_template.outputs))
         self.assertEqual(1, len(p.master_template.resources))
 
         self.assertEqual(2, len(p.environment.parameters))
