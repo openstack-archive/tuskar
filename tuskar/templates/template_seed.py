@@ -72,9 +72,21 @@ def add_top_level_parameters(source, destination, environment):
 
     def _resource_property_keys(resource):
         keys = []
-        resource_def = resource.find_property_by_name('resource_def')
-        for name in resource_def.value['properties']:
-            keys.append(name)
+
+        for rp in resource.properties:
+
+            if rp.name == 'resource_def':
+                # For a resource definition, dig into the properties value
+                # within to get all of the inner resource properties.
+                for name in rp.value['properties']:
+                    keys.append(name)
+            else:
+                # For all other resource properties, if the value is a
+                # get_param lookup, consider the value of the look up a
+                # resource property.
+                if isinstance(rp.value, dict) and 'get_param' in rp.value:
+                    keys.append(rp.value['get_param'])
+
         return keys
 
     role_resources = [r for r in source.resources if _is_role(r)]
@@ -180,12 +192,12 @@ def update_references(template, seed_role_name, tuskar_resource_name):
         for index, value in index_property(update_me):
             if isinstance(value, (dict, list)):
                 update_property(value)
-            elif isinstance(value, str):
+            elif isinstance(value, (str, unicode)):
                 if value.lower() == seed_role_name.lower():
                     update_me[index] = tuskar_resource_name
             else:
-                LOG.warn('Unexpected type (%s) in property value (%s)' %
-                         (value.__class__.__name__, value))
+                LOG.debug('Unexpected type (%s) in property value (%s)' %
+                          (value.__class__.__name__, value))
 
     for r in top_level_resources:
         for p in r.properties:

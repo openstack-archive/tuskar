@@ -31,6 +31,9 @@ parameters:
     type: string
 
   # Role Parameters
+  RoleParameterCount:
+    type: int
+
   RoleParameter1:
     type: string
 
@@ -71,7 +74,7 @@ resources:
   RoleResource1:
     type: OS::Heat::ResourceGroup
     properties:
-      count: {get_param: RoleParameter1}
+      count: {get_param: RoleParameterCount}
       resource_def:
         type: OS::TripleO::Controller
         properties:
