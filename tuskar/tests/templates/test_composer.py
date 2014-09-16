@@ -124,8 +124,7 @@ class ComposerTests(unittest.TestCase):
         template = yaml.safe_load(composed)
 
         self.assertEqual(1, len(template['resources']))
-        wrapper_resource_name = plan._generate_group_id(
-            plan._generate_resource_id('ns1'))
+        wrapper_resource_name = plan.generate_group_id('ns1')
         group_resource = template['resources'][wrapper_resource_name]
         self.assertEqual(p.master_template.resources[0].resource_type,
                          group_resource['type'])
