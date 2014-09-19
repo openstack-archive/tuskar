@@ -60,7 +60,7 @@ class DeploymentPlanTests(unittest.TestCase):
         self.assertEqual(1, len(p.master_template.resources))
         added = p.master_template.resources[0]
 
-        expected_id = plan._generate_resource_id('ns1')
+        expected_id = plan.generate_resource_id('ns1')
         self.assertEqual(added.resource_id, expected_id)
         expected_type = ns_utils.apply_resource_alias_namespace('ns1')
         self.assertEqual(added.resource_type, expected_type)
@@ -126,7 +126,7 @@ class DeploymentPlanTests(unittest.TestCase):
         # Verify Master Template Count Parameters
         self.assertEqual(3, len(p.master_template.parameters))
         count_param = p.master_template.parameters[2]
-        expected_count_name = plan._generate_count_property_name('ns1')
+        expected_count_name = plan.generate_count_property_name('ns1')
         self.assertEqual(count_param.name, expected_count_name)
         self.assertEqual(count_param.param_type, 'number')
 
@@ -139,7 +139,7 @@ class DeploymentPlanTests(unittest.TestCase):
         # Verify Resource Group Wrapper
         self.assertEqual(1, len(p.master_template.resources))
         group_res = p.master_template.resources[0]
-        group_id = plan._generate_group_id(plan._generate_resource_id('ns1'))
+        group_id = plan.generate_group_id('ns1')
         self.assertEqual(group_res.resource_id, group_id)
         self.assertEqual(group_res.resource_type,
                          plan.HEAT_TYPE_RESOURCE_GROUP)

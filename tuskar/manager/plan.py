@@ -12,14 +12,20 @@
 
 from tuskar.manager import models
 from tuskar.manager import name_utils
+from tuskar.storage.exceptions import UnknownName
 from tuskar.storage.stores import DeploymentPlanStore
 from tuskar.storage.stores import EnvironmentFileStore
+from tuskar.storage.stores import MasterSeedStore
 from tuskar.storage.stores import MasterTemplateStore
 from tuskar.storage.stores import TemplateStore
 from tuskar.templates import composer
 from tuskar.templates import namespace as ns_utils
 from tuskar.templates import parser
 from tuskar.templates import plan
+from tuskar.templates import template_seed
+
+
+MASTER_SEED_NAME = '_master_seed'
 
 
 class PlansManager(object):
@@ -27,6 +33,7 @@ class PlansManager(object):
     def __init__(self):
         super(PlansManager, self).__init__()
         self.plan_store = DeploymentPlanStore()
+        self.seed_store = MasterSeedStore()
         self.template_store = TemplateStore()
         self.master_template_store = MasterTemplateStore()
         self.environment_store = EnvironmentFileStore()
@@ -104,13 +111,50 @@ class PlansManager(object):
         deployment_plan = self._plan_to_template_object(db_plan)
         role_template = self._role_to_template_object(db_role)
 
+        # See if a master seed template has been set.
+        try:
+            db_master_seed = self.seed_store.retrieve_by_name(MASTER_SEED_NAME)
+            master_seed = parser.parse_template(db_master_seed.contents)
+            special_properties = template_seed.get_property_map_for_role(
+                master_seed, db_role.name)
+        except UnknownName:
+            master_seed = None
+            special_properties = None
+
         # Use the combination logic to perform the addition.
         role_namespace = name_utils.generate_role_namespace(db_role.name,
                                                             db_role.version)
         template_filename = name_utils.role_template_filename(db_role.name,
                                                               db_role.version)
         deployment_plan.add_template(role_namespace, role_template,
-                                     template_filename)
+                                     template_filename,
+                                     override_properties=special_properties)
+
+        # If there is a master seed, add its top-level elements to the plan.
+        # These calls are idempotent, so it's safe to call each time a role
+        # is added.
+        if master_seed is not None:
+            template_seed.add_top_level_parameters(
+                master_seed,
+                deployment_plan.master_template,
+                deployment_plan.environment)
+            template_seed.add_top_level_resources(
+                master_seed, deployment_plan.master_template)
+            template_seed.add_top_level_outputs(
+                master_seed, deployment_plan.master_template)
+
+            # These calls are idempotent, but must be called on each role as
+            # new references may have been added.
+            template_seed.update_role_resource_references(
+                deployment_plan.master_template,
+                db_role.name,
+                plan.generate_group_id(role_namespace))
+
+            template_seed.update_role_property_references(
+                master_seed,
+                deployment_plan.master_template,
+                db_role.name,
+                role_namespace)
 
         # Save the updated plan.
         updated = self._save_updated_plan(plan_uuid, deployment_plan)
