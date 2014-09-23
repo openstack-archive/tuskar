@@ -17,7 +17,6 @@
 
 from __future__ import print_function
 
-from os import listdir
 from os import path
 
 from tuskar.storage.exceptions import UnknownName
@@ -26,25 +25,6 @@ from tuskar.storage.stores import TemplateStore
 
 
 MASTER_SEED_NAME = '_master_seed'
-
-
-def _list_roles(directory):
-    """Scan a directory and yield a tuple for all the roles containing the
-    role name and the full path to the role.
-    """
-
-    if not path.isdir(directory):
-        raise ValueError("The given path is not a valid directory.")
-
-    directory = path.abspath(directory)
-
-    for filename in listdir(directory):
-
-        if not filename.endswith("yaml") and not filename.endswith("yml"):
-            continue
-
-        role_name = path.splitext(filename)[0]
-        yield role_name, path.join(directory, filename)
 
 
 def _load_file(role_path):
@@ -69,7 +49,7 @@ def _create_or_update(name, contents, store=None):
         return True, store.create(name, contents)
 
 
-def load_roles(directory, seed_file=None, dry_run=False):
+def load_roles(roles, seed_file=None, dry_run=False):
     """Given a directory path, import the YAML role files into the
     TemplateStore. When dry_run=True is passed, run through the roles but don't
     add any to the store.
@@ -93,7 +73,7 @@ def load_roles(directory, seed_file=None, dry_run=False):
 
     all_roles, created, updated = [], [], []
 
-    roles = _list_roles(directory)
+    roles = [(path.splitext(path.basename(r))[0], r) for r in roles]
 
     for name, role_path in roles:
 

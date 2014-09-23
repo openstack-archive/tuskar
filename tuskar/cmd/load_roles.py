@@ -34,7 +34,7 @@ seed_help = ('Full path to the template that should be loaded '
              'as the master seed')
 cfg.CONF.register_cli_opt(cfg.StrOpt('master-seed', dest='master_seed',
                                      help=seed_help))
-cfg.CONF.register_cli_opt(cfg.StrOpt('directory', positional=True))
+cfg.CONF.register_cli_opt(cfg.MultiStrOpt('role', short='r'))
 
 
 def main(argv=None):
@@ -44,7 +44,7 @@ def main(argv=None):
 
     service.prepare_service(argv)
 
-    all_roles, created, updated = load_roles(cfg.CONF.directory,
+    all_roles, created, updated = load_roles(cfg.CONF.role,
                                              seed_file=cfg.CONF.master_seed,
                                              dry_run=cfg.CONF.dry_run)
 
