@@ -92,6 +92,7 @@ class DeploymentPlanTests(unittest.TestCase):
         t = heat.Template()
         t.add_parameter(heat.Parameter('param-1', 'type-1', default='d1'))
         t.add_parameter(heat.Parameter('param-2', 'type-2'))
+        t.add_parameter(heat.Parameter('param-3', 'type-3', default=0))
         p.add_template('ns1', t, 'template-1.yaml')
 
         # Verify
@@ -104,6 +105,11 @@ class DeploymentPlanTests(unittest.TestCase):
         self.assertEqual(ns_utils.apply_template_namespace('ns1', 'param-2'),
                          p2.name)
         self.assertEqual('', p2.value)
+
+        p3 = p.environment.parameters[2]
+        self.assertEqual(ns_utils.apply_template_namespace('ns1', 'param-3'),
+                         p3.name)
+        self.assertEqual(0, p3.value)
 
     def test_add_template_with_colliding_namespace(self):
         # Test

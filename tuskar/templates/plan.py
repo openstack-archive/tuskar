@@ -226,7 +226,10 @@ class DeploymentPlan(object):
                 continue
 
             name = ns_utils.apply_template_namespace(namespace, add_me.name)
-            env_parameter = EnvironmentParameter(name, add_me.default or '')
+            param_default = add_me.default
+            if param_default is None:
+                param_default = ''
+            env_parameter = EnvironmentParameter(name, param_default)
             self.environment.add_parameter(env_parameter)
 
         if self.add_scaling:
