@@ -52,8 +52,16 @@ Install and Contribute
   demo-data-script
   recommended-reading
 
-API
----
+API version 2
+-------------
+
+.. toctree::
+  :maxdepth: 1
+
+  api/curl-v2
+
+API version 1
+-------------
 
 .. toctree::
   :maxdepth: 1
