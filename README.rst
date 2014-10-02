@@ -4,19 +4,13 @@ Tuskar
 
 What is Tuskar?
 ---------------
-Tuskar gives administrators the ability to control how and where
-OpenStack services are deployed across the datacenter. Using Tuskar,
-administrators divide hardware into "resource classes" that allow
-predictable elastic scaling as cloud demands grow. This resource
-orchestration allows Tuskar users to ensure SLAs, improve performance,
-and maximize utilization across the datacenter.
+Tuskar is a management services for planning TripleO deployments.
+This gives administrators the ability to select a number of
+resources for their deployment which will then be integrated into
+the deployment plan.
 
-Tuskar services are available via a RESTful API and management console
-through which administrators are able to classify their hardware and
-define their datacenters. In addition, Tuskar components provide
-administrators with performance monitoring, health statistics, and
-usage metrics, aiding in capacity planning and hardware procurement
-decisions.
+Interested in seeing the full Tuskar and Tuskar IU setup? `Watch
+the demo. <https://www.youtube.com/watch?v=--WWdJXmf8o>`_
 
 For additional information, take a look at the `Tuskar
 documentation <http://git.openstack.org/cgit/openstack/tuskar/tree/docs/index.rst>`_.
