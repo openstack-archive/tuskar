@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: Radomir Dopieralski <openstack@sheep.art.pl>
+Code-Review+2: Alexis Lee <lxsli@hp.com>
+Workflow+1: Alexis Lee <lxsli@hp.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 02 Oct 2014 09:39:44 +0000
+Reviewed-on: https://review.openstack.org/125571
+Project: openstack/tuskar
+Branch: refs/heads/master
