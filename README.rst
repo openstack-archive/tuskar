@@ -39,9 +39,8 @@ From the root directory::
 Contributing
 ------------
 
-Interested in contributing?  Take a look at
-`CONTRIBUTING.rst <doc/source/CONTRIBUTING.rst>`_
-for details on how to do so.
+Interested in contributing?  Take a look at `contributing.rst
+<doc/source/contributing.rst>`_ for details on how to do so.
 
 Contact Us
 ----------
