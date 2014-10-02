@@ -10,13 +10,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import logging
+
 from tuskar.manager import models
 from tuskar.manager import name_utils
 from tuskar.storage.exceptions import UnknownName
+from tuskar.storage.load_roles import RESOURCE_REGISTRY_NAME
+from tuskar.storage.load_roles import role_name_from_path
 from tuskar.storage.stores import DeploymentPlanStore
 from tuskar.storage.stores import EnvironmentFileStore
 from tuskar.storage.stores import MasterSeedStore
 from tuskar.storage.stores import MasterTemplateStore
+from tuskar.storage.stores import ResourceRegistryStore
 from tuskar.storage.stores import TemplateStore
 from tuskar.templates import composer
 from tuskar.templates import namespace as ns_utils
@@ -25,6 +30,7 @@ from tuskar.templates import plan
 from tuskar.templates import template_seed
 
 
+LOG = logging.getLogger(__name__)
 MASTER_SEED_NAME = '_master_seed'
 
 
@@ -34,6 +40,7 @@ class PlansManager(object):
         super(PlansManager, self).__init__()
         self.plan_store = DeploymentPlanStore()
         self.seed_store = MasterSeedStore()
+        self.registry_store = ResourceRegistryStore()
         self.template_store = TemplateStore()
         self.master_template_store = MasterTemplateStore()
         self.environment_store = EnvironmentFileStore()
@@ -115,11 +122,23 @@ class PlansManager(object):
         try:
             db_master_seed = self.seed_store.retrieve_by_name(MASTER_SEED_NAME)
             master_seed = parser.parse_template(db_master_seed.contents)
-            special_properties = template_seed.get_property_map_for_role(
-                master_seed, db_role.name)
         except UnknownName:
             master_seed = None
             special_properties = None
+
+        if master_seed is not None:
+            try:
+                db_registry_env = self.registry_store.retrieve_by_name(
+                    RESOURCE_REGISTRY_NAME).contents
+            except UnknownName:
+                LOG.error("Could not load resource_registry. Make sure you "
+                          "pass --resource-registry to tuskar-load-roles.")
+                raise
+            parsed_registry_env = parser.parse_environment(db_registry_env)
+            registry = dict((role_name_from_path(e.filename), e.alias)
+                            for e in parsed_registry_env.registry_entries)
+            special_properties = template_seed.get_property_map_for_role(
+                master_seed, registry[db_role.name])
 
         # Use the combination logic to perform the addition.
         role_namespace = name_utils.generate_role_namespace(db_role.name,
@@ -143,17 +162,30 @@ class PlansManager(object):
             template_seed.add_top_level_outputs(
                 master_seed, deployment_plan.master_template)
 
+            try:
+                role_type = registry[db_role.name]
+            except KeyError:
+                LOG.error(
+                    "Role '%s' not found in seed template." % db_role.name)
+                raise
+            seed_role = template_seed.find_role_from_type(
+                master_seed.resources, role_type)
+            if seed_role is None:
+                LOG.error(
+                    "Role '%s' of type '%s' not found in seed template." %
+                    (db_role.name, role_type))
+                raise ValueError(db_role.name)
+
             # These calls are idempotent, but must be called on each role as
             # new references may have been added.
             template_seed.update_role_resource_references(
                 deployment_plan.master_template,
-                db_role.name,
+                seed_role,
                 plan.generate_group_id(role_namespace))
 
             template_seed.update_role_property_references(
-                master_seed,
                 deployment_plan.master_template,
-                db_role.name,
+                seed_role,
                 role_namespace)
 
         # Save the updated plan.

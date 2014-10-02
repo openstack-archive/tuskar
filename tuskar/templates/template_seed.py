@@ -131,17 +131,12 @@ def get_property_map_for_role(source, role_name):
 
     :raises ValueError: if the role is not in the given template
     """
-    resource = _find_resource_by_case_insensitive_id(source.resources,
-                                                     role_name)
+    resource = find_role_from_type(source.resources, role_name)
 
     if resource is None:
         return None
 
-    # Heat is inconsistent with its inner resource naming, so check
-    # for both.
-    resource_def = resource.find_property_by_name('resource_def')
-    if resource_def is None:
-        resource_def = resource.find_property_by_name('resource')
+    resource_def = _scaling_inner_resource(resource)
 
     property_map = {}
     for name, value in resource_def.value['properties'].items():
@@ -156,7 +151,7 @@ def get_property_map_for_role(source, role_name):
     return property_map
 
 
-def update_role_resource_references(template, seed_role_name,
+def update_role_resource_references(template, seed_role,
                                     tuskar_resource_name):
     """Updates the the given template to change references
     inside of the top-level resources from the seed's role name to the
@@ -172,7 +167,7 @@ def update_role_resource_references(template, seed_role_name,
     these cases, the lookup must be changed to the Tuskar-generated role name.
 
     :type template: tuskar.templates.heat.Template
-    :type seed_role_name: str
+    :type seed_role: tuskar.templates.heat.Resource
     :type tuskar_resource_name: str
     """
     top_level_resources = [r for r in template.resources if not _is_role(r)]
@@ -188,7 +183,7 @@ def update_role_resource_references(template, seed_role_name,
             if isinstance(value, (dict, list)):
                 update_property(value)
             elif isinstance(value, basestring):
-                if value.lower() == seed_role_name.lower():
+                if value == seed_role.resource_id:
                     update_me[index] = tuskar_resource_name
             else:
                 LOG.warn('Unexpected type (%s) in property value (%s)' %
@@ -200,16 +195,14 @@ def update_role_resource_references(template, seed_role_name,
                 update_property(p.value)
 
 
-def update_role_property_references(source, destination, role_name, namespace):
+def update_role_property_references(destination, orig, namespace):
     """Updates top-level resource use of parameters that are also defined
     by a role resource to use the role's namespaced name for the property.
 
-    :type source: tuskar.templates.heat.Template
     :type destination: tuskar.templates.heat.Template
+    :type orig: tuskar.templates.heat.Resource
     :type namespace: str
     """
-    orig = _find_resource_by_case_insensitive_id(source.resources,
-                                                 role_name)
     all_role_property_keys = _resource_property_keys(orig)
 
     def _update_property(check_me):
@@ -228,52 +221,58 @@ def update_role_property_references(source, destination, role_name, namespace):
             _update_property(p.value)
 
 
+def _scaling_inner_resource(resource):
+    """Return the inner resource wrapped in Heat's scaling resource.
+
+    The property name of the inner resource is inconsistent between
+    ResourceGroup and AutoScalingGroup so this does the necessary checks and
+    returns the right thing or None on any other type.
+    """
+    if resource.resource_type == 'OS::Heat::ResourceGroup':
+        inner = resource.find_property_by_name('resource_def')
+    elif resource.resource_type == 'OS::Heat::AutoScalingGroup':
+        inner = resource.find_property_by_name('resource')
+    else:
+        inner = None
+    return inner
+
+
+def find_role_from_type(resources, role_type):
+    """Given a list of resources an a role type, return the matching one.
+
+    :type resources: list of tuskar.templates.heat.Resource
+    :type role_type: str
+    :rtype: tuskar.templates.heat.Resource
+    :raise ValueError: if the template contains more than one resource with
+                       the given ID (regardless of case)
+    """
+    roles = [r for r in resources if _is_role(r)]
+    matching = [r for r in roles
+                if _scaling_inner_resource(r).value['type'] == role_type]
+    if len(matching) > 1:
+        raise ValueError('Invalid template; contains multiple resources '
+                         'matching %s' % role_type)
+    elif len(matching) == 1:
+        return matching[0]
+    else:
+        return None
+
+
 def _is_role(resource):
     """Returns whether or not the given resource represents a role.
 
     :type resource: tuskar.templates.heat.Resource
     :rtype: bool
     """
-    scaling_groups = ('OS::Heat::ResourceGroup', 'OS::Heat::AutoScalingGroup')
-    if resource.resource_type in scaling_groups:
-        # Heat is inconsistent with its inner resource naming, so check
-        # for both.
-        inner_resource = resource.find_property_by_name('resource_def')
-        if inner_resource is None:
-            inner_resource = resource.find_property_by_name('resource')
-
-        if isinstance(inner_resource.value, Resource):
-            v = inner_resource.value.resource_type
-        else:
-            v = inner_resource.value['type']
-
-        return 'OS::TripleO::' in v
-    else:
+    inner_resource = _scaling_inner_resource(resource)
+    if inner_resource is None:
         return False
 
-
-def _find_resource_by_case_insensitive_id(resources, resource_id):
-    """Returns the resource or None if it is not found. While it is
-    technically possible that the template contains multiple resources with
-    the given ID in different cases, it's not likely. For safety, this method
-    will raise an error if that occurs.
-
-    :type resources: list of tuskar.templates.heat.Resource
-    :str resource_id: str
-    :rtype: tuskar.templates.heat.Resource
-    :raise ValueError: if the template contains more than one resource with
-                       the given ID (regardless of case)
-    """
-    resource_id = resource_id.lower()
-    matching = [r for r in resources if r.resource_id.lower() == resource_id]
-
-    if len(matching) > 1:
-        raise ValueError('Invalid template; contains multiple resources '
-                         'matching %s' % resource_id)
-    elif len(matching) == 1:
-        return matching[0]
+    if isinstance(inner_resource.value, Resource):
+        v = inner_resource.value.resource_type
     else:
-        return None
+        v = inner_resource.value['type']
+    return 'OS::TripleO::' in v
 
 
 def _resource_property_keys(resource):
