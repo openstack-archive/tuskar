@@ -16,10 +16,15 @@ from tuskar.manager.models import PlanParameter
 from tuskar.manager.models import Role
 from tuskar.manager import name_utils
 from tuskar.manager.plan import PlansManager
+from tuskar.manager.plan import MASTER_SEED_NAME
+from tuskar.storage.exceptions import UnknownName
 from tuskar.storage.exceptions import UnknownUUID
+from tuskar.storage.load_roles import RESOURCE_REGISTRY_NAME
 from tuskar.storage.stores import DeploymentPlanStore
 from tuskar.storage.stores import EnvironmentFileStore
+from tuskar.storage.stores import MasterSeedStore
 from tuskar.storage.stores import MasterTemplateStore
+from tuskar.storage.stores import ResourceRegistryStore
 from tuskar.storage.stores import TemplateStore
 from tuskar.templates import namespace as ns_utils
 from tuskar.templates import parser
@@ -66,6 +71,49 @@ outputs:
     value: { get_attr: [foo_instance, first_address] }
 """
 
+TEST_SEED = """
+heat_template_version: 2013-05-23
+
+description: seed template
+
+parameters:
+
+  role_count:
+    type: number
+    default: 3
+
+  role_image:
+    type: string
+
+resources:
+
+  my_role:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: {get_param: role_count}
+      resource_def:
+        type: OS::TripleO::Role
+        properties:
+          image_id: {get_param: role_image}
+          key_name: "hardcoded_keyname"
+          instance_type: m1.large
+
+  some_config:
+    type: OS::Heat::StructuredConfig
+    properties:
+      config:
+        ip_addresses: {get_attr: [my_role, foo_ip]}
+"""
+
+RESOURCE_REGISTRY = """
+resource_registry:
+  OS::TripleO::Role: r1.yaml
+"""
+
+RESOURCE_REGISTRY_WRONG_TYPE = """
+resource_registry:
+  OS::TripleO::UnknownRole: r1.yaml
+"""
 
 class PlansManagerTestCase(TestCase):
 
@@ -75,6 +123,8 @@ class PlansManagerTestCase(TestCase):
 
         self.plan_store = DeploymentPlanStore()
         self.template_store = TemplateStore()
+        self.seed_store = MasterSeedStore()
+        self.registry_store = ResourceRegistryStore()
 
     def test_create_plan(self):
         # Tests
@@ -125,6 +175,68 @@ class PlansManagerTestCase(TestCase):
         db_plan = self.plan_store.retrieve(test_plan.uuid)
         parsed_plan = parser.parse_template(db_plan.master_template.contents)
         self.assertEqual(1, len(parsed_plan.resources))
+
+    def test_add_role_to_seeded_plan(self):
+        # Setup
+        self.seed_store.create(MASTER_SEED_NAME, TEST_SEED)
+        self.registry_store.create(RESOURCE_REGISTRY_NAME, RESOURCE_REGISTRY)
+        test_role = self._add_test_role()
+        test_plan = self.plans_manager.create_plan('p1', 'd1')
+
+        # Test
+        self.plans_manager.add_role_to_plan(test_plan.uuid, test_role.uuid)
+
+        # Verify
+        db_plan = self.plan_store.retrieve(test_plan.uuid)
+        parsed_plan = parser.parse_template(db_plan.master_template.contents)
+        self.assertEqual(2, len(parsed_plan.resources))
+
+        # The role generated in the plan has a different name:
+        my_role = parsed_plan.find_resource_by_id('r1-1-servers')
+        self.assertIsNot(my_role, None)
+
+        # The reference to the role in some_config should be updated:
+        some_config = parsed_plan.find_resource_by_id('some_config')
+        self.assertIsNot(some_config, None)
+        config_property = some_config.find_property_by_name('config')
+        self.assertIsNot(config_property, None)
+        self.assertEqual(config_property.value,
+                         {'ip_addresses': {'get_attr':
+                                            ['r1-1-servers', 'foo_ip']}})
+
+    def test_add_unknown_role_to_seeded_plan(self):
+        # Setup
+        self.seed_store.create(MASTER_SEED_NAME, TEST_SEED)
+        self.registry_store.create(RESOURCE_REGISTRY_NAME, RESOURCE_REGISTRY)
+        test_role = self.template_store.create('unknown_role', TEST_TEMPLATE)
+        test_plan = self.plans_manager.create_plan('p1', 'd1')
+
+        # Test
+        self.assertRaises(KeyError, self.plans_manager.add_role_to_plan,
+                          test_plan.uuid, test_role.uuid)
+
+    def test_add_role_of_unknown_type_to_seeded_plan(self):
+        # Setup
+        self.seed_store.create(MASTER_SEED_NAME, TEST_SEED)
+        self.registry_store.create(RESOURCE_REGISTRY_NAME,
+                                    RESOURCE_REGISTRY_WRONG_TYPE)
+        test_role = self._add_test_role()
+        test_plan = self.plans_manager.create_plan('p1', 'd1')
+
+        # Test
+        self.assertRaises(ValueError, self.plans_manager.add_role_to_plan,
+                          test_plan.uuid, test_role.uuid)
+
+    def test_add_role_to_seeded_plan_without_registry(self):
+        # Setup
+        self.seed_store.create(MASTER_SEED_NAME, TEST_SEED)
+        test_role = self._add_test_role()
+        test_plan = self.plans_manager.create_plan('p1', 'd1')
+
+        # Resource registry is missing, adding role should fail
+        self.assertRaises(UnknownName,
+                          self.plans_manager.add_role_to_plan,
+                          test_plan.uuid, test_role.uuid)
 
     def test_remove_role_from_plan(self):
         # Setup

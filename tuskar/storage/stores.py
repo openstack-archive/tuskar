@@ -221,6 +221,10 @@ class MasterSeedStore(_NamedStore):
     object_type = "master_seed"
 
 
+class ResourceRegistryStore(_NamedStore):
+    object_type = "registry"
+
+
 class EnvironmentFileStore(_BaseStore):
     """Environment File for Heat environment files.
 
