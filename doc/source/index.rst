@@ -46,8 +46,8 @@ Install and Contribute
 .. toctree::
   :maxdepth: 1
 
-  INSTALL
   CONTRIBUTING
+  install
   recommended-reading
 
 API version 2
