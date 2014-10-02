@@ -48,8 +48,6 @@ Install and Contribute
 
   INSTALL
   CONTRIBUTING
-  debugging-with-ipython
-  demo-data-script
   recommended-reading
 
 API version 2
@@ -59,15 +57,6 @@ API version 2
   :maxdepth: 1
 
   api/curl-v2
-
-API version 1
--------------
-
-.. toctree::
-  :maxdepth: 1
-
-  api/curl
-  resource-class-demo-script
 
 HEAT Integration
 ----------------
