@@ -24,9 +24,9 @@ documentation <http://git.openstack.org/cgit/openstack/tuskar/tree/docs/index.rs
 Installation Information
 ------------------------
 
-Please see
-`INSTALL.rst <doc/source/INSTALL.rst>`_
-for an installation guide.
+Please see `INSTALL.rst <doc/source/install.rst>`_ for an
+installation guide.
+
 
 Building the Docs
 -----------------
