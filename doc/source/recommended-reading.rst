@@ -2,15 +2,20 @@
 Recommended Reading
 ===================
 
+Tuskar Design Discussions
+-------------------------
+
+- `Juno Planning <https://wiki.openstack.org/wiki/TripleO/TuskarJunoPlanning>`_
+- `Template storage planning <https://wiki.openstack.org/wiki/TripleO/TuskarJunoPlanning/TemplateBackend>`_
+- `TripleO Specifications <http://git.openstack.org/cgit/openstack/tripleo-specs/>`_
+
 Relevant OpenStack Projects
 ---------------------------
 
--  `nova <http://docs.openstack.org/developer/nova>`_
--  `ceilometer <http://docs.openstack.org/developer/ceilometer>`_
--  `oslo-incubator <http://docs.openstack.org/developer/oslo-incubator>`_
--  `oslo.config <http://docs.openstack.org/developer/oslo.config>`_ This is a
-   library for parsing configuration files and command line arguments.
-   It is maintained by Mark McLoughlin.
+-  `TripleO <http://docs.openstack.org/developer/tripleo-incubator/>`_
+-  `Heat <http://docs.openstack.org/developer/heat/>`_
+-  `oslo.db <http://docs.openstack.org/developer/oslo.db/>`_
+-  `oslo.config <http://docs.openstack.org/developer/oslo.config>`_
 -  `hacking <http://docs.openstack.org/developer/hacking>`_ This enforces
    openstack community coding style guidelines
 
