@@ -184,8 +184,8 @@ class TemplateSeedTests(unittest.TestCase):
 
     def test_get_property_map_for_role(self):
         # Test
-        mapping = template_seed.get_property_map_for_role(self.seed_template,
-                                                          'RoleResource1')
+        mapping = template_seed.get_property_map_for_role(
+            self.seed_template, 'OS::TripleO::Controller')
 
         # Verify
         self.assertEqual(1, len(mapping))
@@ -202,8 +202,11 @@ class TemplateSeedTests(unittest.TestCase):
         # Test
         # This will update the seed template in place. It's good enough for
         # a test as there is data within that exercises this call.
+        seed_role = template_seed.find_role_from_type(
+            self.seed_template.resources,
+            'OS::TripleO::Controller')
         template_seed.update_role_resource_references(
-            self.seed_template, 'RoleResource1', 'converted'
+            self.seed_template, seed_role, 'converted'
         )
 
         # Verify
@@ -255,9 +258,12 @@ class TemplateSeedTests(unittest.TestCase):
                                               dp.master_template)
 
         # Test
+        seed_role = template_seed.find_role_from_type(
+            self.seed_template.resources,
+            'OS::TripleO::Controller')
         template_seed.update_role_property_references(
-            self.seed_template, dp.master_template,
-            'RoleResource1', 'ns1')
+            dp.master_template,
+            seed_role, 'ns1')
 
         # Verify
         tlr2 = dp.master_template.find_resource_by_id('TopLevelResource2')

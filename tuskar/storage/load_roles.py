@@ -21,10 +21,12 @@ from os import path
 
 from tuskar.storage.exceptions import UnknownName
 from tuskar.storage.stores import MasterSeedStore
+from tuskar.storage.stores import ResourceRegistryStore
 from tuskar.storage.stores import TemplateStore
 
 
 MASTER_SEED_NAME = '_master_seed'
+RESOURCE_REGISTRY_NAME = '_registry'
 
 
 def _load_file(role_path):
@@ -49,7 +51,12 @@ def _create_or_update(name, contents, store=None):
         return True, store.create(name, contents)
 
 
-def load_roles(roles, seed_file=None, dry_run=False):
+def role_name_from_path(role_path):
+    return path.splitext(path.basename(role_path))[0]
+
+
+def load_roles(roles, seed_file=None, resource_registry_path=None,
+               dry_run=False):
     """Given a list of roles files import them into the
     add any to the store. TemplateStore. When dry_run=True is
     passed, run through the roles but don't
@@ -73,7 +80,7 @@ def load_roles(roles, seed_file=None, dry_run=False):
 
     all_roles, created, updated = [], [], []
 
-    roles = [(path.splitext(path.basename(r))[0], r) for r in roles]
+    roles = [(role_name_from_path(r), r) for r in roles]
 
     for name, role_path in roles:
 
@@ -100,5 +107,17 @@ def load_roles(roles, seed_file=None, dry_run=False):
             created.append(MASTER_SEED_NAME)
         else:
             updated.append(MASTER_SEED_NAME)
+
+    if resource_registry_path is not None:
+        contents = _load_file(resource_registry_path)
+        store = ResourceRegistryStore()
+        registry_created, role = _create_or_update(RESOURCE_REGISTRY_NAME,
+                                                   contents,
+                                                   store=store)
+        all_roles.append(RESOURCE_REGISTRY_NAME)
+        if registry_created:
+            created.append(RESOURCE_REGISTRY_NAME)
+        else:
+            updated.append(RESOURCE_REGISTRY_NAME)
 
     return all_roles, created, updated
