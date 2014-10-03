@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo.db.sqlalchemy import test_base
+
 from tuskar.storage.drivers import sqlalchemy
 from tuskar.tests.storage.drivers import base
 
@@ -22,16 +24,45 @@ class SQLAlchemyTestCase(base.BaseDriverTestCase):
         return sqlalchemy.SQLAlchemyDriver()
 
 
-class BaseStoreSQLAlchemyTestCase(SQLAlchemyTestCase,
-                                  base.BaseStoreMixin):
+class BaseStoreSQLAlchemyTestCase(SQLAlchemyTestCase, base.BaseStoreMixin):
     pass
 
 
-class NamedStoreSQLAlchemyTestCase(SQLAlchemyTestCase,
-                                   base.NamedStoreMixin):
+class NamedStoreSQLAlchemyTestCase(SQLAlchemyTestCase, base.NamedStoreMixin):
     pass
 
 
 class VersionStoreSQLAlchemyTestCase(SQLAlchemyTestCase,
                                      base.VersionedStoreMixin):
+    pass
+
+
+class MySQLBaseStoreTestCase(BaseStoreSQLAlchemyTestCase,
+                             test_base.MySQLOpportunisticTestCase):
+    pass
+
+
+class MySQLNamedStoreTestCase(NamedStoreSQLAlchemyTestCase,
+                              test_base.MySQLOpportunisticTestCase):
+    pass
+
+
+class MySQLVersionedStoreTestCase(VersionStoreSQLAlchemyTestCase,
+                                  test_base.MySQLOpportunisticTestCase):
+    pass
+
+
+class PostgreSQLBaseStoreTestCase(BaseStoreSQLAlchemyTestCase,
+                                  test_base.PostgreSQLOpportunisticTestCase):
+    pass
+
+
+class PostgreSQLNamedStoreTestCase(NamedStoreSQLAlchemyTestCase,
+                                   test_base.PostgreSQLOpportunisticTestCase):
+    pass
+
+
+class PostgreSQLVersionedStoreTestCase(
+        VersionStoreSQLAlchemyTestCase,
+        test_base.PostgreSQLOpportunisticTestCase):
     pass
