@@ -32,8 +32,13 @@ def _print_names(message, names):
 cfg.CONF.register_cli_opt(cfg.BoolOpt('dry-run'))
 seed_help = ('Full path to the template that should be loaded '
              'as the master seed')
+resource_registry_help = ('Path to the Heat environment file which maps the'
+                          'custom resource types to template paths.')
 cfg.CONF.register_cli_opt(cfg.StrOpt('master-seed', dest='master_seed',
                                      help=seed_help))
+cfg.CONF.register_cli_opt(cfg.StrOpt('resource-registry',
+                                     dest='resource_registry',
+                                     help=resource_registry_help))
 cfg.CONF.register_cli_opt(cfg.MultiStrOpt('role', short='r'))
 
 
@@ -44,9 +49,16 @@ def main(argv=None):
 
     service.prepare_service(argv)
 
-    all_roles, created, updated = load_roles(cfg.CONF.role,
-                                             seed_file=cfg.CONF.master_seed,
-                                             dry_run=cfg.CONF.dry_run)
+    if cfg.CONF.master_seed and not cfg.CONF.resource_registry:
+        sys.stderr.write("When using `master-seed` you must also specify "
+                         "`resource-registry`.")
+        sys.exit(1)
+
+    all_roles, created, updated = load_roles(
+        cfg.CONF.role,
+        seed_file=cfg.CONF.master_seed,
+        resource_registry_path=cfg.CONF.resource_registry,
+        dry_run=cfg.CONF.dry_run)
 
     if len(created):
         _print_names("Created", created)
