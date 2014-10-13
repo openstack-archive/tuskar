@@ -198,7 +198,7 @@ class DeploymentPlan(object):
         if self.add_scaling:
             count_param = Parameter(generate_count_property_name(namespace),
                                     'number')
-            constraint = ParameterConstraint('range', {'min': '1'})
+            constraint = ParameterConstraint('range', {'min': '0'})
             count_param.add_constraint(constraint)
             self.master_template.add_parameter(count_param)
 
