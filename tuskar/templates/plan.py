@@ -23,7 +23,6 @@ from tuskar.templates.heat import Environment
 from tuskar.templates.heat import EnvironmentParameter
 from tuskar.templates.heat import Output
 from tuskar.templates.heat import Parameter
-from tuskar.templates.heat import ParameterConstraint
 from tuskar.templates.heat import RegistryEntry
 from tuskar.templates.heat import Resource
 from tuskar.templates.heat import ResourceProperty
@@ -198,8 +197,6 @@ class DeploymentPlan(object):
         if self.add_scaling:
             count_param = Parameter(generate_count_property_name(namespace),
                                     'number')
-            constraint = ParameterConstraint('range', {'min': '1'})
-            count_param.add_constraint(constraint)
             self.master_template.add_parameter(count_param)
 
     def _add_outputs(self, namespace, template, resource):
