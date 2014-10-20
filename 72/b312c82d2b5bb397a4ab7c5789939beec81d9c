@@ -1,0 +1,11 @@
+Verified+2: Jenkins
+Code-Review+1: Andreas Jaeger <jaegerandi@gmail.com>
+Code-Review+2: Ladislav Smola <lsmola@redhat.com>
+Workflow+1: Ladislav Smola <lsmola@redhat.com>
+Code-Review+2: Steve Kowalik <steven@wedontsleep.org>
+Code-Review+1: Dougal Matthews <dougal@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Mon, 20 Oct 2014 11:37:25 +0000
+Reviewed-on: https://review.openstack.org/122674
+Project: openstack/tuskar
+Branch: refs/heads/master
