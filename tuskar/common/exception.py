@@ -201,3 +201,8 @@ class PlanExists(DuplicateEntry):
 
 class PlanAlreadyHasRole(DuplicateEntry):
     message = _("Plan %(plan_uuid)s already has role %(role_uuid)s.")
+
+
+class PlanParametersNotExist(Invalid):
+    message = _("There are no parameters named %(param_names)s"
+                " in plan %(plan_uuid)s.")
