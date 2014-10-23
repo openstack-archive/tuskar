@@ -12,6 +12,7 @@
 
 import logging
 
+from tuskar.common import exception
 from tuskar.manager import models
 from tuskar.manager import name_utils
 from tuskar.storage.exceptions import UnknownName
@@ -291,9 +292,24 @@ class PlansManager(object):
             db_plan.environment_file.contents
         )
 
+        non_existent_params = []
         for param_value in params:
             p = environment.find_parameter_by_name(param_value.name)
-            p.value = param_value.value
+            if p:
+                p.value = param_value.value
+            else:
+                non_existent_params.append(param_value.name)
+
+        if non_existent_params:
+            param_names = ', '.join(non_existent_params)
+            LOG.exception(
+                'There are no parameters named %(param_names)s'
+                ' in plan %(plan_uuid)s.' %
+                {'param_names': param_names, 'plan_uuid': plan_uuid})
+            raise exception.PlanParametersNotExist(
+                plan_uuid=plan_uuid,
+                param_names=param_names
+            )
 
         # Save the updated environment.
         env_contents = composer.compose_environment(environment)

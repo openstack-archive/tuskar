@@ -10,6 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from tuskar.common import exception
 from tuskar.manager.models import DeploymentPlan
 from tuskar.manager.models import ParameterValue
 from tuskar.manager.models import PlanParameter
@@ -318,6 +319,41 @@ class PlansManagerTestCase(TestCase):
         self.assertEqual(found_params[1].value, 'test-image')
         self.assertEqual(found_params[2].value, 'm1.small')
         self.assertEqual(found_params[3].value, 'test-key')
+
+    def test_set_non_existent_parameters(self):
+        # Setup
+        test_role = self._add_test_role()
+        test_plan = self.plans_manager.create_plan('p1', 'd1')
+        self.plans_manager.add_role_to_plan(test_plan.uuid, test_role.uuid)
+
+        # Test
+        ns = name_utils.generate_role_namespace(test_role.name,
+                                                test_role.version)
+        update_us = [
+            ParameterValue(ns_utils.apply_template_namespace(ns, 'key_name'),
+                           'test-key'),
+            ParameterValue(ns_utils.apply_template_namespace(ns, 'image_id'),
+                           'test-image'),
+            ParameterValue(ns_utils.apply_template_namespace(
+                ns, 'not_present_in_role'),
+                'not-present-in-role-value'),
+        ]
+
+        # Verify
+        self.assertRaises(exception.PlanParametersNotExist,
+                          self.plans_manager.set_parameter_values,
+                          test_plan.uuid,
+                          update_us)
+
+        # Pull it from the database to make sure it was modified
+        found = self.plans_manager.retrieve_plan(test_plan.uuid)
+        found_params = sorted(found.parameters, key=lambda x: x.name)
+        self.assertEqual(4, len(found_params))  # 3 + 1 for scaling
+        self.assertEqual(found_params[0].value, '1')
+        self.assertEqual(found_params[1].value,
+                         '3e6270da-fbf7-4aef-bc78-6d0cfc3ad11b')
+        self.assertEqual(found_params[2].value, 'm1.small')
+        self.assertEqual(found_params[3].value, '')
 
     def test_package_templates(self):
         # Setup
