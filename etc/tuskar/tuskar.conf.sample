@@ -29,8 +29,8 @@
 # Options defined in tuskar.api.app
 #
 
-# Method to use for auth: keystone or noauth. (string value)
-#auth_strategy=keystone
+# Method to use for auth: noauth or keystone. (string value)
+#auth_strategy=noauth
 
 
 #
