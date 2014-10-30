@@ -181,10 +181,11 @@ loaded roles.
 Keystone Configuration
 ----------------------
 
-By default, Tuskar is configured to authenticate with Keystone
-for REST API calls. For development, Keystone authentication can
-be disabled by updating the ``tuskar.conf`` and changing the
-``auth_strategy`` to equal ``noauth ``.
+By default, Tuskar is configured to skip authentication for REST
+API calls. Keystone authentication can be enabled by making the
+appropriate changes to the ``tuskar.conf`` file as described in
+the `keystone documentation <http://docs.openstack.org/developer/
+keystone/configuringservices.html>`_
 
 
 Contributing
