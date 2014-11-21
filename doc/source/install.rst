@@ -163,11 +163,6 @@ the TripleO Heat Templates repository.
         -r compute.yaml \
         -r controller.yaml
 
-.. note::
-
-    Tuskar currently requires the TripleO Heat Template changes
-    in review 123100 <https://review.openstack.org/#/c/123100/>.
-
 After this, if the Tuskar API isn't running, start it with the
 above command and the following curl command should show you the
 loaded roles.
