@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Code-Review+2: Ben Nemec <openstack@nemebean.com>
+Workflow+1: Ben Nemec <openstack@nemebean.com>
+Code-Review+2: Petr Blaho <pblaho@redhat.com>
+Code-Review+1: Dougal Matthews <dougal@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 26 Nov 2014 23:28:46 +0000
+Reviewed-on: https://review.openstack.org/134385
+Project: openstack/tuskar
+Branch: refs/heads/master
