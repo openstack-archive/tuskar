@@ -22,7 +22,7 @@ We comply with the `OpenStack coding standards
 <http://docs.openstack.org/developer/hacking/>`_.
 
 Be sure to familiarise yourself with `OpenStack's Gerrit Workflow
-<https://wiki.openstack.org/wiki/Gerrit_Workflow>`_.
+<http://docs.openstack.org/infra/manual/developers.html#development-workflow>`_.
 
 Before submitting your code, please make sure you have completed
 the following checklist:
