@@ -67,11 +67,6 @@ against Python 2.6, Python 2.7 and run the `flake8
 
     $ tox
 
-.. note::
-
-    If you only have access to Python 2.6 or 2.7 locally pass
-    in `-e py26` or `-e py27` respectively.
-
 
 Configuration
 -------------
