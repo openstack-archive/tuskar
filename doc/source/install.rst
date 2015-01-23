@@ -60,17 +60,12 @@ Now create your virtualenv.
         $ sudo pip install --upgrade setuptools
 
 To run the test suite use the following command. This will run
-against Python 2.6, Python 2.7 and run the `flake8
+against Python 2.7 and run the `flake8
 <https://flake8.readthedocs.org>`_ code linting.
 
 .. code-block:: bash
 
     $ tox
-
-.. note::
-
-    If you only have access to Python 2.6 or 2.7 locally pass
-    in `-e py26` or `-e py27` respectively.
 
 
 Configuration

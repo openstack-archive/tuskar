@@ -152,6 +152,6 @@ You can run tests using Tox:
 
     $ tox
 
-This will run tests under Python 2.6, 2.7 and verify `PEP 8
+This will run tests under Python 2.7 and verify `PEP 8
 <http://www.python.org/dev/peps/pep-0008/>`_ compliance. The identical test
 suite is run by OpenStack's Jenkins whenever you send a patch.
