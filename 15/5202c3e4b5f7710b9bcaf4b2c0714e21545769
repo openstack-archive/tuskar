@@ -1,0 +1,12 @@
+Verified+2: Jenkins
+Code-Review+1: Giulio Fidente <gfidente@redhat.com>
+Code-Review+2: James Slagle <jslagle@redhat.com>
+Code-Review+2: Jiri Stransky <jistr@redhat.com>
+Workflow+1: Jiri Stransky <jistr@redhat.com>
+Code-Review+1: Dougal Matthews <dougal@redhat.com>
+Code-Review+1: Stephanie Miller <stephane@alum.mit.edu>
+Submitted-by: Jenkins
+Submitted-at: Thu, 29 Jan 2015 12:02:08 +0000
+Reviewed-on: https://review.openstack.org/148343
+Project: openstack/tuskar
+Branch: refs/heads/master
