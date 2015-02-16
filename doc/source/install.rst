@@ -152,11 +152,10 @@ the TripleO Heat Templates repository.
 
 .. code-block:: bash
 
-    $ git clone http://git.openstack.org/cgit/openstack/tripleo-heat-templates/
-    $ cd tripleo-heat-templates
+    $ git clone https://git.openstack.org/openstack/tripleo-heat-templates
     $ tuskar-load-roles --config-file etc/tuskar/tuskar.conf \
-        -r compute.yaml \
-        -r controller.yaml
+        -r tripleo-heat-templates/compute.yaml \
+        -r tripleo-heat-templates/controller.yaml
 
 After this, if the Tuskar API isn't running, start it with the
 above command and the following curl command should show you the
