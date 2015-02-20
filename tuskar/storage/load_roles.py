@@ -19,13 +19,14 @@ from __future__ import print_function
 
 from os import path
 
+from tuskar.common import utils
 from tuskar.storage.exceptions import UnknownName
 from tuskar.storage.stores import MasterSeedStore
 from tuskar.storage.stores import ResourceRegistryMappingStore
 from tuskar.storage.stores import ResourceRegistryStore
+from tuskar.storage.stores import TemplateExtraStore
 from tuskar.storage.stores import TemplateStore
 from tuskar.templates import parser
-
 
 MASTER_SEED_NAME = '_master_seed'
 RESOURCE_REGISTRY_NAME = '_registry'
@@ -58,7 +59,7 @@ def role_name_from_path(role_path):
 
 
 def load_roles(roles, seed_file=None, resource_registry_path=None,
-               dry_run=False):
+               dry_run=False, role_extra=None):
     """Given a list of roles files import them into the
     add any to the store. TemplateStore. When dry_run=True is
     passed, run through the roles but don't
@@ -79,29 +80,39 @@ def load_roles(roles, seed_file=None, resource_registry_path=None,
            declares the custom types for Tuskar roles.
     :type  resource_registry_path: str
 
+    :param role_extra: A list of yaml files (as strings) that may be consumed
+           (referenced) by any of the role files.
+    :type  roles: [str]
+
     :return: Summary of the results as a tuple with the total count and then
         the names of the created and updated roles.
     :rtype:  tuple(list, list, list)
     """
-
     all_roles, created, updated = [], [], []
 
+    def _process_roles(roles, store=None):
+        for name, role_path in roles:
+
+            contents = _load_file(role_path)
+            all_roles.append(name)
+
+            if dry_run:
+                continue
+
+            role_created, _ = _create_or_update(name, contents, store)
+
+            if role_created:
+                created.append(name)
+            else:
+                updated.append(name)
+
     roles = [(role_name_from_path(r), r) for r in roles]
-
-    for name, role_path in roles:
-
-        contents = _load_file(role_path)
-        all_roles.append(name)
-
-        if dry_run:
-            continue
-
-        role_created, _ = _create_or_update(name, contents)
-
-        if role_created:
-            created.append(name)
-        else:
-            updated.append(name)
+    _process_roles(roles)
+    template_extra_store = TemplateExtraStore()
+    if role_extra is not None:
+        role_extra = [(utils.resolve_role_extra_name_from_path(re), re)
+                      for re in role_extra]
+        _process_roles(role_extra, template_extra_store)
 
     if seed_file is not None:
         contents = _load_file(seed_file)
