@@ -40,6 +40,7 @@ cfg.CONF.register_cli_opt(cfg.StrOpt('resource-registry',
                                      dest='resource_registry',
                                      help=resource_registry_help))
 cfg.CONF.register_cli_opt(cfg.MultiStrOpt('role', short='r'))
+cfg.CONF.register_cli_opt(cfg.MultiStrOpt('role-extra', short='re'))
 
 
 def main(argv=None):
@@ -58,7 +59,8 @@ def main(argv=None):
         cfg.CONF.role,
         seed_file=cfg.CONF.master_seed,
         resource_registry_path=cfg.CONF.resource_registry,
-        dry_run=cfg.CONF.dry_run)
+        dry_run=cfg.CONF.dry_run,
+        role_extra=cfg.CONF.role_extra)
 
     if len(created):
         _print_names("Created", created)
