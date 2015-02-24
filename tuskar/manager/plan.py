@@ -13,8 +13,10 @@
 import logging
 
 from tuskar.common import exception
+from tuskar.common import utils
 from tuskar.manager import models
 from tuskar.manager import name_utils
+from tuskar.manager.role import RoleManager
 from tuskar.storage.exceptions import UnknownName
 from tuskar.storage.load_roles import RESOURCE_REGISTRY_NAME
 from tuskar.storage.load_roles import role_name_from_path
@@ -23,6 +25,7 @@ from tuskar.storage.stores import EnvironmentFileStore
 from tuskar.storage.stores import MasterSeedStore
 from tuskar.storage.stores import MasterTemplateStore
 from tuskar.storage.stores import ResourceRegistryStore
+from tuskar.storage.stores import TemplateExtraStore
 from tuskar.storage.stores import TemplateStore
 from tuskar.templates import composer
 from tuskar.templates import namespace as ns_utils
@@ -43,6 +46,7 @@ class PlansManager(object):
         self.seed_store = MasterSeedStore()
         self.registry_store = ResourceRegistryStore()
         self.template_store = TemplateStore()
+        self.template_extra_store = TemplateExtraStore()
         self.master_template_store = MasterTemplateStore()
         self.environment_store = EnvironmentFileStore()
 
@@ -331,7 +335,6 @@ class PlansManager(object):
         :raises tuskar.storage.exceptions.UnknownUUID: if there is no plan
                 with the given UUID
         """
-
         # Load and parse the plan.
         db_plan = self.plan_store.retrieve(plan_uuid)
         master_template = parser.parse_template(
@@ -352,13 +355,20 @@ class PlansManager(object):
         }
 
         plan_roles = self._find_roles(environment)
-
+        manager = RoleManager()
         for role in plan_roles:
             contents = composer.compose_template(role.template)
             filename = name_utils.role_template_filename(role.name,
                                                          role.version)
             files_dict[filename] = contents
-
+            # also grab any extradata files for the role
+            db_role = self.template_store.retrieve_by_name(role.name)
+            db_extra_roles = self.template_extra_store.list(only_latest=False)
+            role_extra_paths = utils.resolve_template_extra_data(
+                db_role, db_extra_roles)
+            role_extra_output = manager.template_extra_data_for_output(
+                role_extra_paths)
+            files_dict.update(role_extra_output)
         return files_dict
 
     def _find_roles(self, environment):
