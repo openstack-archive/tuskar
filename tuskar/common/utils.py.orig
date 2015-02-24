@@ -106,9 +106,15 @@ def resolve_role_extra_name_from_path(role_extra_path):
         For instance 'hieradata/compute.yaml' is stored as
         'extra_compute_yaml'.
     """
+<<<<<<< HEAD
     name_ext = os.path.basename(role_extra_path)
     name, extension = os.path.splitext(name_ext)
     return "extra_%s_%s" % (name, extension.replace('.', ''))
+=======
+    tokens = os.path.splitext(role_extra_path)
+    extension = tokens[1].replace('.', '')
+    name = os.path.basename(tokens[0]).replace(extension, '')
+    return "extra_%s_%s" % (name, extension)
 
 
 def resolve_template_file_name_from_role_extra_name(role_extra_name):
@@ -170,3 +176,4 @@ def resolve_template_extra_data(template, template_extra=[]):
                     "}", "").rstrip()
                 included_files.append({te.name: path})
     return included_files
+>>>>>>> c11a121... Adds the /role/role_id/extra_data path to the v2 API
