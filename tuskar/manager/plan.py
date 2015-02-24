@@ -13,8 +13,10 @@
 import logging
 
 from tuskar.common import exception
+from tuskar.common import utils
 from tuskar.manager import models
 from tuskar.manager import name_utils
+from tuskar.manager.role import RoleManager
 from tuskar.storage.exceptions import UnknownName
 from tuskar.storage.load_roles import RESOURCE_REGISTRY_NAME
 from tuskar.storage.load_roles import role_name_from_path
@@ -24,6 +26,7 @@ from tuskar.storage.stores import MasterSeedStore
 from tuskar.storage.stores import MasterTemplateStore
 from tuskar.storage.stores import ResourceRegistryMappingStore
 from tuskar.storage.stores import ResourceRegistryStore
+from tuskar.storage.stores import TemplateExtraStore
 from tuskar.storage.stores import TemplateStore
 from tuskar.templates import composer
 from tuskar.templates.heat import RegistryEntry
@@ -46,6 +49,7 @@ class PlansManager(object):
         self.registry_store = ResourceRegistryStore()
         self.registry_mapping_store = ResourceRegistryMappingStore()
         self.template_store = TemplateStore()
+        self.template_extra_store = TemplateExtraStore()
         self.master_template_store = MasterTemplateStore()
         self.environment_store = EnvironmentFileStore()
 
@@ -367,17 +371,34 @@ class PlansManager(object):
         }
 
         plan_roles = self._find_roles(environment)
-
+        manager = RoleManager()
         for role in plan_roles:
             contents = composer.compose_template(role.template)
             filename = name_utils.role_template_filename(role.name,
                                                          role.version)
             files_dict[filename] = contents
 
+        def _add_template_extra_data_for(templates, template_store):
+            template_extra_data = self.template_extra_store.list(
+                only_latest=False)
+            for template in templates:
+                db_template = template_store.retrieve_by_name(template.name)
+                template_extra_paths = utils.resolve_template_extra_data(
+                    db_template, template_extra_data)
+                extra_data_output = manager.template_extra_data_for_output(
+                    template_extra_paths)
+                files_dict.update(extra_data_output)
+
+        # also grab any extradata files for the role
+        _add_template_extra_data_for(plan_roles, self.template_store)
+
         # in addition to provider roles above, return non-role template files
         reg_mapping = self.registry_mapping_store.list()
         for entry in reg_mapping:
             files_dict[entry.name] = entry.contents
+
+        # similarly, also grab extradata files for the non role templates
+        _add_template_extra_data_for(reg_mapping, self.registry_mapping_store)
 
         return files_dict
 
