@@ -106,9 +106,15 @@ def resolve_role_extra_name_from_path(role_extra_path):
         For instance 'hieradata/compute.yaml' is stored as
         'extra_compute_yaml'.
     """
+<<<<<<< HEAD
     name_ext = os.path.basename(role_extra_path)
     name, extension = os.path.splitext(name_ext)
     return "extra_%s_%s" % (name, extension.replace('.', ''))
+=======
+    tokens = os.path.splitext(role_extra_path)
+    extension = tokens[1].replace('.', '')
+    name = os.path.basename(tokens[0]).replace(extension, '')
+    return "extra_%s_%s" % (name, extension)
 
 
 def resolve_template_file_name_from_role_extra_name(role_extra_name):
@@ -119,9 +125,6 @@ def resolve_template_file_name_from_role_extra_name(role_extra_name):
         is stored as 'extra_compute_yaml'. Here, given the stored name,
         return name.extension
 
-        Raises a InvalidTemplateExtraStoredName exception if the given
-        role_extra_name doesn't start with 'extra_' as a prefix.
-
         :param role_extra_name: the name as stored for the role-extra
         :type role_extra_name: string
 
@@ -130,13 +133,12 @@ def resolve_template_file_name_from_role_extra_name(role_extra_name):
 
         Returns 'compute.yaml' from 'extra_compute_yaml'.
     """
-    if role_extra_name.find("extra_") != 0:
-        raise exception.InvalidTemplateExtraStoredName(name=role_extra_name)
-    name_extension = role_extra_name.replace('extra_', '').split("_")
-    extension = name_extension[-1]
-    name = "_".join(name_extension[0:-1])
-    if len(extension) > 0:
-        return "%s.%s" % (name, extension)
+    name_ext = role_extra_name.split('extra_')[1]
+    tokens = name_ext.split('_')
+    ext = tokens[-1].replace('.', '')
+    name = name_ext.split('_%s' % ext)[0]
+    if len(ext) > 0:
+        return "%s.%s" % (name, ext)
     return name
 
 
@@ -174,3 +176,4 @@ def resolve_template_extra_data(template, template_extra=[]):
                     "}", "").rstrip()
                 included_files.append({te.name: path})
     return included_files
+>>>>>>> c11a121... Adds the /role/role_id/extra_data path to the v2 API
