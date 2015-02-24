@@ -19,6 +19,7 @@
 """Utilities and helper functions."""
 
 import os
+import re
 
 from oslo.config import cfg
 
@@ -109,3 +110,64 @@ def resolve_role_extra_name_from_path(role_extra_path):
     extension = tokens[1].replace('.', '')
     name = os.path.basename(tokens[0]).replace(extension, '')
     return "extra_%s_%s" % (name, extension)
+
+
+def resolve_template_file_name_from_role_extra_name(role_extra_name):
+    """Return the name of the included file based on the role-extra name
+
+        The internal representation for a given role-extra file encodes the
+        file extension into the name. For instance 'compute.yaml'
+        is stored as 'extra_compute_yaml'. Here, given the stored name,
+        return name.extension
+
+        :param role_extra_name: the name as stored for the role-extra
+        :type role_extra_name: string
+
+        :return: the name as used in the template
+        :rtype: string
+
+        Returns 'compute.yaml' from 'extra_compute_yaml'.
+    """
+    name_ext = role_extra_name.split('extra_')[1]
+    tokens = name_ext.split('_')
+    ext = tokens[-1].replace('.', '')
+    name = name_ext.split('_%s' % ext)[0]
+    if len(ext) > 0:
+        return "%s.%s" % (name, ext)
+    return name
+
+
+def resolve_template_extra_data(template, template_extra=[]):
+    """Match all occurences of get_file against the stored role-extra data.
+
+        :param template: the given heat template to search for "get_file"(s)
+        :type template: tuskar.storage.models.StoredFile
+
+        :param template_extra: a list of all stored role-extra data
+        :type template_extra: list of tuskar.storage.models.StoredFile
+
+        :return: a dict of 'name'=>'path' for each matched role-extra
+        :rtype: dict
+
+        Using regex, compile a list of all occurences of 'get_file:' in the
+        template. Match each of the stored role-extra data based on their name.
+
+        For each match capture the full path as it appears in the template
+        and couple it to the name of the role-extra we have on record. For
+        example:
+
+            [{'extra_common_yaml': 'hieradata/common.yaml'},
+             {'extra_object_yaml': 'hieradata/object.yaml'}]
+
+    """
+    included_files = []
+    all_get_files = re.findall("get_file:.*\n", template.contents)
+    # looks like: ["get_file: hieradata/common.yaml}", ... ]
+    for te in template_extra:
+        token = resolve_template_file_name_from_role_extra_name(te.name)
+        for get_file in all_get_files:
+            if re.match("get_file:.*%s[}]*\n" % token, get_file):
+                path = get_file.replace("get_file:", "").lstrip().replace(
+                    "}", "").rstrip()
+                included_files.append({te.name: path})
+    return included_files

@@ -16,7 +16,6 @@ from mock import call
 from mock import patch
 
 from tuskar.cmd import load_roles
-from tuskar.common import utils
 from tuskar.tests.base import TestCase
 
 
