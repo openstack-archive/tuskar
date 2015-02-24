@@ -22,7 +22,9 @@ from os import path
 from tuskar.storage.exceptions import UnknownName
 from tuskar.storage.stores import MasterSeedStore
 from tuskar.storage.stores import ResourceRegistryStore
+from tuskar.storage.stores import ResourceRegistryMappingStore
 from tuskar.storage.stores import TemplateStore
+from tuskar.templates import parser
 
 
 MASTER_SEED_NAME = '_master_seed'
@@ -123,5 +125,25 @@ def load_roles(roles, seed_file=None, resource_registry_path=None,
             created.append(RESOURCE_REGISTRY_NAME)
         else:
             updated.append(RESOURCE_REGISTRY_NAME)
+
+        parsed_env = parser.parse_environment(contents)
+
+        dirname = path.dirname(resource_registry_path)
+        for entry in parsed_env.registry_entries:
+            # TODO: should improve RegistryEntry to not assume all mappings are
+            # filenames. This check attempts to be robust, but assumes all
+            # files are .yaml suffixed.
+            complete_path = dirname + '/' + entry.filename
+            if ('::' in entry.filename
+                or path.splitext(entry.filename)[1] != '.yaml'
+                    or [afile for afile, apath in roles
+                        if apath == complete_path]):
+                continue
+
+            # TODO (this sprint): anything else need to be filtered out?
+            store = ResourceRegistryMappingStore()
+            flag, role = _create_or_update(entry.filename,
+                                           _load_file(complete_path),
+                                           store=store)
 
     return all_roles, created, updated

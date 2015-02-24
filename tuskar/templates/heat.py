@@ -460,12 +460,19 @@ class Environment(object):
                 return True
         return False
 
-    def add_registry_entry(self, entry):
+    def add_registry_entry(self, entry, iset=False):
         """Adds a registry entry to the environment.
 
         :type entry: tuskar.templates.heat.RegistryEntry
+        :type set: boolean, toggles if registry is treated as set, which is
+        used to easily add unique elements only
         """
-        self._registry_entries.append(entry)
+        if iset:
+            setentries = set(self._registry_entries)
+            setentries.add(entry)
+            self._registry_entries = list(setentries)
+        else:
+            self._registry_entries.append(entry)
 
     def remove_registry_entry(self, entry):
         """Removes a registry entry from the environment.
