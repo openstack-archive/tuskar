@@ -14,6 +14,7 @@
 #    under the License.
 
 from tuskar.common import utils
+from tuskar.storage import models
 from tuskar.tests import base
 
 
@@ -24,12 +25,41 @@ class CommonUtilsTestCase(base.TestCase):
                     {"/hieradata/config.yaml": "extra_config_yaml"},
                     {"./name.has.dots": "extra_name.has_dots"},
                     {"/path/name.": "extra_name_"},
-                    {"/path/cdefile.c": "extra_cdefile_c"}, ]
+                    {"/path/cdefile.c": "extra_cdefile_c"},
+                    {"./name_underscore_no_extension":
+                        "extra_name_underscore_no_extension_"},
+                    {"/path/name_underscore.ext":
+                        "extra_name_underscore_ext"}, ]
 
         for params in expected:
             path = params.keys()[0]
             res = utils.resolve_role_extra_name_from_path(path)
             self.assertEqual(params[path], res)
+
+    def test_resolve_template_file_name_from_role_extra_name(self):
+        expected = [{"extra_FOO_": "FOO"},
+                    {"extra_config_yaml": "config.yaml"},
+                    {"extra_name.has_dots": "name.has.dots"},
+                    {"extra_name_": "name"},
+                    {"extra_cdefile_c": "cdefile.c"},
+                    {"extra_name_underscore_no_extension_":
+                        "name_underscore_no_extension"},
+                    {"extra_name_underscore_ext": "name_underscore.ext"}, ]
+        for params in expected:
+            name = params.keys()[0]
+            res = utils.resolve_template_file_name_from_role_extra_name(name)
+            self.assertEqual(params[name], res)
+
+    def test_resolve_template_extra_data(self):
+        template_contents = """ Foo Bar Baz
+                                    get_file: foo/bar.baz
+                            """
+        template_extra = models.StoredFile(
+            uuid="1234", contents="boo!", store=None, name="extra_bar_baz")
+        template = models.StoredFile(
+            uuid="1234", contents=template_contents, store=None)
+        res = utils.resolve_template_extra_data(template, [template_extra])
+        self.assertEqual(res, [{"extra_bar_baz": "foo/bar.baz"}])
 
 
 class IntLikeTestCase(base.TestCase):
