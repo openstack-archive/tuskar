@@ -11,6 +11,7 @@
 # under the License.
 
 from tuskar.manager import models
+from tuskar.storage.stores import TemplateExtraStore
 from tuskar.storage.stores import TemplateStore
 from tuskar.templates import parser
 
@@ -20,6 +21,7 @@ class RoleManager(object):
     def __init__(self):
         super(RoleManager, self).__init__()
         self.template_store = TemplateStore()
+        self.template_extra_store = TemplateExtraStore()
 
     def list_roles(self, only_latest=False):
         """Returns a list of all roles known to Tuskar.
@@ -45,6 +47,49 @@ class RoleManager(object):
         db_role = self.template_store.retrieve(role_uuid)
         role = self._role_to_tuskar_object(db_role)
         return role
+
+    def retrieve_db_role_by_uuid(self, role_uuid):
+        return self.template_store.retrieve(role_uuid)
+
+    def retrieve_db_role_extra(self):
+        return self.template_extra_store.list(only_latest=False)
+
+    def template_extra_data_for_output(self, template_extra_paths):
+        """Compile and return role-extra data for output as a string
+
+            :param template_extra_paths: a list of {k,v} (name=>path)
+            :type template_extra_paths: list of dict
+
+            :return: a dict of path=>contents
+            :rtype: dict
+
+            The keys in template_extra_paths correspond to the names of stored
+            role-extra data and the values are the paths at which the
+            corresponding files ares expected to be. This list is returned by
+            common.utils.resolve_template_extra_data for example:
+
+                [{'extra_common_yaml': 'hieradata/common.yaml'},
+                 {'extra_object_yaml': 'hieradata/object.yaml'}]
+
+            Using this create a new dict that maps the path (values above) as
+            key to the contents of the corresponding stored role-extra object
+            (using the name above to retrieve it). For the example input
+            above, the output would be like:
+
+            {
+                "hieradata/common.yaml": "CONTENTS",
+                "hieradata/object.yaml": "CONTENTS"
+            }
+
+        """
+        res = {}
+        for path in template_extra_paths:
+            role_extra_name = path.keys()[0]
+            role_extra_path = path[role_extra_name]
+            db_role_extra = self.template_extra_store.retrieve_by_name(
+                role_extra_name)
+            res[role_extra_path] = db_role_extra.contents
+        return res
 
     @staticmethod
     def _role_to_tuskar_object(db_role):
