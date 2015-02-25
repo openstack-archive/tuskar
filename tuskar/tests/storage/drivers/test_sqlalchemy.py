@@ -37,32 +37,32 @@ class VersionStoreSQLAlchemyTestCase(SQLAlchemyTestCase,
     pass
 
 
-class MySQLBaseStoreTestCase(BaseStoreSQLAlchemyTestCase,
-                             test_base.MySQLOpportunisticTestCase):
+class MySQLBaseStoreTestCase(test_base.MySQLOpportunisticTestCase,
+                             BaseStoreSQLAlchemyTestCase):
     pass
 
 
-class MySQLNamedStoreTestCase(NamedStoreSQLAlchemyTestCase,
-                              test_base.MySQLOpportunisticTestCase):
+class MySQLNamedStoreTestCase(test_base.MySQLOpportunisticTestCase,
+                              NamedStoreSQLAlchemyTestCase):
     pass
 
 
-class MySQLVersionedStoreTestCase(VersionStoreSQLAlchemyTestCase,
-                                  test_base.MySQLOpportunisticTestCase):
+class MySQLVersionedStoreTestCase(test_base.MySQLOpportunisticTestCase,
+                                  VersionStoreSQLAlchemyTestCase):
     pass
 
 
-class PostgreSQLBaseStoreTestCase(BaseStoreSQLAlchemyTestCase,
-                                  test_base.PostgreSQLOpportunisticTestCase):
+class PostgreSQLBaseStoreTestCase(test_base.PostgreSQLOpportunisticTestCase,
+                                  BaseStoreSQLAlchemyTestCase):
     pass
 
 
-class PostgreSQLNamedStoreTestCase(NamedStoreSQLAlchemyTestCase,
-                                   test_base.PostgreSQLOpportunisticTestCase):
+class PostgreSQLNamedStoreTestCase(test_base.PostgreSQLOpportunisticTestCase,
+                                   NamedStoreSQLAlchemyTestCase):
     pass
 
 
 class PostgreSQLVersionedStoreTestCase(
-        VersionStoreSQLAlchemyTestCase,
-        test_base.PostgreSQLOpportunisticTestCase):
+        test_base.PostgreSQLOpportunisticTestCase,
+        VersionStoreSQLAlchemyTestCase):
     pass
