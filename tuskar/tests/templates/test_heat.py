@@ -433,6 +433,11 @@ class EnvironmentTests(unittest.TestCase):
         e.remove_registry_entry(re)
         self.assertEqual(0, len(e.registry_entries))
 
+        # Test unique add
+        e.add_registry_entry(re, iset=True)
+        e.add_registry_entry(re, iset=True)
+        self.assertEqual(1, len(e.registry_entries))
+
     def test_remove_registry_entry_not_found(self):
         e = heat.Environment()
         self.assertRaises(ValueError, e.remove_registry_entry,
@@ -493,6 +498,17 @@ class EnvironmentParameterTests(unittest.TestCase):
         # Verify
         self.assertEqual('test-name', p.name)
         self.assertEqual('test-value', p.value)
+
+
+class RegistryEntryTest(unittest.TestCase):
+
+    def test_is_filename(self):
+        re = heat.RegistryEntry('Tuskar::compute-1', 'provider-compute-1.yaml')
+        self.assertTrue(re.is_filename())
+
+        re = heat.RegistryEntry('OS::TripleO::StructuredDeployment',
+                                'OS::Heat::StructuredDeployment')
+        self.assertFalse(re.is_filename())
 
 
 class ModuleMethodTests(unittest.TestCase):
