@@ -32,3 +32,4 @@ ChangeLog
 etc/tuskar/tuskar.conf
 *.sqlite
 tuskar/api/templates/tripleo-heat-templates/
+tags
