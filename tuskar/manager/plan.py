@@ -22,6 +22,7 @@ from tuskar.storage.stores import DeploymentPlanStore
 from tuskar.storage.stores import EnvironmentFileStore
 from tuskar.storage.stores import MasterSeedStore
 from tuskar.storage.stores import MasterTemplateStore
+from tuskar.storage.stores import ResourceRegistryMappingStore
 from tuskar.storage.stores import ResourceRegistryStore
 from tuskar.storage.stores import TemplateStore
 from tuskar.templates import composer
@@ -29,6 +30,7 @@ from tuskar.templates import namespace as ns_utils
 from tuskar.templates import parser
 from tuskar.templates import plan
 from tuskar.templates import template_seed
+from tuskar.templates.heat import RegistryEntry
 
 
 LOG = logging.getLogger(__name__)
@@ -42,6 +44,7 @@ class PlansManager(object):
         self.plan_store = DeploymentPlanStore()
         self.seed_store = MasterSeedStore()
         self.registry_store = ResourceRegistryStore()
+        self.registry_mapping_store = ResourceRegistryMappingStore()
         self.template_store = TemplateStore()
         self.master_template_store = MasterTemplateStore()
         self.environment_store = EnvironmentFileStore()
@@ -188,6 +191,17 @@ class PlansManager(object):
                 deployment_plan.master_template,
                 seed_role,
                 role_namespace)
+
+            # Update environment file to add top level mappings
+            reg_mapping = self.registry_mapping_store.list()
+
+            environment = deployment_plan.environment
+            for entry in parsed_registry_env.registry_entries:
+                # check if registry_mapping is in database, if so add to
+                # environment (later will become environment.yaml)
+                if any(x.name == entry.filename for x in reg_mapping):
+                    additem = RegistryEntry(entry.alias, entry.filename)
+                    environment.add_registry_entry(additem, iset=True)
 
         # Save the updated plan.
         updated = self._save_updated_plan(plan_uuid, deployment_plan)
@@ -359,6 +373,11 @@ class PlansManager(object):
                                                          role.version)
             files_dict[filename] = contents
 
+        # in addition to provider roles above, return non-role template files
+        reg_mapping = self.registry_mapping_store.list()
+        for entry in reg_mapping:
+            files_dict[entry.name] = entry.contents
+
         return files_dict
 
     def _find_roles(self, environment):
@@ -386,7 +405,9 @@ class PlansManager(object):
                                       role.description, role)
             return tuskar_role
 
-        roles = [load_role(e) for e in environment.registry_entries]
+        reg_mapping = self.registry_mapping_store.list()
+        roles = [load_role(e) for e in environment.registry_entries
+                 if not any(x.name == e.filename for x in reg_mapping)]
         return roles
 
     @staticmethod

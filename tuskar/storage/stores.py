@@ -225,6 +225,10 @@ class ResourceRegistryStore(_NamedStore):
     object_type = "registry"
 
 
+class ResourceRegistryMappingStore(_NamedStore):
+    object_type = "registry_mapping"
+
+
 class EnvironmentFileStore(_BaseStore):
     """Environment File for Heat environment files.
 
