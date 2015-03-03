@@ -17,6 +17,8 @@ These objects were created against the HOT specification found at:
 http://docs.openstack.org/developer/heat/template_guide/hot_spec.html
 """
 
+from os import path
+
 from tuskar.templates import namespace as ns_utils
 
 
@@ -460,12 +462,19 @@ class Environment(object):
                 return True
         return False
 
-    def add_registry_entry(self, entry):
+    def add_registry_entry(self, entry, unique=False):
         """Adds a registry entry to the environment.
 
         :type entry: tuskar.templates.heat.RegistryEntry
+        :param unique: toggles if registry is treated as a set
+        :type unique: boolean
         """
-        self._registry_entries.append(entry)
+        if unique:
+            setentries = set(self._registry_entries)
+            setentries.add(entry)
+            self._registry_entries = list(setentries)
+        else:
+            self._registry_entries.append(entry)
 
     def remove_registry_entry(self, entry):
         """Removes a registry entry from the environment.
@@ -506,6 +515,7 @@ class RegistryEntry(object):
         super(RegistryEntry, self).__init__()
         self.alias = alias
         self.filename = filename
+        # TODO(jpeeler) rename self.filename to mapping
 
     def __str__(self):
         msg = 'RegistryEntry: alias=%(alias)s, filename=%(f)s'
@@ -514,6 +524,12 @@ class RegistryEntry(object):
             'f': self.filename,
         }
         return msg % data
+
+    def is_filename(self):
+        if ('::' in self.filename or
+                path.splitext(self.filename)[1] not in ('.yaml', '.yml')):
+            return False
+        return True
 
 
 def _safe_strip(value):

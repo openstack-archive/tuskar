@@ -33,19 +33,22 @@ class LoadRoleTests(TestCase):
         self.roles = [path.join(self.directory, role) for role in roles_name]
 
         for role in self.roles:
-            self._create_role(role)
+            self._create_file(role)
 
     def tearDown(self):
         super(LoadRoleTests, self).tearDown()
         rmtree(self.directory)
 
-    def _create_role(self, role):
-        """Create a mock role file which simple contains it's own name as
-        the file contents.
+    def _create_file(self, file, data=None):
+        """Create a mock file which contains its own name as the file
+        contents when the data argument is empty.
         """
 
-        with open(role, 'w') as f:
-            f.write("CONTENTS FOR {0}".format(role))
+        if data is None:
+            data = "CONTENTS FOR {0}".format(file)
+
+        with open(file, 'w') as f:
+            f.write(data)
 
     def test_dry_run(self):
 
@@ -83,7 +86,7 @@ class LoadRoleTests(TestCase):
 
     def test_import_with_seed(self):
         # Setup
-        self._create_role(path.join(self.directory, 'seed'))
+        self._create_file(path.join(self.directory, 'seed'))
 
         # Test
         seed_file = path.join(self.directory, 'seed')
@@ -93,4 +96,31 @@ class LoadRoleTests(TestCase):
         # Verify
         self.assertEqual(['_master_seed', 'role1', 'role2'], sorted(total))
         self.assertEqual(['_master_seed', 'role1', 'role2'], sorted(created))
+        self.assertEqual([], updated)
+
+    def test_import_seed_and_registry(self):
+        env_data = """
+resource_registry:
+  OS::TripleO::Role: role1.yaml
+  OS::TripleO::Another: required_file.yaml
+        """
+
+        # Setup
+        self._create_file(path.join(self.directory, 'seed'))
+        self._create_file(path.join(self.directory, 'environment'), env_data)
+        self._create_file(path.join(self.directory, 'required_file.yaml'))
+
+        # Test
+        seed_file = path.join(self.directory, 'seed')
+        env_file = path.join(self.directory, 'environment')
+        all_roles, created, updated = load_roles.load_roles(
+            self.roles,
+            seed_file=seed_file,
+            resource_registry_path=env_file)
+
+        # Verify
+        self.assertEqual(['_master_seed', '_registry',
+                          'role1', 'role2'], sorted(all_roles))
+        self.assertEqual(['_master_seed', '_registry', 'required_file.yaml',
+                          'role1', 'role2'], sorted(created))
         self.assertEqual([], updated)

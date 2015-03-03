@@ -21,8 +21,10 @@ from os import path
 
 from tuskar.storage.exceptions import UnknownName
 from tuskar.storage.stores import MasterSeedStore
+from tuskar.storage.stores import ResourceRegistryMappingStore
 from tuskar.storage.stores import ResourceRegistryStore
 from tuskar.storage.stores import TemplateStore
+from tuskar.templates import parser
 
 
 MASTER_SEED_NAME = '_master_seed'
@@ -123,5 +125,25 @@ def load_roles(roles, seed_file=None, resource_registry_path=None,
             created.append(RESOURCE_REGISTRY_NAME)
         else:
             updated.append(RESOURCE_REGISTRY_NAME)
+
+        parsed_env = parser.parse_environment(contents)
+
+        mapping_store = ResourceRegistryMappingStore()
+        dirname = path.dirname(resource_registry_path)
+        role_paths = [r[1] for r in roles]
+        for entry in parsed_env.registry_entries:
+            complete_path = path.join(dirname, entry.filename)
+            # skip adding if entry is not a filename (is another alias) or
+            # if template has already been stored as a role
+            if (not entry.is_filename() or complete_path in role_paths):
+                continue
+
+            mapping_created, _ = _create_or_update(entry.filename,
+                                                   _load_file(complete_path),
+                                                   store=mapping_store)
+            if mapping_created:
+                created.append(entry.filename)
+            else:
+                updated.append(entry.filename)
 
     return all_roles, created, updated
