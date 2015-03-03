@@ -25,6 +25,7 @@ from tuskar.storage.stores import DeploymentPlanStore
 from tuskar.storage.stores import EnvironmentFileStore
 from tuskar.storage.stores import MasterSeedStore
 from tuskar.storage.stores import MasterTemplateStore
+from tuskar.storage.stores import ResourceRegistryMappingStore
 from tuskar.storage.stores import ResourceRegistryStore
 from tuskar.storage.stores import TemplateStore
 from tuskar.templates import namespace as ns_utils
@@ -109,6 +110,7 @@ resources:
 RESOURCE_REGISTRY = """
 resource_registry:
   OS::TripleO::Role: r1.yaml
+  OS::TripleO::Another: required_file.yaml
 """
 
 RESOURCE_REGISTRY_WRONG_TYPE = """
@@ -127,6 +129,7 @@ class PlansManagerTestCase(TestCase):
         self.template_store = TemplateStore()
         self.seed_store = MasterSeedStore()
         self.registry_store = ResourceRegistryStore()
+        self.registry_mapping_store = ResourceRegistryMappingStore()
 
     def test_create_plan(self):
         # Tests
@@ -182,6 +185,9 @@ class PlansManagerTestCase(TestCase):
         # Setup
         self.seed_store.create(MASTER_SEED_NAME, TEST_SEED)
         self.registry_store.create(RESOURCE_REGISTRY_NAME, RESOURCE_REGISTRY)
+        # more setup (this is normally called in load_roles)
+        self.registry_mapping_store.create('required_file.yaml',
+                                           'some fake template data')
         test_role = self._add_test_role()
         test_plan = self.plans_manager.create_plan('p1', 'd1')
 
@@ -205,6 +211,12 @@ class PlansManagerTestCase(TestCase):
         self.assertEqual(config_property.value,
                          {'ip_addresses':
                           {'get_attr': ['r1-1-servers', 'foo_ip']}})
+
+        # verify both entries are present from RESOURCE_REGISTRY
+        parsed_env = parser.parse_environment(
+            db_plan.environment_file.contents
+        )
+        self.assertEqual(2, len(parsed_env.registry_entries))
 
     def test_add_unknown_role_to_seeded_plan(self):
         # Setup
@@ -387,6 +399,60 @@ class PlansManagerTestCase(TestCase):
         self.assertTrue(role_filename in templates)
         parsed_role = parser.parse_template(templates[role_filename])
         self.assertEqual(parsed_role.description, 'Test provider resource foo')
+
+    def test_package_templates_seeded_plan(self):
+        # Setup
+        self.seed_store.create(MASTER_SEED_NAME, TEST_SEED)
+        self.registry_store.create(RESOURCE_REGISTRY_NAME, RESOURCE_REGISTRY)
+        # more setup (this is normally called in load_roles)
+        self.registry_mapping_store.create('required_file.yaml',
+                                           'some fake template data')
+
+        test_role = self._add_test_role()
+        test_plan = self.plans_manager.create_plan('p1', 'd1')
+        self.plans_manager.add_role_to_plan(test_plan.uuid, test_role.uuid)
+
+        # Test
+        templates = self.plans_manager.package_templates(test_plan.uuid)
+
+        # Verify
+        self.assertTrue(isinstance(templates, dict))
+        self.assertEqual(4, len(templates))
+
+        self.assertTrue('plan.yaml' in templates)
+        parsed_plan = parser.parse_template(templates['plan.yaml'])
+        self.assertEqual(parsed_plan.description, 'd1')
+
+        self.assertTrue('environment.yaml' in templates)
+        self.assertTrue('required_file.yaml' in templates)
+        parsed_env = parser.parse_environment(templates['environment.yaml'])
+        self.assertEqual(2, len(parsed_env.registry_entries))
+
+        role_filename = name_utils.role_template_filename('r1', '1')
+        self.assertTrue(role_filename in templates)
+        parsed_role = parser.parse_template(templates[role_filename])
+        self.assertEqual(parsed_role.description, 'Test provider resource foo')
+
+    def test_find_roles(self):
+        # Setup
+        self.seed_store.create(MASTER_SEED_NAME, TEST_SEED)
+        self.registry_store.create(RESOURCE_REGISTRY_NAME, RESOURCE_REGISTRY)
+        # more setup (this is normally called in load_roles)
+        self.registry_mapping_store.create('required_file.yaml',
+                                           'some fake template data')
+        test_role = self._add_test_role()
+        test_plan = self.plans_manager.create_plan('p1', 'd1')
+
+        # Test
+        self.plans_manager.add_role_to_plan(test_plan.uuid, test_role.uuid)
+
+        # Verify only one role is found
+        db_plan = self.plan_store.retrieve(test_plan.uuid)
+        parsed_env = parser.parse_environment(
+            db_plan.environment_file.contents
+        )
+        roles = self.plans_manager._find_roles(parsed_env)
+        self.assertEqual(1, len(roles))
 
     def _add_test_role(self):
         return self.template_store.create('r1', TEST_TEMPLATE)
