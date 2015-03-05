@@ -197,6 +197,14 @@ class _VersionedStore(_NamedStore):
         return self._driver.list(self, only_latest=only_latest)
 
 
+class TemplateExtraStore(_VersionedStore):
+    """Template Store for Extra template files that are referenced by the
+       Heat Orchestration Templates held in the TemplateStore
+
+    """
+    object_type = "template_extra"
+
+
 class TemplateStore(_VersionedStore):
     """Template Store for Heat Orchestration TemplateStore
 

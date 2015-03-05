@@ -91,3 +91,21 @@ def read_cached_file(filename, cache_info, reload_func=None):
         if reload_func:
             reload_func(cache_info['data'])
     return cache_info['data']
+
+
+def resolve_role_extra_name_from_path(role_extra_path):
+    """Get the name we will use to store a role-extra file based on its name
+
+        We want to capture the filename and extension into the name of the
+        store role-extra object. The name is constructed by prepending 'extra_'
+        and using the final '_' to include the extension. Any paths used before
+        the filename are dropped at this point (these are resolved relative to
+        a given template, i.e. where they are used and referenced).
+
+        For instance 'hieradata/compute.yaml' is stored as
+        'extra_compute_yaml'.
+    """
+    tokens = os.path.splitext(role_extra_path)
+    extension = tokens[1].replace('.', '')
+    name = os.path.basename(tokens[0]).replace(extension, '')
+    return "extra_%s_%s" % (name, extension)
