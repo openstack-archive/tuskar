@@ -160,6 +160,21 @@ class TemplateStoreTests(TestCase):
         self.driver.create.assert_called_once_with(self.store, name, contents)
 
 
+class TemplateExtraStoreTests(TestCase):
+
+    def setUp(self):
+        super(TemplateExtraStoreTests, self).setUp()
+
+        self.driver = Mock()
+        self.store = stores.TemplateExtraStore(self.driver)
+
+    def test_create(self):
+        name = "template_name_name"
+        contents = "template extra contents"
+        self.store.create(name, contents)
+        self.driver.create.assert_called_once_with(self.store, name, contents)
+
+
 class MasterSeedStoreTests(TestCase):
 
     def setUp(self):
