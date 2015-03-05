@@ -21,16 +21,23 @@ from tuskar.tests.base import TestCase
 
 class LoadRoleTests(TestCase):
 
+    ROLES = """ -r role_name1.yaml -r /path/role_name2.yaml
+                --role /path1/role_name3.yaml """
+
+    ROLE_EXTRA = """ --role-extra /path/metadata/compute_data.yaml
+                     -re /path/metadata/common_data.yaml """
+
     @patch('tuskar.storage.load_roles._load_file', return_value="YAML")
     @patch('tuskar.cmd.load_roles._print_names')
     def test_main(self, mock_print, mock_read):
+        main_args = " --master-seed=seed.yaml %s %s" % (
+            self.ROLES, self.ROLE_EXTRA)
+        expected_res = ['role_name1', 'role_name2', 'role_name3',
+                        'extra_compute_data_yaml', 'extra_common_data_yaml']
 
         # test
-        load_roles.main(argv=(
-            "--master-seed=seed.yaml -r role_name1.yaml "
-            "-r /path/role_name2.yaml").split())
+        load_roles.main(argv=(main_args).split())
 
         # verify
-        self.assertEqual([
-            call('Created', ['role_name1', 'role_name2'])
-        ], mock_print.call_args_list)
+        self.assertEqual([call('Created', expected_res)],
+                         mock_print.call_args_list)

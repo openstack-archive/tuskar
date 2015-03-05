@@ -17,6 +17,21 @@ from tuskar.common import utils
 from tuskar.tests import base
 
 
+class CommonUtilsTestCase(base.TestCase):
+
+    def test_resolve_role_extra_name_from_path(self):
+        expected = [{"/path/to/FOO": "extra_FOO_"},
+                    {"/hieradata/config.yaml": "extra_config_yaml"},
+                    {"./name.has.dots": "extra_name.has_dots"},
+                    {"/path/name.": "extra_name_"},
+                    {"/path/cdefile.c": "extra_cdefile_c"}, ]
+
+        for params in expected:
+            path = params.keys()[0]
+            res = utils.resolve_role_extra_name_from_path(path)
+            self.assertEqual(params[path], res)
+
+
 class IntLikeTestCase(base.TestCase):
 
     def test_is_int_like(self):
