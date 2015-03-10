@@ -59,10 +59,9 @@ def role_name_from_path(role_path):
 
 
 def load_roles(roles, seed_file=None, resource_registry_path=None,
-               dry_run=False, role_extra=None):
+               role_extra=None):
     """Given a list of roles files import them into the
-    add any to the store. TemplateStore. When dry_run=True is
-    passed, run through the roles but don't
+    add any to the store. TemplateStore.
 
     The returned tuple contains all the role names and then the names split
     over where were created and updated. On a dry run the first item will
@@ -95,9 +94,6 @@ def load_roles(roles, seed_file=None, resource_registry_path=None,
 
             contents = _load_file(role_path)
             all_roles.append(name)
-
-            if dry_run:
-                continue
 
             role_created, _ = _create_or_update(name, contents, store)
 

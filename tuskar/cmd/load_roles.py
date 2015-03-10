@@ -29,7 +29,6 @@ def _print_names(message, names):
     print("{0}: \n    {1}".format(message, '\n    '.join(names)))
 
 
-cfg.CONF.register_cli_opt(cfg.BoolOpt('dry-run'))
 seed_help = ('Full path to the template that should be loaded '
              'as the master seed')
 resource_registry_help = ('Path to the Heat environment file which maps the'
@@ -59,7 +58,6 @@ def main(argv=None):
         cfg.CONF.role,
         seed_file=cfg.CONF.master_seed,
         resource_registry_path=cfg.CONF.resource_registry,
-        dry_run=cfg.CONF.dry_run,
         role_extra=cfg.CONF.role_extra)
 
     if len(created):
@@ -68,8 +66,4 @@ def main(argv=None):
     if len(updated):
         _print_names("Updated", updated)
 
-    if not cfg.CONF.dry_run:
-        print("Imported {0} roles".format(len(all_roles)))
-    else:
-        _print_names("Found", all_roles)
-        print("Imported 0 roles")
+    print("Imported {0} roles".format(len(all_roles)))

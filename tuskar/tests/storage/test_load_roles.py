@@ -50,17 +50,6 @@ class LoadRoleTests(TestCase):
         with open(file, 'w') as f:
             f.write(data)
 
-    def test_dry_run(self):
-
-        # test
-        total, created, updated = load_roles.load_roles(
-            self.roles, dry_run=True)
-
-        # verify
-        self.assertEqual(['role1', 'role2'], sorted(total))
-        self.assertEqual([], created)
-        self.assertEqual([], updated)
-
     def test_import(self):
 
         # test
