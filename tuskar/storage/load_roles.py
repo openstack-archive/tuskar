@@ -89,18 +89,20 @@ def load_roles(roles, seed_file=None, resource_registry_path=None,
     """
     all_roles, created, updated = [], [], []
 
+    def _process_role(role_path, role_name, store):
+
+        contents = _load_file(role_path)
+        role_created, _ = _create_or_update(role_name, contents, store)
+
+        all_roles.append(role_name)
+        if role_created:
+            created.append(role_name)
+        else:
+            updated.append(role_name)
+
     def _process_roles(roles, store=None):
-        for name, role_path in roles:
-
-            contents = _load_file(role_path)
-            all_roles.append(name)
-
-            role_created, _ = _create_or_update(name, contents, store)
-
-            if role_created:
-                created.append(name)
-            else:
-                updated.append(name)
+        for role_name, role_path in roles:
+            _process_role(role_path, role_name, store)
 
     roles = [(role_name_from_path(r), r) for r in roles]
     _process_roles(roles)
@@ -112,28 +114,14 @@ def load_roles(roles, seed_file=None, resource_registry_path=None,
         _process_roles(role_extra, template_extra_store)
 
     if seed_file is not None:
-        contents = _load_file(seed_file)
-        seed_created, role = _create_or_update(MASTER_SEED_NAME, contents,
-                                               store=MasterSeedStore())
-        all_roles.append(MASTER_SEED_NAME)
-
-        if seed_created:
-            created.append(MASTER_SEED_NAME)
-        else:
-            updated.append(MASTER_SEED_NAME)
+        _process_role(seed_file, MASTER_SEED_NAME,
+                      store=MasterSeedStore())
 
     if resource_registry_path is not None:
-        contents = _load_file(resource_registry_path)
-        store = ResourceRegistryStore()
-        registry_created, role = _create_or_update(RESOURCE_REGISTRY_NAME,
-                                                   contents,
-                                                   store=store)
-        all_roles.append(RESOURCE_REGISTRY_NAME)
-        if registry_created:
-            created.append(RESOURCE_REGISTRY_NAME)
-        else:
-            updated.append(RESOURCE_REGISTRY_NAME)
+        _process_role(resource_registry_path, RESOURCE_REGISTRY_NAME,
+                      store=ResourceRegistryStore())
 
+        contents = _load_file(resource_registry_path)
         parsed_env = parser.parse_environment(contents)
 
         mapping_store = ResourceRegistryMappingStore()
@@ -146,12 +134,6 @@ def load_roles(roles, seed_file=None, resource_registry_path=None,
             if (not entry.is_filename() or complete_path in role_paths):
                 continue
 
-            mapping_created, _ = _create_or_update(entry.filename,
-                                                   _load_file(complete_path),
-                                                   store=mapping_store)
-            if mapping_created:
-                created.append(entry.filename)
-            else:
-                updated.append(entry.filename)
+            _process_role(complete_path, entry.filename, store=mapping_store)
 
     return all_roles, created, updated
