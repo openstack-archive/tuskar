@@ -206,3 +206,9 @@ class PlanAlreadyHasRole(DuplicateEntry):
 class PlanParametersNotExist(Invalid):
     message = _("There are no parameters named %(param_names)s"
                 " in plan %(plan_uuid)s.")
+
+
+class InvalidTemplateExtraStoredName(TuskarException):
+    # code 500 definitely internal server error. Default for TuskarException
+    message = _("Unexpected name for stored template extra file "
+                "%(name)s . Expected to start with 'extra_'")
