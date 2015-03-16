@@ -27,7 +27,7 @@ class LoadRoleTests(TestCase):
     ROLE_EXTRA = """ --role-extra /path/metadata/compute_data.yaml
                      -re /path/metadata/common_data.yaml """
 
-    @patch('tuskar.storage.load_roles._load_file', return_value="YAML")
+    @patch('tuskar.storage.load_utils.load_file', return_value="YAML")
     @patch('tuskar.cmd.load_roles._print_names')
     def test_main(self, mock_print, mock_read):
         main_args = " --master-seed=seed.yaml %s %s" % (
