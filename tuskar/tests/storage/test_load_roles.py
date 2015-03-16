@@ -17,6 +17,7 @@ from shutil import rmtree
 from tempfile import mkdtemp
 
 from tuskar.storage import load_roles
+from tuskar.storage import load_utils
 from tuskar.storage import stores
 from tuskar.tests.base import TestCase
 
@@ -63,7 +64,7 @@ class LoadRoleTests(TestCase):
     def test_import_update(self):
 
         # setup
-        load_roles._create_or_update("role2", "contents")
+        load_utils._create_or_update("role2", "contents")
 
         # test
         total, created, updated = load_roles.load_roles(self.roles)

@@ -20,38 +20,16 @@ from __future__ import print_function
 from os import path
 
 from tuskar.common import utils
-from tuskar.storage.exceptions import UnknownName
+from tuskar.storage.load_utils import load_file
+from tuskar.storage.load_utils import process_role
 from tuskar.storage.stores import MasterSeedStore
 from tuskar.storage.stores import ResourceRegistryMappingStore
 from tuskar.storage.stores import ResourceRegistryStore
 from tuskar.storage.stores import TemplateExtraStore
-from tuskar.storage.stores import TemplateStore
 from tuskar.templates import parser
 
 MASTER_SEED_NAME = '_master_seed'
 RESOURCE_REGISTRY_NAME = '_registry'
-
-
-def _load_file(role_path):
-
-    with open(role_path) as role_file:
-        return role_file.read()
-
-
-def _create_or_update(name, contents, store=None):
-
-    if store is None:
-        store = TemplateStore()
-
-    try:
-        role = store.retrieve_by_name(name)
-
-        if role.contents != contents:
-            role = store.update(role.uuid, contents)
-
-        return False, role
-    except UnknownName:
-        return True, store.create(name, contents)
 
 
 def role_name_from_path(role_path):
@@ -89,22 +67,10 @@ def load_roles(roles, seed_file=None, resource_registry_path=None,
     """
     all_roles, created, updated = [], [], []
 
-    def _process_role(role_path, role_name, store, role=True):
-
-        contents = _load_file(role_path)
-        role_created, _ = _create_or_update(role_name, contents, store)
-
-        if role:
-            all_roles.append(role_name)
-
-        if role_created:
-            created.append(role_name)
-        else:
-            updated.append(role_name)
-
     def _process_roles(roles, store=None):
         for role_name, role_path in roles:
-            _process_role(role_path, role_name, store)
+            process_role(role_path, role_name, store, all_roles, created,
+                         updated)
 
     roles = [(role_name_from_path(r), r) for r in roles]
     _process_roles(roles)
@@ -116,14 +82,14 @@ def load_roles(roles, seed_file=None, resource_registry_path=None,
         _process_roles(role_extra, template_extra_store)
 
     if seed_file is not None:
-        _process_role(seed_file, MASTER_SEED_NAME,
-                      store=MasterSeedStore())
+        process_role(seed_file, MASTER_SEED_NAME,
+                     MasterSeedStore(), all_roles, created, updated)
 
     if resource_registry_path is not None:
-        _process_role(resource_registry_path, RESOURCE_REGISTRY_NAME,
-                      store=ResourceRegistryStore())
+        process_role(resource_registry_path, RESOURCE_REGISTRY_NAME,
+                     ResourceRegistryStore(), all_roles, created, updated)
 
-        contents = _load_file(resource_registry_path)
+        contents = load_file(resource_registry_path)
         parsed_env = parser.parse_environment(contents)
 
         mapping_store = ResourceRegistryMappingStore()
@@ -136,7 +102,7 @@ def load_roles(roles, seed_file=None, resource_registry_path=None,
             if (not entry.is_filename() or complete_path in role_paths):
                 continue
 
-            _process_role(complete_path, entry.filename, store=mapping_store,
-                          role=False)
+            process_role(complete_path, entry.filename, mapping_store,
+                         None, created, updated)
 
     return all_roles, created, updated
