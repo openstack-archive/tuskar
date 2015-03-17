@@ -32,8 +32,12 @@ class NameUtilsTestCases(unittest.TestCase):
         self.assertEqual('v1', version)
 
     def test_role_template_filename(self):
-        filename = name_utils.role_template_filename('r1', 'v1')
+        filename = name_utils.role_template_filename('r1', 'v1', None)
         self.assertEqual('provider-r1-v1.yaml', filename)
+
+    def test_role_template_filename_with_relative_path(self):
+        filename = name_utils.role_template_filename('r1', 'v1', 'l1')
+        self.assertEqual('l1/provider-r1-v1.yaml', filename)
 
     def test_master_template_filename(self):
         filename = name_utils.master_template_filename('p1')
