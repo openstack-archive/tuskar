@@ -20,6 +20,8 @@ such as:
   resource
 """
 
+import os
+
 
 def generate_role_namespace(role_name, role_version):
     """Creates a unique namespace for the given role name and version.
@@ -44,16 +46,22 @@ def parse_role_namespace(role_namespace):
     return role_namespace.rsplit('-', 1)
 
 
-def role_template_filename(role_name, role_version):
+def role_template_filename(role_name, role_version, role_relative_path):
     """Generates the filename a role's template should be stored in when
     creating the deployment plan's Heat files.
 
     :type role_name: str
     :type role_version: str
+    :type role_relative_path: str or None
     :rtype: str
     """
     namespace = generate_role_namespace(role_name, role_version)
-    return 'provider-%s.yaml' % namespace
+
+    filename = 'provider-%s.yaml' % namespace
+    if role_relative_path:
+        filename = os.path.join(role_relative_path, filename)
+
+    return filename
 
 
 def master_template_filename(plan_name):
