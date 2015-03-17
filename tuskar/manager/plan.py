@@ -151,8 +151,9 @@ class PlansManager(object):
         # Use the combination logic to perform the addition.
         role_namespace = name_utils.generate_role_namespace(db_role.name,
                                                             db_role.version)
-        template_filename = name_utils.role_template_filename(db_role.name,
-                                                              db_role.version)
+        template_filename = (
+            name_utils.role_template_filename(db_role.name, db_role.version,
+                                              db_role.relative_path))
         deployment_plan.add_template(role_namespace, role_template,
                                      template_filename,
                                      override_properties=special_properties)
@@ -375,7 +376,8 @@ class PlansManager(object):
         for role in plan_roles:
             contents = composer.compose_template(role.template)
             filename = name_utils.role_template_filename(role.name,
-                                                         role.version)
+                                                         role.version,
+                                                         role.relative_path)
             files_dict[filename] = contents
 
         def _add_template_extra_data_for(templates, template_store):
@@ -423,7 +425,8 @@ class PlansManager(object):
 
             # Convert to the Tuskar domain model.
             tuskar_role = models.Role(db_role.uuid, name, version,
-                                      role.description, role)
+                                      role.description, role,
+                                      relative_path=db_role.relative_path)
             return tuskar_role
 
         reg_mapping = self.registry_mapping_store.list()

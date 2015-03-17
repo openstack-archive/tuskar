@@ -13,7 +13,8 @@
 
 class Role(object):
 
-    def __init__(self, uuid, name, version, description, template):
+    def __init__(self, uuid, name, version, description, template,
+                 relative_path=None):
         super(Role, self).__init__()
 
         self.uuid = uuid
@@ -21,6 +22,7 @@ class Role(object):
         self.version = version
         self.description = description
         self.template = template
+        self.relative_path = relative_path
 
 
 class DeploymentPlan(object):
