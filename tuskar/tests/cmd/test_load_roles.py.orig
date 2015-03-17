@@ -49,6 +49,7 @@ resource_registry:
         self.assertEqual([call('Created', expected_res)],
                          mock_print.call_args_list)
 
+<<<<<<< HEAD
     def test_load_seed_invalid_args(self):
         main_args = "tuskar-load-seed"
         self.assertRaises(SystemExit, load_seed.main, main_args.split())
@@ -71,7 +72,7 @@ resource_registry:
 
         self.assertEqual([call('Created', expected_created)],
                          mock_print.call_args_list)
-
+=======
     @patch('tuskar.storage.load_utils.load_file', return_value="YAML")
     @patch('tuskar.cmd.load_role._print_names')
     def test_load_role(self, mock_print, mock_read):
@@ -108,3 +109,4 @@ resource_registry:
                      " --extra-data /path/to/puppet/hieradata/compute.yaml "
                      " --extra-data /path/to/puppet/hieradata/common.yaml ")
         self.assertRaises(SystemExit, load_role.main, (main_args.split()))
+>>>>>>> Adds tuskar-load-role to load a single role and associated extra-data
