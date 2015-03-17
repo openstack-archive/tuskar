@@ -21,7 +21,7 @@ class StoredFile(object):
     """
 
     def __init__(self, uuid, contents, store, name=None, created_at=None,
-                 updated_at=None, version=None):
+                 updated_at=None, version=None, relative_path=None):
         """The constructor requires uuid, contents and store which are the
         common attributes in all drivers.
 
@@ -56,6 +56,7 @@ class StoredFile(object):
         self.created_at = created_at
         self.updated_at = updated_at
         self.version = version
+        self.relative_path = relative_path
 
     def __eq__(self, other):
         return (isinstance(other, self.__class__)

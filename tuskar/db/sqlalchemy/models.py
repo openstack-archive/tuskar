@@ -234,5 +234,8 @@ class StoredFile(Base):
     #: Names provide a short human readable description of a file.
     name = Column(String(length=64), nullable=True)
 
+    #: Relative path to which the file belongs
+    relative_path = Column(String(length=64), nullable=True)
+
     #: Versions are an automatic incrementing count.
     version = Column(Integer(), nullable=True)
