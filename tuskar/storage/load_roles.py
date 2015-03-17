@@ -26,6 +26,7 @@ from tuskar.storage.stores import MasterSeedStore
 from tuskar.storage.stores import ResourceRegistryMappingStore
 from tuskar.storage.stores import ResourceRegistryStore
 from tuskar.storage.stores import TemplateExtraStore
+from tuskar.storage.stores import TemplateStore
 from tuskar.templates import parser
 
 MASTER_SEED_NAME = '_master_seed'
@@ -34,6 +35,15 @@ RESOURCE_REGISTRY_NAME = '_registry'
 
 def role_name_from_path(role_path):
     return path.splitext(path.basename(role_path))[0]
+
+
+def load_role(name, file_path, extra_data=None, relative_path=''):
+    name = role_name_from_path(file_path) if (name == '') else name
+    all_roles, created, updated = load_roles(
+        roles=[], seed_file=None,
+        resource_registry_path=None, role_extra=extra_data)
+    process_role(file_path, name, TemplateStore(), all_roles, created, updated)
+    return created, updated
 
 
 def load_roles(roles, seed_file=None, resource_registry_path=None,
