@@ -36,6 +36,17 @@ def role_name_from_path(role_path):
     return path.splitext(path.basename(role_path))[0]
 
 
+def load_seed(seed_file, resource_registry_path):
+
+    # enforced in CLI
+    assert seed_file is not None
+    assert resource_registry_path is not None
+
+    all_roles, created, updated = load_roles([], seed_file,
+                                             resource_registry_path)
+    return created, updated
+
+
 def load_roles(roles, seed_file=None, resource_registry_path=None,
                role_extra=None):
     """Given a list of roles files import them into the
