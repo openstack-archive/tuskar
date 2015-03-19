@@ -11,6 +11,8 @@
 # under the License.
 
 import logging
+from os import path as os_path
+
 
 from tuskar.common import exception
 from tuskar.common import utils
@@ -371,6 +373,7 @@ class PlansManager(object):
         }
 
         plan_roles = self._find_roles(environment)
+
         manager = RoleManager()
         for role in plan_roles:
             contents = composer.compose_template(role.template)
@@ -382,10 +385,11 @@ class PlansManager(object):
             template_extra_data = manager.retrieve_db_role_extra()
             for template in templates:
                 db_template = template_store.retrieve_by_name(template.name)
+                prefix = os_path.split(db_template.name)[0]
                 template_extra_paths = utils.resolve_template_extra_data(
                     db_template, template_extra_data)
                 extra_data_output = manager.template_extra_data_for_output(
-                    template_extra_paths)
+                    template_extra_paths, prefix)
                 files_dict.update(extra_data_output)
 
         # also grab any extradata files for the role
@@ -395,7 +399,6 @@ class PlansManager(object):
         reg_mapping = self.registry_mapping_store.list()
         for entry in reg_mapping:
             files_dict[entry.name] = entry.contents
-
         # similarly, also grab extradata files for the non role templates
         _add_template_extra_data_for(reg_mapping, self.registry_mapping_store)
 

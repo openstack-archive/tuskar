@@ -10,6 +10,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from os import path as os_path
+
 from tuskar.manager import models
 from tuskar.storage.stores import TemplateExtraStore
 from tuskar.storage.stores import TemplateStore
@@ -54,11 +56,14 @@ class RoleManager(object):
     def retrieve_db_role_extra(self):
         return self.template_extra_store.list(only_latest=False)
 
-    def template_extra_data_for_output(self, template_extra_paths):
+    def template_extra_data_for_output(self, template_extra_paths, prefix=''):
         """Compile and return role-extra data for output as a string
 
             :param template_extra_paths: a list of {k,v} (name=>path)
             :type template_extra_paths: list of dict
+
+            :param prefix: a prefix path
+            :type prefix: string
 
             :return: a dict of path=>contents
             :rtype: dict
@@ -81,6 +86,18 @@ class RoleManager(object):
                 "hieradata/object.yaml": "CONTENTS"
             }
 
+            In those cases that the template_extra_paths were generated for a
+            non Role template (i.e. those templates read from the resource
+            registry), include their path prefix - so that the extra data files
+            are created relative to the template. For example the template
+            'path/to/some_template.yaml' has a reference to the extra-data file
+            'hieradata/common.yaml'. The resulting extra-data file returned by
+            tuskar must then be:
+
+            {
+                "path/to/hieradata/common.yaml": "CONTENTS",
+            }
+
         """
         res = {}
         for path in template_extra_paths:
@@ -88,6 +105,7 @@ class RoleManager(object):
             role_extra_path = path[role_extra_name]
             db_role_extra = self.template_extra_store.retrieve_by_name(
                 role_extra_name)
+            role_extra_path = os_path.join(prefix, role_extra_path)
             res[role_extra_path] = db_role_extra.contents
         return res
 
