@@ -189,7 +189,7 @@ class PlansManager(object):
             template_seed.update_role_resource_references(
                 deployment_plan.master_template,
                 seed_role,
-                plan.generate_group_id(role_namespace))
+                db_role.name)
 
             template_seed.update_role_property_references(
                 deployment_plan.master_template,

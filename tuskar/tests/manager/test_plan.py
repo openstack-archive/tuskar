@@ -210,7 +210,7 @@ class PlansManagerTestCase(TestCase):
         self.assertIsNot(config_property, None)
         self.assertEqual(config_property.value,
                          {'ip_addresses':
-                          {'get_attr': ['r1-1-servers', 'foo_ip']}})
+                          {'get_attr': ['r1', 'foo_ip']}})
 
         # verify both entries are present from RESOURCE_REGISTRY
         parsed_env = parser.parse_environment(
