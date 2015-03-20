@@ -27,7 +27,7 @@ from tuskar.storage.delete_roles import delete_roles
 def _print_names(message, names):
     print("{0}: \n    {1}".format(message, '\n    '.join(names)))
 
-cfg.CONF.register_cli_opt(cfg.BoolOpt('dryrun', short='n', default=False))
+cfg.CONF.register_cli_opt(cfg.BoolOpt('dryrun', default=False))
 
 cfg.CONF.register_cli_opt(cfg.ListOpt(
     'uuids', help='List of role uuid to delete'))
