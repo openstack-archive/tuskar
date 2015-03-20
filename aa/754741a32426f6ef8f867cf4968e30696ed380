@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: James Slagle <jslagle@redhat.com>
+Workflow+1: James Slagle <jslagle@redhat.com>
+Code-Review+2: Jay Dobies <jason.dobies@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 20 Mar 2015 18:38:41 +0000
+Reviewed-on: https://review.openstack.org/166009
+Project: openstack/tuskar
+Branch: refs/heads/master
