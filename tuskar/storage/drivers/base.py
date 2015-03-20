@@ -34,7 +34,7 @@ class BaseDriver(object):
     """
 
     @abstractmethod
-    def create(self, store, name, contents):
+    def create(self, store, name, contents, relative_path):
         """Given the store, name and contents create a new file and return a
         `StoredFile` instance representing it.
 
@@ -77,7 +77,7 @@ class BaseDriver(object):
         """
 
     @abstractmethod
-    def update(self, store, uuid, contents):
+    def update(self, store, uuid, contents, relative_path):
         """Given the store, uuid, name and contents update the existing stored
         file and return an instance of StoredFile that reflects the updates.
         Either name and/or contents can be provided. If they are not then they
