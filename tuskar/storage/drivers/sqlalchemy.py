@@ -87,21 +87,23 @@ class SQLAlchemyDriver(BaseDriver):
         finally:
             session.close()
 
-    def _create(self, store, name, contents, version):
+    def _create(self, store, name, contents, version, relative_path=''):
 
         stored_file = StoredFile(
             uuid=self._generate_uuid(),
             contents=contents,
             object_type=store.object_type,
             name=name,
-            version=version
+            version=version,
+            relative_path=relative_path
         )
 
         return self._upsert(store, stored_file)
 
-    def create(self, store, name, contents):
+    def create(self, store, name, contents, relative_path=''):
         """Given the store, name and contents create a new file and return a
-        `StoredFile` instance representing it.
+        `StoredFile` instance representing it. The optional relative_path
+        is appended to the generated template directory structure.
 
         Some of the stored items such as environment files do not have names.
         When working with these, name must be passed explicitly as None. This
@@ -115,6 +117,9 @@ class SQLAlchemyDriver(BaseDriver):
 
         :param contents: String containing the file contents
         :type  contents: str
+
+        :param relative_path: String relative path to place the template under
+        : type relative_path: str
 
         :return: StoredFile instance containing the file metadata and contents
         :rtype:  tuskar.storage.models.StoredFile
@@ -136,7 +141,7 @@ class SQLAlchemyDriver(BaseDriver):
             except UnknownName:
                 pass
 
-        return self._create(store, name, contents, version)
+        return self._create(store, name, contents, version, relative_path)
 
     def _retrieve(self, object_type, uuid):
 
@@ -172,7 +177,7 @@ class SQLAlchemyDriver(BaseDriver):
         stored_file = self._retrieve(store.object_type, uuid)
         return self._to_storage_model(store, stored_file)
 
-    def update(self, store, uuid, contents):
+    def update(self, store, uuid, contents, relative_path=''):
         """Given the store, uuid, name and contents update the existing stored
         file and return an instance of StoredFile that reflects the updates.
         Either name and/or contents can be provided. If they are not then they
@@ -201,10 +206,13 @@ class SQLAlchemyDriver(BaseDriver):
 
         stored_file.contents = contents
 
+        stored_file.relative_path = relative_path if relative_path else None
+
         if store.versioned:
             version = self._get_latest_version(store, stored_file.name) + 1
             return self._create(
-                store, stored_file.name, stored_file.contents, version)
+                store, stored_file.name, stored_file.contents, version,
+                relative_path)
 
         return self._upsert(store, stored_file)
 
