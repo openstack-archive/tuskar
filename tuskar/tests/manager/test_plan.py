@@ -395,7 +395,7 @@ class PlansManagerTestCase(TestCase):
         parsed_env = parser.parse_environment(templates['environment.yaml'])
         self.assertEqual(1, len(parsed_env.registry_entries))
 
-        role_filename = name_utils.role_template_filename('r1', '1')
+        role_filename = name_utils.role_template_filename('r1', '1', None)
         self.assertTrue(role_filename in templates)
         parsed_role = parser.parse_template(templates[role_filename])
         self.assertEqual(parsed_role.description, 'Test provider resource foo')
@@ -428,7 +428,7 @@ class PlansManagerTestCase(TestCase):
         parsed_env = parser.parse_environment(templates['environment.yaml'])
         self.assertEqual(2, len(parsed_env.registry_entries))
 
-        role_filename = name_utils.role_template_filename('r1', '1')
+        role_filename = name_utils.role_template_filename('r1', '1', None)
         self.assertTrue(role_filename in templates)
         parsed_role = parser.parse_template(templates[role_filename])
         self.assertEqual(parsed_role.description, 'Test provider resource foo')
