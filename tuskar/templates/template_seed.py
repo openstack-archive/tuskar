@@ -95,7 +95,9 @@ def add_top_level_parameters(source, destination, environment):
             cloned = copy.copy(p)
             destination.add_parameter(cloned)
 
-            ep = EnvironmentParameter(p.name, p.default or '')
+            ep = EnvironmentParameter(p.name,
+                                      p.default if p.default is not None else
+                                      '')
             environment.add_parameter(ep)
 
 
