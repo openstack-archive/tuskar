@@ -29,7 +29,8 @@ parameters:
   TopLevelParameter1:
     type: string
   TopLevelParameter2:
-    type: string
+    type: json
+    default: []
 
   # Role Parameters
   RoleParameterCount:
@@ -128,6 +129,12 @@ class TemplateSeedTests(unittest.TestCase):
                                  in self.environment.parameters]
         self.assertEqual(['TopLevelParameter1', 'TopLevelParameter2'],
                          sorted(added_parameter_names))
+
+        for param in self.environment.parameters:
+            if param.name == 'TopLevelParameter1':
+                self.assertEqual('', param.value)
+            if param.name == 'TopLevelParameter2':
+                self.assertEqual([], param.value)
 
     def test_add_top_level_parameters_idempotency(self):
         # Test
