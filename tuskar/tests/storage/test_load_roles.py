@@ -19,6 +19,7 @@ from tempfile import mkdtemp
 from tuskar.storage import load_roles
 from tuskar.storage import load_utils
 from tuskar.storage import stores
+from tuskar.storage.stores import ResourceRegistryMappingStore
 from tuskar.tests.base import TestCase
 
 
@@ -64,7 +65,7 @@ class LoadRoleTests(TestCase):
     def test_import_update(self):
 
         # setup
-        load_utils._create_or_update("role2", "contents")
+        load_utils.create_or_update("role2", "contents")
 
         # test
         total, created, updated = load_roles.load_roles(self.roles)
@@ -93,6 +94,7 @@ class LoadRoleTests(TestCase):
 resource_registry:
   OS::TripleO::Role: role1.yaml
   OS::TripleO::Another: required_file.yaml
+  OS::TripleO::SoftwareDeployment: OS::Heat::StructuredDeployment
         """
 
         # Setup
@@ -114,3 +116,11 @@ resource_registry:
         self.assertEqual(['_master_seed', '_registry', 'required_file.yaml',
                           'role1', 'role2'], sorted(created))
         self.assertEqual([], updated)
+
+        # Check resource registry
+        registry_list = ResourceRegistryMappingStore().list()
+        ordered_list = sorted(registry_list, key=lambda x: x.name)
+        self.assertEqual('OS::Heat::StructuredDeployment',
+                         ordered_list[0].name)
+        self.assertEqual('required_file.yaml',
+                         ordered_list[1].name)

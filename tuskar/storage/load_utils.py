@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -21,8 +20,8 @@ def load_file(role_path):
         return role_file.read()
 
 
-def _create_or_update(name, contents, store=None, relative_path='',
-                      registry_path=''):
+def create_or_update(name, contents, store=None, relative_path='',
+                     registry_path=''):
     if store is None:
         store = TemplateStore()
     try:
@@ -41,8 +40,8 @@ def process_role(role_path, role_name, store, all_roles, created, updated,
     contents = load_file(role_path)
     # if bigger than 255 chars, truncate to the last 255
     registry_path = role_path[-255:]
-    role_created, _ = _create_or_update(role_name, contents, store,
-                                        relative_path, registry_path)
+    role_created, _ = create_or_update(role_name, contents, store,
+                                       relative_path, registry_path)
 
     if all_roles is not None:
         all_roles.append(role_name)
