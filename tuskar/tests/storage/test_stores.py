@@ -42,7 +42,7 @@ class BaseStoreTests(TestCase):
         contents = "Stored contents"
         self.store.update(uuid, contents)
         self.driver.update.assert_called_once_with(self.store, uuid,
-                                                   contents, "")
+                                                   contents, "", "")
 
     def test_retrieve(self):
         uuid = "d131dd02c5e6eec5"
@@ -71,14 +71,14 @@ class NamedStoreTests(TestCase):
         name = "Object name"
         self.store.create(name, "My contents")
         self.driver.create.assert_called_once_with(
-            self.store, name, "My contents", '')
+            self.store, name, "My contents", '', '')
 
     def test_update(self):
         uuid = "d131dd02c5e6eec4"
         contents = "Stored contents"
         self.store.update(uuid, contents)
         self.driver.update.assert_called_once_with(self.store, uuid,
-                                                   contents, '')
+                                                   contents, '', '')
 
     def test_retrieve(self):
         uuid = "d131dd02c5e6eec5"
@@ -112,14 +112,14 @@ class VersionedStoreTests(TestCase):
         name = "Object name"
         self.store.create(name, "My contents")
         self.driver.create.assert_called_once_with(
-            self.store, name, "My contents", "")
+            self.store, name, "My contents", "", "")
 
     def test_update(self):
         uuid = "d131dd02c5e6eec4"
         contents = "Stored contents"
         self.store.update(uuid, contents)
         self.driver.update.assert_called_once_with(self.store, uuid,
-                                                   contents, "")
+                                                   contents, "", "")
 
     def test_retrieve(self):
         uuid = "d131dd02c5e6eec5"
@@ -161,7 +161,7 @@ class TemplateStoreTests(TestCase):
         contents = "template contents"
         self.store.create(name, contents, "")
         self.driver.create.assert_called_once_with(self.store, name,
-                                                   contents, "")
+                                                   contents, "", "")
 
 
 class TemplateExtraStoreTests(TestCase):
@@ -177,7 +177,7 @@ class TemplateExtraStoreTests(TestCase):
         contents = "template extra contents"
         self.store.create(name, contents)
         self.driver.create.assert_called_once_with(self.store, name,
-                                                   contents, "")
+                                                   contents, "", "")
 
 
 class MasterSeedStoreTests(TestCase):
@@ -193,7 +193,7 @@ class MasterSeedStoreTests(TestCase):
         contents = "seed contents"
         self.store.create(name, contents)
         self.driver.create.assert_called_once_with(self.store, name,
-                                                   contents, "")
+                                                   contents, "", "")
 
     def test_object_type(self):
         self.assertEqual(stores.MasterSeedStore.object_type, "master_seed")
@@ -268,7 +268,7 @@ class DeploymentPlanMockedTests(TestCase):
 
         result = self.store.create(name, 'Template UUID', 'Environment UUID')
         self.driver.create.assert_called_once_with(self.store, name,
-                                                   contents, "")
+                                                   contents, "", "")
 
         self.assertEqual(result.name, name)
 
@@ -293,7 +293,7 @@ class DeploymentPlanMockedTests(TestCase):
         self.assertItemsEqual(self.environment_store.create.call_args_list, [])
 
         self.driver.create.assert_called_once_with(self.store, name,
-                                                   contents, "")
+                                                   contents, "", "")
 
         self.assertEqual(result.name, name)
         self.master_template_store.retrieve.assert_called_once_with('UUID1')
@@ -316,7 +316,7 @@ class DeploymentPlanMockedTests(TestCase):
             self.master_template_store.create.call_args_list, [])
 
         self.driver.create.assert_called_once_with(self.store, name,
-                                                   contents, "")
+                                                   contents, "", "")
 
         self.assertEqual(result.name, name)
         self.master_template_store.retrieve.assert_called_once_with(
