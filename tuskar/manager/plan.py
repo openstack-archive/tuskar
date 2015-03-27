@@ -13,7 +13,6 @@
 import logging
 from os import path as os_path
 
-
 from tuskar.common import exception
 from tuskar.common import utils
 from tuskar.manager import models
@@ -119,7 +118,6 @@ class PlansManager(object):
         :raises tuskar.storage.exceptions.UnknownUUID: if either the plan
                 or the role cannot be found
         """
-
         # Load the plan and role from storage
         db_plan = self.plan_store.retrieve(plan_uuid)
         db_role = self.template_store.retrieve(role_uuid)
@@ -136,6 +134,11 @@ class PlansManager(object):
             master_seed = None
             special_properties = None
 
+        def _find_role_type(registry):
+            for path in registry.keys():
+                if path in db_role.registry_path:
+                    return registry[path]
+
         if master_seed is not None:
             try:
                 db_registry_env = self.registry_store.retrieve_by_name(
@@ -144,11 +147,13 @@ class PlansManager(object):
                 LOG.error("Could not load resource_registry. Make sure you "
                           "pass --resource-registry to tuskar-load-roles.")
                 raise
+
             parsed_registry_env = parser.parse_environment(db_registry_env)
-            registry = dict((role_name_from_path(e.filename), e.alias)
+            registry = dict((e.filename, e.alias)
                             for e in parsed_registry_env.registry_entries)
+            role_type = _find_role_type(registry)
             special_properties = template_seed.get_property_map_for_role(
-                master_seed, registry[db_role.name])
+                master_seed, role_type)
 
         # Use the combination logic to perform the addition.
         role_namespace = name_utils.generate_role_namespace(db_role.name,
@@ -173,12 +178,9 @@ class PlansManager(object):
             template_seed.add_top_level_outputs(
                 master_seed, deployment_plan.master_template)
 
-            try:
-                role_type = registry[db_role.name]
-            except KeyError:
+            if role_type is None:
                 LOG.error(
                     "Role '%s' not found in seed template." % db_role.name)
-                raise
             seed_role = template_seed.find_role_from_type(
                 master_seed.resources, role_type)
             if seed_role is None:
@@ -374,7 +376,6 @@ class PlansManager(object):
         }
 
         plan_roles = self._find_roles(environment)
-
         manager = RoleManager()
         for role in plan_roles:
             contents = composer.compose_template(role.template)
@@ -394,6 +395,7 @@ class PlansManager(object):
                     template_extra_paths, prefix)
                 files_dict.update(extra_data_output)
 
+
         # also grab any extradata files for the role
         _add_template_extra_data_for(plan_roles, self.template_store)
 
@@ -401,6 +403,7 @@ class PlansManager(object):
         reg_mapping = self.registry_mapping_store.list()
         for entry in reg_mapping:
             files_dict[entry.name] = entry.contents
+
         # similarly, also grab extradata files for the non role templates
         _add_template_extra_data_for(reg_mapping, self.registry_mapping_store)
 
