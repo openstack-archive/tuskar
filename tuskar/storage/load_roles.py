@@ -20,6 +20,7 @@ from __future__ import print_function
 from os import path
 
 from tuskar.common import utils
+from tuskar.storage.load_utils import create_or_update
 from tuskar.storage.load_utils import load_file
 from tuskar.storage.load_utils import process_role
 from tuskar.storage.stores import MasterSeedStore
@@ -119,12 +120,15 @@ def load_roles(roles, seed_file=None, resource_registry_path=None,
         role_paths = [r[1] for r in roles]
         for entry in parsed_env.registry_entries:
             complete_path = path.join(dirname, entry.filename)
-            # skip adding if entry is not a filename (is another alias) or
-            # if template has already been stored as a role
-            if (not entry.is_filename() or complete_path in role_paths):
+            # skip adding if template has already been stored as a role
+            if (complete_path in role_paths):
                 continue
 
-            process_role(complete_path, entry.filename, mapping_store,
-                         None, created, updated)
+            if (entry.is_filename()):
+                process_role(complete_path, entry.filename, mapping_store,
+                             None, created, updated)
+            else:
+                # if entry is not a filename, (is an alias) add to mappings
+                create_or_update(entry.filename, entry.alias, mapping_store)
 
     return all_roles, created, updated
