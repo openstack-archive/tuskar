@@ -79,6 +79,7 @@ parameters:
 resource_registry:
   Tuskar::Foo: provider-foo.yaml
   Tuskar::Bar: provider-bar.yaml
+  OS::TripleO::SoftwareDeployment: OS::Heat::StructuredDeployment
 """
 
 
@@ -186,9 +187,13 @@ class ParserTests(unittest.TestCase):
         self.assertEqual('heat_key', ordered_params[2].value)
 
         # Resource Registry
-        self.assertEqual(2, len(e.registry_entries))
+        self.assertEqual(3, len(e.registry_entries))
         ordered_entries = sorted(e.registry_entries, key=lambda x: x.alias)
-        self.assertEqual('Tuskar::Bar', ordered_entries[0].alias)
-        self.assertEqual('provider-bar.yaml', ordered_entries[0].filename)
-        self.assertEqual('Tuskar::Foo', ordered_entries[1].alias)
-        self.assertEqual('provider-foo.yaml', ordered_entries[1].filename)
+        self.assertEqual('OS::TripleO::SoftwareDeployment',
+                         ordered_entries[0].alias)
+        self.assertEqual('OS::Heat::StructuredDeployment',
+                         ordered_entries[0].filename)
+        self.assertEqual('Tuskar::Bar', ordered_entries[1].alias)
+        self.assertEqual('provider-bar.yaml', ordered_entries[1].filename)
+        self.assertEqual('Tuskar::Foo', ordered_entries[2].alias)
+        self.assertEqual('provider-foo.yaml', ordered_entries[2].filename)

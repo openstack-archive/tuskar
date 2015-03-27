@@ -200,7 +200,8 @@ class PlansManager(object):
                 role_namespace)
 
             # Update environment file to add top level mappings, which is made
-            # up of all non-role files present in the resource registry
+            # up of all non-role files present in the resource registry, plus
+            # required aliases
             reg_mapping = self.registry_mapping_store.list()
 
             environment = deployment_plan.environment
@@ -400,7 +401,10 @@ class PlansManager(object):
         # in addition to provider roles above, return non-role template files
         reg_mapping = self.registry_mapping_store.list()
         for entry in reg_mapping:
-            files_dict[entry.name] = entry.contents
+            if os_path.splitext(entry.name)[1] in ('.yaml', '.yml'):
+                # if entry is an alias, don't include it
+                files_dict[entry.name] = entry.contents
+
         # similarly, also grab extradata files for the non role templates
         _add_template_extra_data_for(reg_mapping, self.registry_mapping_store)
 
