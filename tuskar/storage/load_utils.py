@@ -21,7 +21,7 @@ def load_file(role_path):
         return role_file.read()
 
 
-def _create_or_update(name, contents, store=None, relative_path=''):
+def create_or_update(name, contents, store=None, relative_path=''):
     if store is None:
         store = TemplateStore()
     try:
@@ -37,8 +37,8 @@ def _create_or_update(name, contents, store=None, relative_path=''):
 def process_role(role_path, role_name, store, all_roles, created, updated,
                  relative_path=''):
     contents = load_file(role_path)
-    role_created, _ = _create_or_update(role_name, contents, store,
-                                        relative_path)
+    role_created, _ = create_or_update(role_name, contents, store,
+                                       relative_path)
 
     if all_roles is not None:
         all_roles.append(role_name)
