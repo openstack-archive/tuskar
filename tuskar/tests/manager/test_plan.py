@@ -226,7 +226,7 @@ class PlansManagerTestCase(TestCase):
         test_plan = self.plans_manager.create_plan('p1', 'd1')
 
         # Test
-        self.assertRaises(KeyError, self.plans_manager.add_role_to_plan,
+        self.assertRaises(ValueError, self.plans_manager.add_role_to_plan,
                           test_plan.uuid, test_role.uuid)
 
     def test_add_role_of_unknown_type_to_seeded_plan(self):
@@ -455,4 +455,5 @@ class PlansManagerTestCase(TestCase):
         self.assertEqual(1, len(roles))
 
     def _add_test_role(self):
-        return self.template_store.create('r1', TEST_TEMPLATE)
+        return self.template_store.create('r1', TEST_TEMPLATE,
+                                          registry_path='r1.yaml')

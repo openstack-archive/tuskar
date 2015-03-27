@@ -87,7 +87,8 @@ class SQLAlchemyDriver(BaseDriver):
         finally:
             session.close()
 
-    def _create(self, store, name, contents, version, relative_path=''):
+    def _create(self, store, name, contents, version, relative_path='',
+                registry_path=''):
 
         stored_file = StoredFile(
             uuid=self._generate_uuid(),
@@ -95,12 +96,14 @@ class SQLAlchemyDriver(BaseDriver):
             object_type=store.object_type,
             name=name,
             version=version,
-            relative_path=relative_path
+            relative_path=relative_path,
+            registry_path=registry_path
         )
 
         return self._upsert(store, stored_file)
 
-    def create(self, store, name, contents, relative_path=''):
+    def create(self, store, name, contents, relative_path='',
+               registry_path=''):
         """Given the store, name and contents create a new file and return a
         `StoredFile` instance representing it. The optional relative_path
         is appended to the generated template directory structure.
@@ -119,6 +122,10 @@ class SQLAlchemyDriver(BaseDriver):
         :type  contents: str
 
         :param relative_path: String relative path to place the template under
+        : type relative_path: str
+
+        :param registry_path: String path with which a Role will appear in
+                              the resource registry.
         : type relative_path: str
 
         :return: StoredFile instance containing the file metadata and contents
@@ -141,7 +148,8 @@ class SQLAlchemyDriver(BaseDriver):
             except UnknownName:
                 pass
 
-        return self._create(store, name, contents, version, relative_path)
+        return self._create(store, name, contents, version, relative_path,
+                            registry_path)
 
     def _retrieve(self, object_type, uuid):
 
@@ -177,7 +185,8 @@ class SQLAlchemyDriver(BaseDriver):
         stored_file = self._retrieve(store.object_type, uuid)
         return self._to_storage_model(store, stored_file)
 
-    def update(self, store, uuid, contents, relative_path=''):
+    def update(self, store, uuid, contents, relative_path='',
+               registry_path=''):
         """Given the store, uuid, name and contents update the existing stored
         file and return an instance of StoredFile that reflects the updates.
         Either name and/or contents can be provided. If they are not then they
@@ -208,11 +217,13 @@ class SQLAlchemyDriver(BaseDriver):
 
         stored_file.relative_path = relative_path if relative_path else None
 
+        stored_file.registry_path = registry_path if registry_path else None
+
         if store.versioned:
             version = self._get_latest_version(store, stored_file.name) + 1
             return self._create(
                 store, stored_file.name, stored_file.contents, version,
-                relative_path)
+                relative_path, registry_path)
 
         return self._upsert(store, stored_file)
 
