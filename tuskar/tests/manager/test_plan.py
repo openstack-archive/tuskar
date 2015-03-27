@@ -200,7 +200,7 @@ class PlansManagerTestCase(TestCase):
         self.assertEqual(2, len(parsed_plan.resources))
 
         # The role generated in the plan has a different name:
-        my_role = parsed_plan.find_resource_by_id('r1-1-servers')
+        my_role = parsed_plan.find_resource_by_id('r1')
         self.assertIsNot(my_role, None)
 
         # The reference to the role in some_config should be updated:

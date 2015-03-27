@@ -285,7 +285,7 @@ def generate_group_id(namespace):
     :type namespace: str
     :rtype: str
     """
-    return namespace + '-servers'
+    return namespace.rsplit('-', 1)[0]
 
 
 def generate_count_property_name(namespace):

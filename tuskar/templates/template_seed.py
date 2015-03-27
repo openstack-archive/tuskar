@@ -161,8 +161,7 @@ def update_role_resource_references(template, seed_role,
 
     For example, the overcloud.yaml definition for the compute resource is
     given the name "Compute", however when Tuskar generates the resource it
-    includes the role and version information and is named
-    "compute-1-servers".
+    includes the role named "Compute".
 
     Many of the top-level resources will want to reference the role in its
     properties using one of two mechanisms: get_attr or get_resource. In
