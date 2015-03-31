@@ -75,7 +75,7 @@ class _BaseStore(object):
         """
         return self._driver.retrieve(self, uuid)
 
-    def update(self, uuid, contents, relative_path=''):
+    def update(self, uuid, contents, relative_path='', registry_path=''):
         """Given the uuid and contents update the existing stored file
         and return an instance of StoredFile that reflects the updates.
 
@@ -91,7 +91,8 @@ class _BaseStore(object):
         :raises: tuskar.storage.exceptions.UnknownUUID if the UUID can't be
             found
         """
-        return self._driver.update(self, uuid, contents, relative_path)
+        return self._driver.update(self, uuid, contents, relative_path,
+                                   registry_path)
 
     def delete(self, uuid):
         """Delete the file in this store with the matching uuid.
@@ -120,7 +121,7 @@ class _NamedStore(_BaseStore):
     where required.
     """
 
-    def create(self, name, contents, relative_path=''):
+    def create(self, name, contents, relative_path='', registry_path=''):
         """Given the name and contents create a new file and return a
         `StoredFile` instance representing it.
 
@@ -139,7 +140,8 @@ class _NamedStore(_BaseStore):
         :raises: tuskar.storage.exceptions.NameAlreadyUsed if the name is
             already in use
         """
-        return self._driver.create(self, name, contents, relative_path)
+        return self._driver.create(self, name, contents, relative_path,
+                                   registry_path)
 
     def retrieve_by_name(self, name):
         """Returns the stored file for a given store that matches the provided

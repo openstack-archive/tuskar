@@ -237,5 +237,8 @@ class StoredFile(Base):
     #: Relative path to which the file belongs
     relative_path = Column(String(length=256), nullable=True)
 
+    #: Resource registry path for the file belongs
+    registry_path = Column(String(length=256), nullable=True)
+
     #: Versions are an automatic incrementing count.
     version = Column(Integer(), nullable=True)
