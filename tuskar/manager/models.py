@@ -69,7 +69,7 @@ class DeploymentPlan(object):
 class PlanParameter(object):
 
     def __init__(self, name, value, param_type, description,
-                 label, default, hidden):
+                 label, default, hidden, constraints):
         super(PlanParameter, self).__init__()
         self.name = name
         self.value = value
@@ -78,6 +78,7 @@ class PlanParameter(object):
         self.label = label
         self.default = default
         self.hidden = hidden
+        self.constraints = constraints
 
 
 class ParameterValue(object):

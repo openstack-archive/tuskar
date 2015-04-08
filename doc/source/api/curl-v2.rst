@@ -26,11 +26,33 @@ Example of JSON Representation of Plan
       "parameters":
       [
         {
+          "constraints":
+          [
+            {
+              "constraint_type": "range",
+              "definition":
+              {
+                "min": "0"
+              },
+              "description": "Can't be less than zero"
+            }
+          ],
+          "default": "0",
+          "description": "The number of cinder storage nodes to deploy"
+          "hidden": False,
+          "label": "The number of cinder storage nodes to deploy",
+          "name": "Cinder-Storage-1::count",
+          "parameter_type": "number",
+          "value": "0"
+        },
+        {
+          "constraints": []
           "default": "guest",
           "description": "The password for RabbitMQ",
           "hidden": true,
           "label": null,
           "name": "compute-1::RabbitPassword",
+          "parameter_type: "string"
           "value": "secret-password"
         }
       ],
