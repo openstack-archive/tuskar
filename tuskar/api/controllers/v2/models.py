@@ -69,6 +69,19 @@ class Role(Base):
         return r
 
 
+class ParameterConstraint(Base):
+
+    constraint_type = wtypes.text
+    definition = v2types.MultiType(list, dict, wtypes.text)
+    description = wtypes.text
+
+    @classmethod
+    def from_tuskar_model(cls, constraint):
+        return cls(**{'constraint_type': constraint.constraint_type,
+                      'definition': constraint.definition,
+                      'description': constraint.description})
+
+
 class PlanParameter(Base):
 
     name = wtypes.text
@@ -77,6 +90,8 @@ class PlanParameter(Base):
     description = wtypes.text
     hidden = bool
     value = v2types.MultiType(wtypes.text, six.integer_types, list, dict)
+    constraints = [ParameterConstraint]
+    parameter_type = wtypes.text
 
     @classmethod
     def from_tuskar_model(cls, param):
@@ -84,6 +99,8 @@ class PlanParameter(Base):
 
         :type param: tuskar.manager.models.PlanParameter
         """
+        constraints = [ParameterConstraint.from_tuskar_model(c)
+                       for c in param.constraints]
         p = cls(**{
             'name': param.name,
             'label': param.label,
@@ -91,6 +108,8 @@ class PlanParameter(Base):
             'description': param.description,
             'hidden': param.hidden,
             'value': param.value,
+            'constraints': constraints,
+            'parameter_type': param.param_type
         })
         return p
 
