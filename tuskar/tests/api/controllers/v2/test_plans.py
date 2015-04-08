@@ -105,13 +105,15 @@ class PlansTests(base.TestCase):
         p.add_parameters(
             manager_models.PlanParameter(
                 name="Param 1", label="1", default=2, hidden=False,
-                description="1", value=1, param_type=int),
+                description="1", value=1, param_type='number', constraints=''),
             manager_models.PlanParameter(
                 name="Param 2", label="2", default=['a', ], hidden=False,
-                description="2", value=['a', 'b'], param_type=list),
+                description="2", value=['a', 'b'],
+                param_type='comma_delimited_list', constraints=''),
             manager_models.PlanParameter(
                 name="Param 3", label="3", default={'a': 2}, hidden=False,
-                description="3", value={'a': 1}, param_type=dict),
+                description="3", value={'a': 1}, param_type='json',
+                constraints=''),
         )
         mock_retrieve.return_value = p
 

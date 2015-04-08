@@ -459,9 +459,8 @@ class PlansManager(object):
             env_param = environment.find_parameter_by_name(p.name)
             return models.PlanParameter(
                 p.name, env_param.value, p.param_type,
-                p.description, p.label, p.default, p.hidden
+                p.description, p.label, p.default, p.hidden, p.constraints
             )
-
         params = [generate_param(tp) for tp in template.parameters]
         return params
 
