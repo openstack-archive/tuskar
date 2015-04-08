@@ -77,6 +77,7 @@ class PlanParameter(Base):
     description = wtypes.text
     hidden = bool
     value = v2types.MultiType(wtypes.text, six.integer_types, list, dict)
+    constraints = wtypes.text
 
     @classmethod
     def from_tuskar_model(cls, param):
@@ -84,6 +85,10 @@ class PlanParameter(Base):
 
         :type param: tuskar.manager.models.PlanParameter
         """
+        constraints = ""
+        for c in param.constraints:
+            constraints += "%s: %s" % (c.constraint_type, c.definition)
+            constraints += c.description if c.description else ''
         p = cls(**{
             'name': param.name,
             'label': param.label,
@@ -91,6 +96,7 @@ class PlanParameter(Base):
             'description': param.description,
             'hidden': param.hidden,
             'value': param.value,
+            'constraints': constraints
         })
         return p
 
