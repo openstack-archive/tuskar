@@ -18,7 +18,7 @@ from upstream tripleo-heat-templates.
 
 import os
 
-from oslo.config import cfg
+from oslo_config import cfg
 from tripleo_heat_merge import merge
 
 

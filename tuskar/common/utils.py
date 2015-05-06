@@ -21,7 +21,7 @@
 import os
 import re
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from tuskar.common import exception
 from tuskar.openstack.common import log as logging

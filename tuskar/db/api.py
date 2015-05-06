@@ -18,8 +18,8 @@ Base classes for storage engines
 
 import abc
 
-from oslo.config import cfg
-from oslo.db import api as db_api
+from oslo_config import cfg
+from oslo_db import api as db_api
 import six
 
 _BACKEND_MAPPING = {'sqlalchemy': 'tuskar.db.sqlalchemy.api'}

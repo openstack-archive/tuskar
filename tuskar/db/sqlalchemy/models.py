@@ -15,8 +15,8 @@
 Tuskar domain models for use with SQLAlchemy.
 """
 
-from oslo.config import cfg
-from oslo.db.sqlalchemy import models
+from oslo_config import cfg
+from oslo_db.sqlalchemy import models
 
 from sqlalchemy import (Column, ForeignKey, Integer, String, Text)
 from sqlalchemy.ext.declarative import declarative_base

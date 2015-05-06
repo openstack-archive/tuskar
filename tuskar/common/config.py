@@ -15,8 +15,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo.config import cfg
-from oslo.db import options as db_options
+from oslo_config import cfg
+from oslo_db import options as db_options
 
 from tuskar import version
 

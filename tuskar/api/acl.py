@@ -16,7 +16,7 @@
 """Access Control Lists (ACL's) control access the API server."""
 
 from keystoneclient.middleware import auth_token
-from oslo.config import cfg
+from oslo_config import cfg
 
 
 OPT_GROUP_NAME = 'keystone_authtoken'

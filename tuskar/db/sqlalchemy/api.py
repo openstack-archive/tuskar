@@ -17,9 +17,9 @@
 
 import threading
 
-from oslo.config import cfg
-from oslo.db import exception as db_exception
-from oslo.db.sqlalchemy import session as db_session
+from oslo_config import cfg
+from oslo_db import exception as db_exception
+from oslo_db.sqlalchemy import session as db_session
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import subqueryload

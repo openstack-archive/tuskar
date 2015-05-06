@@ -21,7 +21,7 @@ import logging
 import sys
 from wsgiref import simple_server
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from tuskar.api import app
 from tuskar.common import service as tuskar_service

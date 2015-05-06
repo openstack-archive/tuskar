@@ -18,7 +18,7 @@ Includes decorator for re-raising Tuskar-type exceptions.
 SHOULD include dedicated exception logging.
 """
 
-from oslo.config import cfg
+from oslo_config import cfg
 import six
 
 from tuskar.openstack.common.gettextutils import _  # noqa

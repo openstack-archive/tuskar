@@ -28,7 +28,7 @@ import os
 import shutil
 
 import fixtures
-from oslo.config import cfg
+from oslo_config import cfg
 import testtools
 import unittest2
 

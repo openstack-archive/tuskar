@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import sys
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from tuskar.common import service
 from tuskar.storage.load_roles import load_role

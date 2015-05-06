@@ -16,7 +16,7 @@ from __future__ import absolute_import
 
 from uuid import uuid4
 
-from oslo.config import cfg
+from oslo_config import cfg
 from sqlalchemy import and_
 from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound

@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo.db.sqlalchemy import test_base
+from oslo_db.sqlalchemy import test_base
 
 from tuskar.storage.drivers import sqlalchemy
 from tuskar.tests.storage.drivers import base
