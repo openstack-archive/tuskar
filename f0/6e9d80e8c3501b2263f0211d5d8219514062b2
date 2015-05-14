@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: Giulio Fidente <gfidente@redhat.com>
+Workflow+1: Giulio Fidente <gfidente@redhat.com>
+Code-Review+2: Petr Blaho <pblaho@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 14 May 2015 18:16:10 +0000
+Reviewed-on: https://review.openstack.org/182025
+Project: openstack/tuskar
+Branch: refs/heads/master
