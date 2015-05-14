@@ -130,11 +130,16 @@ class DeploymentPlanTests(unittest.TestCase):
         p.add_template('ns1', t, 'template-1.yaml')
 
         # Verify Master Template Count Parameters
-        self.assertEqual(3, len(p.master_template.parameters))
+        self.assertEqual(4, len(p.master_template.parameters))
         count_param = p.master_template.parameters[2]
         expected_count_name = plan.generate_count_property_name('ns1')
         self.assertEqual(count_param.name, expected_count_name)
         self.assertEqual(count_param.param_type, 'number')
+
+        removal_param = p.master_template.parameters[3]
+        expected_removal_name = plan.generate_removal_policies_name('ns1')
+        self.assertEqual(removal_param.name, expected_removal_name)
+        self.assertEqual(removal_param.param_type, 'json')
 
         self.assertEqual(1, len(count_param.constraints))
         const = count_param.constraints[0]
@@ -150,21 +155,30 @@ class DeploymentPlanTests(unittest.TestCase):
         self.assertEqual(group_res.resource_type,
                          plan.HEAT_TYPE_RESOURCE_GROUP)
 
-        self.assertEqual(2, len(group_res.properties))
+        self.assertEqual(3, len(group_res.properties))
+
         count_prop = group_res.properties[0]
         self.assertEqual(count_prop.name, plan.PROPERTY_SCALING_COUNT)
         self.assertEqual(count_prop.value,
                          {'get_param': [expected_count_name]})
 
-        def_prop = group_res.properties[1]
+        removal_prop = group_res.properties[1]
+        self.assertEqual(removal_prop.name, plan.PROPERTY_REMOVAL_POLICIES)
+        self.assertEqual(removal_prop.value,
+                         {'get_param': [expected_removal_name]})
+
+        def_prop = group_res.properties[2]
         self.assertEqual(def_prop.name, plan.PROPERTY_RESOURCE_DEFINITION)
         self.assertTrue(isinstance(def_prop.value, heat.Resource))
 
         # Verify Environment Parameters
-        self.assertEqual(3, len(p.environment.parameters))
+        self.assertEqual(4, len(p.environment.parameters))
         count_param = p.environment.parameters[2]
         self.assertEqual(count_param.name, expected_count_name)
         self.assertEqual(count_param.value, '1')
+        removal_param = p.environment.parameters[3]
+        self.assertEqual(removal_param.name, expected_removal_name)
+        self.assertEqual(removal_param.value, [])
 
     def test_remove_template(self):
         # Setup & Sanity Check

@@ -34,8 +34,11 @@ import tuskar.templates.namespace as ns_utils
 # Type string for a Heat resource group
 HEAT_TYPE_RESOURCE_GROUP = 'OS::Heat::ResourceGroup'
 
-# Name of the propety added to a resource group to control its scaling
+# Name of the property added to a resource group to control its scaling
 PROPERTY_SCALING_COUNT = 'count'
+
+# Name of the property added to a resource group to control removing resources
+PROPERTY_REMOVAL_POLICIES = 'removal_policies'
 
 # Name of the property added to a resource group to define the resources
 # in the group
@@ -172,6 +175,11 @@ class DeploymentPlan(object):
                 {'get_param': [generate_count_property_name(namespace)]})
             heat_group.add_property(count_prop)
 
+            removal_prop = ResourceProperty(
+                PROPERTY_REMOVAL_POLICIES,
+                {'get_param': [generate_removal_policies_name(namespace)]})
+            heat_group.add_property(removal_prop)
+
             def_prop = ResourceProperty(PROPERTY_RESOURCE_DEFINITION, resource)
             heat_group.add_property(def_prop)
 
@@ -193,14 +201,18 @@ class DeploymentPlan(object):
             self.master_template.add_parameter(cloned)
 
         # If scaling features are being automatically added in, create the
-        # template parameter for accepting the count for the resource with
-        # this namespace
+        # template parameters for configuring the group
         if self.add_scaling:
             count_param = Parameter(generate_count_property_name(namespace),
                                     'number')
             constraint = ParameterConstraint('range', {'min': '0'})
             count_param.add_constraint(constraint)
             self.master_template.add_parameter(count_param)
+
+            removal_param = Parameter(
+                generate_removal_policies_name(namespace), 'json')
+            removal_param.default = []
+            self.master_template.add_parameter(removal_param)
 
     def _add_outputs(self, namespace, template, resource):
         for add_me in template.outputs:
@@ -236,6 +248,10 @@ class DeploymentPlan(object):
             count_param_name = generate_count_property_name(namespace)
             count_param = EnvironmentParameter(count_param_name, '1')
             self.environment.add_parameter(count_param)
+
+            removal_param_name = generate_removal_policies_name(namespace)
+            removal_param = EnvironmentParameter(removal_param_name, [])
+            self.environment.add_parameter(removal_param)
 
         # Add Resource Registry Entry
         registry_entry = RegistryEntry(resource_alias, filename)
@@ -298,3 +314,14 @@ def generate_count_property_name(namespace):
     :rtype: str
     """
     return ns_utils.apply_template_namespace(namespace, 'count')
+
+
+def generate_removal_policies_name(namespace):
+    """Generates the name of the property to hold the removal policies for
+    a group. The property will be prefixed by the namespace in the same way
+    as other parameters for the resource.
+
+    :type namespace: str
+    :rtype: str
+    """
+    return ns_utils.apply_template_namespace(namespace, 'removal_policies')

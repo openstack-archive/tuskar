@@ -284,7 +284,7 @@ class PlansManagerTestCase(TestCase):
         self.assertEqual('d1', found.description)
         self.assertEqual(1, len(found.roles))
         self.assertTrue(isinstance(found.roles[0], Role))
-        self.assertEqual(4, len(found.parameters))  # 3 + 1 for scaling
+        self.assertEqual(5, len(found.parameters))  # 3 + 2 for scaling
         self.assertTrue(isinstance(found.parameters[0], PlanParameter))
 
     def test_list_plans(self):
@@ -326,11 +326,12 @@ class PlansManagerTestCase(TestCase):
         # Pull it from the database again to make sure it was saved
         found = self.plans_manager.retrieve_plan(test_plan.uuid)
         found_params = sorted(found.parameters, key=lambda x: x.name)
-        self.assertEqual(4, len(found_params))  # 3 + 1 for scaling
+        self.assertEqual(5, len(found_params))  # 3 + 2 for scaling
         self.assertEqual(found_params[0].value, '1')
         self.assertEqual(found_params[1].value, 'test-image')
         self.assertEqual(found_params[2].value, 'm1.small')
         self.assertEqual(found_params[3].value, 'test-key')
+        self.assertEqual(found_params[4].value, [])
 
     def test_set_non_existent_parameters(self):
         # Setup
@@ -367,7 +368,7 @@ class PlansManagerTestCase(TestCase):
         # Pull it from the database to make sure it was modified
         found = self.plans_manager.retrieve_plan(test_plan.uuid)
         found_params = sorted(found.parameters, key=lambda x: x.name)
-        self.assertEqual(4, len(found_params))  # 3 + 1 for scaling
+        self.assertEqual(5, len(found_params))  # 3 + 2 for scaling
         self.assertEqual(found_params[0].value, '1')
         self.assertEqual(found_params[1].value,
                          '3e6270da-fbf7-4aef-bc78-6d0cfc3ad11b')
