@@ -31,12 +31,12 @@
       admin-password: unset
       admin-token: unset
       cinder:
-        db: mysql://cinder:unset@localhost/cinder
+        db: mysql+pymysql://cinder:unset@localhost/cinder
         volume_size_mb: '5000'
       controller-address: 192.0.2.5
       db-password: unset
       glance:
-        db: mysql://glance:unset@localhost/glance
+        db: mysql+pymysql://glance:unset@localhost/glance
         host: 192.0.2.5
       heat:
         access_key_id:
@@ -45,7 +45,7 @@
         admin_tenant_name: service
         admin_user: heat
         auth_encryption_key: unset___________
-        db: mysql://heat:unset@localhost/heat
+        db: mysql+pymysql://heat:unset@localhost/heat
         heat_watch_server_url: http://192.0.2.5:8003
         metadata_server_url: http://192.0.2.5:8000
         refresh:
@@ -63,7 +63,7 @@
       interfaces:
         control: eth2
       keystone:
-        db: mysql://keystone:unset@localhost/keystone
+        db: mysql+pymysql://keystone:unset@localhost/keystone
         host: 192.0.2.5
       neutron:
         floatingip_end: 192.0.2.64
@@ -80,10 +80,10 @@
           ovs_range: 10.0.0.0/8
           public_interface: eth0
           tenant_network_type: gre
-        ovs_db: mysql://neutron:unset@localhost/ovs_neutron?charset=utf8
+        ovs_db: mysql+pymysql://neutron:unset@localhost/ovs_neutron?charset=utf8
       nova:
         compute_driver: libvirt.LibvirtDriver
-        db: mysql://nova:unset@localhost/nova
+        db: mysql+pymysql://nova:unset@localhost/nova
         host: 192.0.2.5
         metadata-proxy: true
       rabbit:
