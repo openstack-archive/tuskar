@@ -22,6 +22,8 @@ from sqlalchemy import (Column, ForeignKey, Integer, String, Text)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
+from tuskar.db.sqlalchemy.types import LongText
+
 
 sql_opts = [
     cfg.StrOpt('mysql_engine',
@@ -225,7 +227,7 @@ class StoredFile(Base):
     uuid = Column(String(length=36), primary_key=True)
 
     #: contents contains the full file contents as a string.
-    contents = Column(Text(), nullable=False)
+    contents = Column(LongText(), nullable=False)
 
     #: Object type flags the type of file that this is, i.e. template or
     #: environment file.
