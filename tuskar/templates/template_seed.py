@@ -34,6 +34,7 @@ plan's master template file using a seed template.
 import copy
 import logging
 
+from tuskar.templates.heat import Environment
 from tuskar.templates.heat import EnvironmentParameter
 from tuskar.templates.heat import Resource
 from tuskar.templates import namespace as ns_utils
@@ -99,6 +100,32 @@ def add_top_level_parameters(source, destination, environment):
                                       p.default if p.default is not None else
                                       '')
             environment.add_parameter(ep)
+
+
+def preserve_defaults(source, destination):
+    """Preserve default values from the master_seed.
+
+        For example ServiceNetMap has a default value specified in
+        overcloud-without-merge.py but is specified as {} in the role
+        templates. If the master default is not empty and the destination
+        value is empty, then propagate it. This is also applied to the
+        Environment file (hence, dp.default, vs dp.value)
+    """
+    def _update_value(exists, dp):
+        if isinstance(destination, Environment):
+            if exists and exists.default and not dp.value:
+                dp.value = exists.default
+        else:
+            if exists and exists.default and not dp.default:
+                dp.default = exists.default
+
+    for dp in destination.parameters:
+        try:
+            exists = source.find_parameter_by_name(
+                ns_utils.remove_template_namespace(dp.name))
+        except ValueError:  # non namespaced attributes
+            exists = source.find_parameter_by_name(dp.name)
+        _update_value(exists, dp)
 
 
 def add_top_level_outputs(source, destination):
@@ -307,12 +334,22 @@ def _top_level_property_keys(keys, check_me):
 
     :type keys: list
     """
+    # this is borked. consider the example:
+    # keystone_admin_api_vip:
+    # {get_attr: [VipMap, net_ip_map, {
+    #                  get_param: [ServiceNetMap, KeystoneAdminApiNetwork]}]}
     if isinstance(check_me, (dict, list)):
-        for pr in check_me:
+        if isinstance(check_me, list):
+            values = check_me
+        else:
+            values = check_me.values()
+        for pr in values:
             if isinstance(pr, dict):
                 for k, v in pr.items():
-                    if k == 'get_param':
+                    if k == 'get_param' and isinstance(v, str):
                         keys.append(v)
+                    elif k == 'get_param' and isinstance(v, list):
+                        keys.append(v[0])
                     else:
                         # It could be a nested dictionary, so recurse further
                         _top_level_property_keys(keys, v)

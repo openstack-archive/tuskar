@@ -176,6 +176,8 @@ class PlansManager(object):
                 master_seed, deployment_plan.master_template)
             template_seed.add_top_level_outputs(
                 master_seed, deployment_plan.master_template)
+            template_seed.preserve_defaults(
+                master_seed, deployment_plan.master_template)
 
             if role_type is None:
                 LOG.error(
@@ -213,6 +215,9 @@ class PlansManager(object):
                 if any(x.name == entry.filename for x in reg_mapping):
                     additem = RegistryEntry(entry.alias, entry.filename)
                     environment.add_registry_entry(additem, unique=True)
+
+            # similarly defaults from master_seed to to environment parameters
+            template_seed.preserve_defaults(master_seed, environment)
 
         # Save the updated plan.
         updated = self._save_updated_plan(plan_uuid, deployment_plan)
