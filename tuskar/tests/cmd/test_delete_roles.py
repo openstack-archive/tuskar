@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from mock import call
 from mock import patch
 
 from tuskar.cmd import delete_roles
@@ -21,17 +20,65 @@ from tuskar.tests.base import TestCase
 
 class DeleteRoleTests(TestCase):
 
-    CMD = """ tuskar-delete-roles --dryrun """
-    UUIDS = """ 3 4 5 """
+    @patch('tuskar.storage.delete_roles.delete_roles')
+    def test_main_single_uuid(self, mock_delete):
+        # Setup
+        cmd = """ tuskar-delete-roles --uuid foo """
 
-    @patch('tuskar.storage.stores.TemplateStore.retrieve', return_value="boo")
-    @patch('tuskar.cmd.delete_roles._print_names')
-    def test_main(self, mock_print, mock_read):
-        main_args = "%s --uuids %s" % (self.CMD, self.UUIDS)
-        expected_res = ['3', '4', '5', 'No deletions, dryrun']
-        # test
-        delete_roles.main(argv=(main_args).split())
+        # Test
+        delete_roles.main(argv=(cmd.split()))
 
-        # verify
-        self.assertEqual([call('Deleted', expected_res)],
-                         mock_print.call_args_list)
+        # Verify
+        mock_delete.assert_called_once_with(['foo'], noop=False)
+
+    @patch('tuskar.storage.delete_roles.delete_roles')
+    def test_main_multiple_uuids(self, mock_delete):
+        # Setup
+        cmd = """ tuskar-delete-roles --uuid foo --uuid bar """
+
+        # Test
+        delete_roles.main(argv=(cmd.split()))
+
+        # Verify
+        mock_delete.assert_called_once_with(['foo', 'bar'], noop=False)
+
+    @patch('tuskar.storage.delete_roles.delete_all_roles')
+    def test_main_all(self, mock_delete):
+        # Setup
+        cmd = """ tuskar-delete-roles --all """
+
+        # Test
+        delete_roles.main(argv=(cmd.split()))
+
+        # Verify
+        mock_delete.assert_called_once_with(noop=False)
+
+    @patch('tuskar.storage.delete_roles.delete_all_roles')
+    def test_main_all_dryrun(self, mock_delete):
+        # Setup
+        cmd = """ tuskar-delete-roles --all --dryrun """
+
+        # Test
+        delete_roles.main(argv=(cmd.split()))
+
+        # Verify
+        mock_delete.assert_called_once_with(noop=True)
+
+    @patch('tuskar.storage.delete_roles.delete_roles')
+    def test_main_uuid_dryrun(self, mock_delete):
+        # Setup
+        cmd = """ tuskar-delete-roles --uuid foo --dryrun """
+
+        # Test
+        delete_roles.main(argv=(cmd.split()))
+
+        # Verify
+        mock_delete.assert_called_once_with(['foo'], noop=True)
+
+    @patch('tuskar.storage.delete_roles.delete_roles')
+    def test_main_no_roles(self, mock_delete):
+        # Setup
+        cmd = """ tuskar-delete-roles """
+
+        # Test
+        self.assertRaises(SystemExit, delete_roles.main, argv=(cmd.split()))
