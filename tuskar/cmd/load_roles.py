@@ -40,10 +40,22 @@ cfg.CONF.register_cli_opt(cfg.StrOpt('resource-registry',
                                      help=resource_registry_help))
 cfg.CONF.register_cli_opt(cfg.MultiStrOpt('role', short='r'))
 cfg.CONF.register_cli_opt(cfg.MultiStrOpt('role-extra', short='re'))
+cfg.CONF.register_cli_opt(cfg.BoolOpt(
+    'all', default=False,
+    help='If specified, all roles and role-extra data will be added; as '
+    'encountered under the local tripleo heat templates directory. This can '
+    ' set with the corresponding option',))
+cfg.CONF.register_cli_opt(cfg.StrOpt(
+    'local-tripleo-heat-templates',
+    dest='local_tripleo_heat_templates',
+    default='/usr/share/openstack-tripleo-heat-templates/',
+    help='The absolute local path to the tripleo heat templates directory. '
+    ' This option is to be used with the --all option to override the '
+    ' local path which will be searched for heat templates to load as roles '
+    ' and role-extra data ',))
 
 
 def main(argv=None):
-
     if argv is None:
         argv = sys.argv
 
@@ -58,7 +70,9 @@ def main(argv=None):
         cfg.CONF.role,
         seed_file=cfg.CONF.master_seed,
         resource_registry_path=cfg.CONF.resource_registry,
-        role_extra=cfg.CONF.role_extra)
+        role_extra=cfg.CONF.role_extra,
+        load_all_roles=cfg.CONF.all,
+        local_tht=cfg.CONF.local_tripleo_heat_templates)
 
     if len(created):
         _print_names("Created", created)
