@@ -18,6 +18,7 @@
 from __future__ import print_function
 
 from os import path
+from os import walk
 
 from tuskar.common import utils
 from tuskar.storage.load_utils import create_or_update
@@ -32,6 +33,12 @@ from tuskar.templates import parser
 
 MASTER_SEED_NAME = '_master_seed'
 RESOURCE_REGISTRY_NAME = '_registry'
+ALL_ROLES = ['Compute', 'Controller', 'Swift-Storage', 'Cinder-Storage',
+             'Ceph-Storage']
+# ROLE_EXTRA: relative to the local heat templates, local_tht in load_roles
+ROLE_EXTRA = ['puppet/hieradata/', 'puppet/manifests/', 'extraconfig']
+RESOURCE_REGISTRY = 'overcloud-resource-registry'
+SEED = 'overcloud-without-mergepy.yaml'
 
 
 def role_name_from_path(role_path):
@@ -60,7 +67,8 @@ def load_role(name, file_path, extra_data=None, relative_path=''):
 
 
 def load_roles(roles, seed_file=None, resource_registry_path=None,
-               role_extra=None):
+               role_extra=None, load_all_roles=False,
+               local_tht='/usr/share/openstack-tripleo-heat-templates/'):
     """Given a list of roles files import them into the
     add any to the store. TemplateStore.
 
@@ -84,6 +92,17 @@ def load_roles(roles, seed_file=None, resource_registry_path=None,
            (referenced) by any of the role files.
     :type  roles: [str]
 
+    :param load_all_roles: Boolean, whether to attempt to gather and load all
+           roles ("Compute" "Controller" "Swift-Storage" "Cinder-Storage"
+           "Ceph-Storage") encountered within the local_tht directory
+    :type  all_roles: Boolean (default False)
+
+    :param local_tht: String, the absolute local path to the
+           tripleo-heat-templates directory. Used in conjunction with the
+           load_all_roles parameter. Defaults to
+           /usr/share/openstack-tripleo-heat-templates/
+    :type  local_tht: String
+
     :return: Summary of the results as a tuple with the total count and then
         the names of the created and updated roles.
     :rtype:  tuple(list, list, list)
@@ -95,7 +114,44 @@ def load_roles(roles, seed_file=None, resource_registry_path=None,
             process_role(role_path, role_name, store, all_roles, created,
                          updated)
 
-    roles = [(role_name_from_path(r), r) for r in roles]
+    # This internal method is used when --all. It uses the constrants defined
+    # earlier, ALL_ROLES, ROLE_EXTRA, RESOURCE_REGISTRY and SEED, to locate the
+    # paths to all roles, role extra files, resource registry and master seed
+    # and pass these for processing as if they were specified with the usual
+    # command line arguments.
+    def _gather_all_local_role_paths():
+        local_role_paths = []
+        local_role_extra_paths = []
+        puppet_role_path = path.join(local_tht, "puppet")
+        puppet_roles = True if path.isdir(puppet_role_path) else False
+        suffix = "-puppet.yaml" if puppet_roles else ".yaml"
+        for role_name in ALL_ROLES:
+            if puppet_roles:
+                role_path = (path.join(puppet_role_path, role_name.lower())
+                             + suffix)
+            else:
+                role_path = (path.join(local_tht, role_name.lower())
+                             + suffix)
+            if path.isfile(role_path):
+                local_role_paths.append((role_name, role_path))
+        for extra_path in ROLE_EXTRA:
+            if path.isdir(path.join(local_tht, extra_path)):
+                for dirpath, dirnames, filenames in walk(path.join(
+                        local_tht, extra_path)):
+                    for filename in filenames:
+                        local_role_extra_paths.append(path.join(
+                                                      dirpath, filename))
+        registry = path.join(local_tht, (RESOURCE_REGISTRY + suffix))
+        seed = path.join(local_tht, SEED)
+        return local_role_paths, local_role_extra_paths, registry, seed
+
+    if load_all_roles:
+        roles, role_extra, registry, seed = _gather_all_local_role_paths()
+        resource_registry_path = (registry if not resource_registry_path
+                                  else resource_registry_path)
+        seed_file = seed if not seed_file else seed_file
+    else:
+        roles = [(role_name_from_path(r), r) for r in roles]
     _process_roles(roles)
 
     template_extra_store = TemplateExtraStore()
