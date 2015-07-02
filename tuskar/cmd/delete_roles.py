@@ -21,7 +21,7 @@ import sys
 from oslo_config import cfg
 
 from tuskar.common import service
-from tuskar.storage.delete_roles import delete_roles
+from tuskar.storage import delete_roles as dr
 
 
 def _print_names(message, names):
@@ -29,19 +29,31 @@ def _print_names(message, names):
 
 cfg.CONF.register_cli_opt(cfg.BoolOpt('dryrun', default=False))
 
-cfg.CONF.register_cli_opt(cfg.ListOpt(
-    'uuids', help='List of role uuid to delete'))
+cfg.CONF.register_cli_opt(cfg.MultiStrOpt(
+    'uuid', short='u', help='List of role uuid to delete'))
+
+cfg.CONF.register_cli_opt(cfg.BoolOpt(
+    'all', default=False,
+    help='If specified, all roles will be deleted; overrides the '
+         '--uuids argument'))
 
 
 def main(argv=None):
     if argv is None:
         argv = sys.argv
 
-    index = argv.index('--uuids')
-    service.prepare_service(argv[:index])
-    roles = argv[index + 1:]
+    service.prepare_service(argv)
 
-    deleted = delete_roles(roles, noop=cfg.CONF.dryrun)
+    if not cfg.CONF.uuid and not cfg.CONF.all:
+        sys.stderr.write(
+            'Either specific roles must be specified using the --uuid '
+            'argument or --all must be specified\n')
+        sys.exit(1)
+
+    if cfg.CONF.uuid:
+        deleted = dr.delete_roles(cfg.CONF.uuid, noop=cfg.CONF.dryrun)
+    else:
+        deleted = dr.delete_all_roles(noop=cfg.CONF.dryrun)
 
     if len(deleted):
         _print_names("Deleted", deleted)

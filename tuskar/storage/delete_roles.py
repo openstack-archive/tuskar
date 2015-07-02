@@ -56,6 +56,12 @@ def _delete_role(role_id):
     TemplateStore().delete(role_id)
 
 
+def delete_all_roles(noop=False):
+    store = TemplateStore()
+    all_uuids = [role.uuid for role in store.list(only_latest=True)]
+    return delete_roles(all_uuids, noop=noop)
+
+
 def delete_roles(role_ids=None, noop=False):
     deleted = []
     # if any of the roles are in use, or invalid, do nothing
