@@ -17,8 +17,7 @@ module also contain the translations between the REST transfer objects and
 the internal Tuskar domain model.
 """
 
-import logging
-
+from oslo_log import log as logging
 from wsme import types as wtypes
 
 from tuskar.db.sqlalchemy import models as db_models

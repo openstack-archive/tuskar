@@ -22,9 +22,9 @@ import os
 import re
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from tuskar.common import exception
-from tuskar.openstack.common import log as logging
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
