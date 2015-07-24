@@ -19,10 +19,10 @@ SHOULD include dedicated exception logging.
 """
 
 from oslo_config import cfg
+from oslo_log import log as logging
 import six
 
 from tuskar.openstack.common.gettextutils import _  # noqa
-from tuskar.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)
