@@ -29,13 +29,14 @@ import shutil
 
 import fixtures
 from oslo_config import cfg
+from oslo_log import log as logging
 import testtools
 import unittest2
 
+import tuskar.common.config  # noqa
 from tuskar.common import paths
 from tuskar.db import migration
 from tuskar.db.sqlalchemy import api as sqla_api
-from tuskar.openstack.common import log as logging
 from tuskar.tests import conf_fixture
 
 
@@ -46,10 +47,9 @@ test_opts = [
 ]
 
 CONF = cfg.CONF
-CONF.register_opts(test_opts, group='database')
 CONF.set_override('use_stderr', False)
 
-logging.setup('tuskar')
+logging.setup(CONF, 'tuskar')
 
 _DB_CACHE = None
 
