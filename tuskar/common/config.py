@@ -17,8 +17,12 @@
 
 from oslo_config import cfg
 from oslo_db import options as db_options
+from oslo_log import log as logging
 
 from tuskar import version
+
+
+logging.register_options(cfg.CONF)
 
 
 def parse_args(argv, default_config_files=None):

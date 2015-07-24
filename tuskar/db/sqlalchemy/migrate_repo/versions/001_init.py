@@ -12,12 +12,12 @@
 # under the License.
 
 from migrate.changeset import UniqueConstraint
+from oslo_log import log as logging
 from sqlalchemy import (Column, DateTime, ForeignKey, Integer,
                         MetaData, String, Table, Text)
 
 from tuskar.db.sqlalchemy import models
 from tuskar.openstack.common.gettextutils import _  # noqa
-from tuskar.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)
