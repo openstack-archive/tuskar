@@ -11,10 +11,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_log import log as logging
 from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, Text
 
 from tuskar.openstack.common.gettextutils import _  # noqa
-from tuskar.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

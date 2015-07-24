@@ -17,12 +17,16 @@
 
 from oslo_config import cfg
 from oslo_db import options as db_options
+from oslo_log import log as logging
 
 from tuskar import version
 
+CONF = cfg.CONF
+logging.register_options(CONF)
+
 
 def parse_args(argv, default_config_files=None):
-    db_options.set_defaults(cfg.CONF, sqlite_db='tuskar.sqlite')
+    db_options.set_defaults(CONF, sqlite_db='tuskar.sqlite')
 
     cfg.CONF(argv[1:],
              project='tuskar',

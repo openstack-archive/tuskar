@@ -23,9 +23,11 @@
 
 from os import environ as env
 
+from heatclient.exc import HTTPNotFound as HeatStackNotFound
+from heatclient.v1.client import Client as heatclient
+from keystoneclient.v2_0 import client as ksclient
 from oslo_config import cfg
-
-from tuskar.openstack.common import log as logging
+from oslo_log import log as logging
 
 heat_opts = [
     cfg.StrOpt('stack_name',
@@ -69,10 +71,6 @@ CONF = cfg.CONF
 CONF.register_opts(heat_opts, group='heat')
 CONF.register_opts(heat_keystone_opts, group='heat_keystone')
 LOG = logging.getLogger(__name__)
-
-from heatclient.exc import HTTPNotFound as HeatStackNotFound
-from heatclient.v1.client import Client as heatclient
-from keystoneclient.v2_0 import client as ksclient
 
 
 class HeatClient(object):
