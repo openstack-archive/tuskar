@@ -20,6 +20,7 @@ import threading
 from oslo_config import cfg
 from oslo_db import exception as db_exception
 from oslo_db.sqlalchemy import session as db_session
+from oslo_log import log as logging
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import subqueryload
@@ -27,11 +28,10 @@ from sqlalchemy.orm import subqueryload
 from tuskar.common import exception
 from tuskar.db import api
 from tuskar.db.sqlalchemy import models
-from tuskar.openstack.common import log
 
 
 CONF = cfg.CONF
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 _FACADE = None

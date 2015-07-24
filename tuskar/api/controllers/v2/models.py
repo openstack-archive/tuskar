@@ -18,8 +18,8 @@ the internal Tuskar domain model.
 """
 
 import datetime
-import logging
 
+from oslo_log import log as logging
 import six
 from wsme import types as wtypes
 

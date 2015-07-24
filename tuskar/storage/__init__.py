@@ -13,8 +13,8 @@
 # under the License.
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
-from tuskar.openstack.common import log as logging
 
 tuskar_opts = [
     cfg.StrOpt(

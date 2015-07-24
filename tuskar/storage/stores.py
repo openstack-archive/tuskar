@@ -12,13 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_log import log as logging
+
 from tuskar.openstack.common import jsonutils
-from tuskar.openstack.common import log
 from tuskar.storage.exceptions import UnknownUUID
 from tuskar.storage import get_driver
 from tuskar.storage.models import DeploymentPlan
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class _BaseStore(object):

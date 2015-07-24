@@ -10,8 +10,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import logging
 from os import path as os_path
+
+from oslo_log import log as logging
 
 from tuskar.common import exception
 from tuskar.common import utils
