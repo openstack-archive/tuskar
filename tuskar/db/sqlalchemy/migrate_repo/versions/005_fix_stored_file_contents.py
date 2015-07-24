@@ -11,11 +11,11 @@
 # under the License.
 
 from oslo_db.sqlalchemy import utils
+from oslo_log import log as logging
 from sqlalchemy import MetaData
 
 from tuskar.db.sqlalchemy.types import LongText
 from tuskar.openstack.common.gettextutils import _  # noqa
-from tuskar.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

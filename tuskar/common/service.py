@@ -17,8 +17,8 @@
 import socket
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
-from tuskar.openstack.common import log
 
 cfg.CONF.register_opts([
     cfg.IntOpt('periodic_interval',
@@ -35,15 +35,15 @@ cfg.CONF.register_opts([
 
 
 def prepare_service(argv=[]):
-    cfg.set_defaults(log.log_opts,
-                     default_log_levels=['amqp=WARN',
-                                         'amqplib=WARN',
-                                         'qpid.messaging=INFO',
-                                         'sqlalchemy=WARN',
-                                         'keystoneclient=INFO',
-                                         'stevedore=INFO',
-                                         'eventlet.wsgi.server=WARN',
-                                         'iso8601=WARN'
-                                         ])
+    logging.register_options(cfg.CONF)
+    logging.set_defaults(default_log_levels=['amqp=WARN',
+                                             'amqplib=WARN',
+                                             'qpid.messaging=INFO',
+                                             'sqlalchemy=WARN',
+                                             'keystoneclient=INFO',
+                                             'stevedore=INFO',
+                                             'eventlet.wsgi.server=WARN',
+                                             'iso8601=WARN'
+                                             ])
     cfg.CONF(argv[1:], project='tuskar')
-    log.setup('tuskar')
+    logging.setup(cfg.CONF, 'tuskar')
