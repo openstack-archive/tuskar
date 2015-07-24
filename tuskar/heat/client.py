@@ -24,8 +24,7 @@
 from os import environ as env
 
 from oslo_config import cfg
-
-from tuskar.openstack.common import log as logging
+from oslo_log import log as logging
 
 heat_opts = [
     cfg.StrOpt('stack_name',
