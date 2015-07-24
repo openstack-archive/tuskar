@@ -32,7 +32,8 @@ plan's master template file using a seed template.
 """
 
 import copy
-import logging
+
+from oslo_log import log as logging
 
 from tuskar.templates.heat import Environment
 from tuskar.templates.heat import EnvironmentParameter

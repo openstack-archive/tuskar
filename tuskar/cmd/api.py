@@ -17,15 +17,14 @@
 
 """The Tuskar Service API."""
 
-import logging
 import sys
 from wsgiref import simple_server
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from tuskar.api import app
 from tuskar.common import service as tuskar_service
-from tuskar.openstack.common import log
 
 
 def main(argv=None):
@@ -42,7 +41,7 @@ def main(argv=None):
         host, port,
         app.VersionSelectorApplication())
 
-    LOG = log.getLogger(__name__)
+    LOG = logging.getLogger(__name__)
     LOG.info("Serving on http://%s:%s" % (host, port))
     LOG.info("Configuration:")
     cfg.CONF.log_opt_values(LOG, logging.INFO)
