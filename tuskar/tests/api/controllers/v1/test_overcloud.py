@@ -58,7 +58,7 @@ class OvercloudTests(base.TestCase):
         self.assertEqual(result[0]['attributes']['password'], '******')
         self.assertEqual(result[0]['attributes']['AdminPassword'], '******')
 
-        mock_db_get.assert_called_once()
+        self.assertEqual(1, mock_db_get.call_count)
 
     @mock.patch('tuskar.db.sqlalchemy.api.'
                 'Connection.get_overcloud_by_id')

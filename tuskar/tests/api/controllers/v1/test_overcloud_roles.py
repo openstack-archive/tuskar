@@ -48,7 +48,7 @@ class OvercloudRolesTests(base.TestCase):
         self.assertEqual(1, len(result))
         self.assertEqual(result[0]['name'], 'foo')
 
-        mock_db_get.assert_called_once()
+        self.assertEqual(1, mock_db_get.call_count)
 
     @mock.patch('tuskar.db.sqlalchemy.api.'
                 'Connection.get_overcloud_role_by_id')

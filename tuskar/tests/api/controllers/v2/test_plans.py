@@ -47,7 +47,7 @@ class PlansTests(base.TestCase):
         result = response.json
 
         # Verify
-        mock_list.assert_called_once()
+        self.assertEqual(1, mock_list.call_count)
         self.assertEqual(response.status_int, 200)
         self.assertTrue(isinstance(result, list))
         self.assertEqual(2, len(result))
@@ -64,7 +64,7 @@ class PlansTests(base.TestCase):
         result = response.json
 
         # Verify
-        mock_list.assert_called_once()
+        self.assertEqual(1, mock_list.call_count)
         self.assertEqual(response.status_int, 200)
         self.assertTrue(isinstance(result, list))
         self.assertEqual(0, len(result))
@@ -239,7 +239,7 @@ class PlansTests(base.TestCase):
         result = response.json
 
         # Verify
-        mock_set.assert_called_once()
+        self.assertEqual(1, mock_set.call_count)
         self.assertEqual(mock_set.call_args[0][0], 'qwerty12345')
         self.assertEqual(mock_set.call_args[0][1][0].name, 'foo')
         self.assertEqual(mock_set.call_args[0][1][0].value, 'bar')
