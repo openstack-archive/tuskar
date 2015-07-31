@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: Jay Dobies <jason.dobies@redhat.com>
+Code-Review+2: Marios Andreou <marios@redhat.com>
+Workflow+1: Marios Andreou <marios@redhat.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 31 Jul 2015 21:16:25 +0000
+Reviewed-on: https://review.openstack.org/205846
+Project: openstack/tuskar
+Branch: refs/heads/master
