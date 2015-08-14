@@ -37,6 +37,12 @@ HEAT_TYPE_RESOURCE_GROUP = 'OS::Heat::ResourceGroup'
 # Name of the property added to a resource group to control its scaling
 PROPERTY_SCALING_COUNT = 'count'
 
+# Names of the top-level (master-seed) scaling params
+PROPERTY_SCALING_PARAMS = ["CephStorageCount", "ControllerCount",
+                           "ComputeCount", "BlockStorageCount",
+                           "ObjectStorageCount", ]
+
+
 # Name of the property added to a resource group to control removing resources
 PROPERTY_REMOVAL_POLICIES = 'removal_policies'
 

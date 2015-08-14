@@ -38,7 +38,7 @@ from tuskar.templates.heat import Environment
 from tuskar.templates.heat import EnvironmentParameter
 from tuskar.templates.heat import Resource
 from tuskar.templates import namespace as ns_utils
-
+from tuskar.templates import plan as tuskar_plan
 
 LOG = logging.getLogger(__name__)
 
@@ -237,12 +237,16 @@ def update_role_property_references(destination, orig, namespace):
         if isinstance(check_me, dict):
             for k, v in check_me.items():
                 if k == 'get_param' and v in all_role_property_keys:
-                    check_me[k] = ns_utils.apply_template_namespace(namespace,
-                                                                    v)
+                    # Deal with nested references to the scaling params
+                    if v in tuskar_plan.PROPERTY_SCALING_PARAMS:
+                        check_me[k] = ns_utils.apply_template_namespace(
+                            namespace, tuskar_plan.PROPERTY_SCALING_COUNT)
+                    else:
+                        check_me[k] = ns_utils.apply_template_namespace(
+                            namespace, v)
                 else:
                     # It could be a nested dictionary, so recurse further
                     _update_property(v)
-
     top_level_resources = [r for r in destination.resources if not _is_role(r)]
     for r in top_level_resources:
         for p in r.properties:
