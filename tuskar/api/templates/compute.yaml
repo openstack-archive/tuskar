@@ -45,7 +45,7 @@
         ovs_db:
           Fn::Join:
           - ''
-          - - mysql://neutron:unset@
+          - - mysql+pymysql://neutron:unset@
             - Fn::GetAtt:
               - notcompute
               - PrivateIp
@@ -56,7 +56,7 @@
         db:
           Fn::Join:
           - ''
-          - - mysql://nova:unset@
+          - - mysql+pymysql://nova:unset@
             - Fn::GetAtt:
               - notcompute
               - PrivateIp
