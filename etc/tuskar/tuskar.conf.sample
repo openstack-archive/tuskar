@@ -481,4 +481,9 @@
 # Orchestration Templates (string value)
 #driver=tuskar.storage.drivers.sqlalchemy.SQLAlchemyDriver
 
-
+[cors]
+#allowed_origin=https://website.example.com:443
+#max_age=3600
+#allow_methods=GET,POST,PUT,DELETE
+#allow_headers=Content-Type,Cache-Control,Content-Language,Expires,Last-Modified,Pragma,X-Custom-Header
+#expose_headers=Content-Type,Cache-Control,Content-Language,Expires,Last-Modified,Pragma,X-Custom-Header
