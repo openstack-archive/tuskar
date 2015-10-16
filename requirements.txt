@@ -18,7 +18,7 @@ oslo.db>=2.4.1 # Apache-2.0
 pecan>=1.0.0
 posix-ipc
 python-heatclient>=0.3.0
-python-keystoneclient>=1.6.0
+python-keystoneclient!=1.8.0,>=1.6.0
 PyYAML>=3.1.0
 six>=1.9.0
 SQLAlchemy<1.1.0,>=0.9.9
