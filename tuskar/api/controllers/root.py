@@ -15,12 +15,14 @@ import pecan
 
 from tuskar.api.controllers.v1 import controller as v1_controller
 from tuskar.api.controllers.v2 import controller as v2_controller
+from tuskar.api.controllers.v3 import controller as v3_controller
 
 
 class RootController(object):
 
     v1 = v1_controller.Controller()
     v2 = v2_controller.Controller()
+    v3 = v3_controller.Controller()
 
     @pecan.expose('json')
     def index(self):
@@ -44,7 +46,17 @@ class RootController(object):
                             'href': '/v2/',
                             'rel': 'self',
                         }]
+                    },
+                    {
+                        'status': 'development',
+                        'media-types': [{'base': 'application/json'}],
+                        'id': 'v3.0',
+                        'links': [{
+                            'href': '/v3/',
+                            'rel': 'self',
+                        }]
                     }
+
                 ]
             }
         }
