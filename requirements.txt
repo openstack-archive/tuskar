@@ -11,6 +11,7 @@ http://tarballs.openstack.org/tripleo-heat-templates/tripleo-heat-templates-mast
 eventlet>=0.17.4
 greenlet>=0.3.2
 iso8601>=0.1.9
+keystonemiddleware>=4.0.0
 kombu>=3.0.7
 lxml>=2.3
 oslo.config>=2.3.0 # Apache-2.0
