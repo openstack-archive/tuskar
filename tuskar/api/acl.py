@@ -15,7 +15,8 @@
 
 """Access Control Lists (ACL's) control access the API server."""
 
-from keystoneclient.middleware import auth_token
+from keystonemiddleware import auth_token
+from keystonemiddleware import opts
 from oslo_config import cfg
 
 
@@ -23,9 +24,10 @@ OPT_GROUP_NAME = 'keystone_authtoken'
 
 
 def register_opts(conf):
-    """Register keystoneclient middleware options
+    """Register keystonemiddleware options
     """
-    conf.register_opts(auth_token.opts, group=OPT_GROUP_NAME)
+    for group, options in opts.list_auth_token_opts():
+        conf.register_opts(list(options), group=group)
     auth_token.CONF = conf
 
 
