@@ -214,8 +214,8 @@ def update_role_resource_references(template, seed_role,
                 if value == seed_role.resource_id:
                     update_me[index] = tuskar_resource_name
             else:
-                LOG.warn('Unexpected type (%s) in property value (%s)' %
-                         (value.__class__.__name__, value))
+                LOG.warning('Unexpected type (%s) in property value (%s)' %
+                            (value.__class__.__name__, value))
 
     for r in top_level_resources:
         for p in r.properties:

@@ -302,15 +302,17 @@ class DeploymentPlanStore(_NamedStore):
         try:
             master = self._template_store.retrieve(template_uuid)
         except UnknownUUID:
-            LOG.warn("Deployment Plan {0} had a relation to Template {1} "
-                     "which doesn't exist.".format(plan_uuid, template_uuid))
+            LOG.warning(
+                "Deployment Plan {0} had a relation to Template {1} "
+                "which doesn't exist.".format(plan_uuid, template_uuid))
             master = None
 
         try:
             env = self._env_file_store.retrieve(env_uuid)
         except UnknownUUID:
-            LOG.warn("Deployment Plan {0} had a relation to Environment {1} "
-                     "which doesn't exist.".format(plan_uuid, env_uuid))
+            LOG.warning(
+                "Deployment Plan {0} had a relation to Environment {1} "
+                "which doesn't exist.".format(plan_uuid, env_uuid))
             env = None
 
         return DeploymentPlan.from_stored_file(plan_stored_file,
