@@ -75,7 +75,7 @@ def http_request(conn, base_url, url, method, **kwargs):
     log_http_response(resp, body)
 
     if 300 <= resp.status < 600:
-        LOG.warn('Request returned failure/redirect status.')
+        LOG.warning('Request returned failure/redirect status.')
         raise RuntimeError('Status code %d returned' % resp.status)
 
     return resp, body
