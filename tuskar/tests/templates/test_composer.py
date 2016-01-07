@@ -55,7 +55,7 @@ class ComposerTests(unittest.TestCase):
         self.assertEqual('desc-1', template['parameters']['p1']['description'])
         self.assertEqual('l1', template['parameters']['p1']['label'])
         self.assertEqual('def-1', template['parameters']['p1']['default'])
-        self.assertEqual(True, template['parameters']['p1']['hidden'])
+        self.assertTrue(template['parameters']['p1']['hidden'])
 
         self.assertTrue('p2' in template['parameters'])
         self.assertEqual('t2', template['parameters']['p2']['type'])

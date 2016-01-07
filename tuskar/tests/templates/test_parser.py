@@ -127,7 +127,7 @@ class ParserTests(unittest.TestCase):
         self.assertEqual('string', ordered_params[2].param_type)
         self.assertEqual('Name of a KeyPair', ordered_params[2].description)
         self.assertEqual(None, ordered_params[2].default)
-        self.assertEqual(True, ordered_params[2].hidden)
+        self.assertTrue(ordered_params[2].hidden)
         self.assertEqual('Key', ordered_params[2].label)
         self.assertEqual(0, len(ordered_params[2].constraints))
 
